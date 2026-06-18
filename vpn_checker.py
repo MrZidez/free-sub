@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import requests
+import re
 from datetime import datetime
+import urllib.parse
 
-print("🚀 START")
-
-# Просто список URL
-urls = [
+# Список URL для парсинга
+URLS = [
     "https://raw.githubusercontent.com/dmitriistekolnikov/Free_vpns_for_Russ/refs/heads/main/Vip.txt",
     "https://raw.githubusercontent.com/dmitriistekolnikov/Free_vpns_for_Russ/refs/heads/main/YouTube.txt",
     "https://gitlab.com/zieng2/wl/raw/main/vless_universal.txt",
@@ -16,36 +16,192 @@ urls = [
     "https://gist.githubusercontent.com/j80547013-max/1ed9f2d72fd7613eda3c4a36c96955cb/raw/bfd36277ccf212a8ed2800708a749efbcd5a0885/gistfile1.txt",
 ]
 
-all_keys = []
+OUTPUT_FILE = "FREE-VPN-FROM-KIRILL.txt"
 
-for url in urls:
+# Словарь стран и флагов
+COUNTRIES = {
+    '🇷🇺': 'Россия',
+    '🇺🇸': 'США',
+    '🇬🇧': 'Великобритания',
+    '🇩🇪': 'Германия',
+    '🇫🇷': 'Франция',
+    '🇳🇱': 'Нидерланды',
+    '🇨🇦': 'Канада',
+    '🇦🇺': 'Австралия',
+    '🇯🇵': 'Япония',
+    '🇨🇳': 'Китай',
+    '🇸🇬': 'Сингапур',
+    '🇰🇷': 'Южная Корея',
+    '🇧🇷': 'Бразилия',
+    '🇮🇳': 'Индия',
+    '🇮🇹': 'Италия',
+    '🇪🇸': 'Испания',
+    '🇨🇭': 'Швейцария',
+    '🇸🇪': 'Швеция',
+    '🇳🇴': 'Норвегия',
+    '🇫🇮': 'Финляндия',
+    '🇩🇰': 'Дания',
+    '🇵🇱': 'Польша',
+    '🇺🇦': 'Украина',
+    '🇰🇿': 'Казахстан',
+    '🇱🇻': 'Латвия',
+    '🇪🇪': 'Эстония',
+    '🇱🇹': 'Литва',
+    '🇧🇾': 'Беларусь',
+    '🇹🇷': 'Турция',
+    '🇦🇪': 'ОАЭ',
+    '🇮🇱': 'Израиль',
+    '🇿🇦': 'ЮАР',
+    '🇦🇷': 'Аргентина',
+    '🇲🇽': 'Мексика'
+}
+
+# Сокращения стран для поиска в названиях
+COUNTRY_CODES = {
+    'RU': '🇷🇺',
+    'US': '🇺🇸',
+    'GB': '🇬🇧',
+    'DE': '🇩🇪',
+    'FR': '🇫🇷',
+    'NL': '🇳🇱',
+    'CA': '🇨🇦',
+    'AU': '🇦🇺',
+    'JP': '🇯🇵',
+    'CN': '🇨🇳',
+    'SG': '🇸🇬',
+    'KR': '🇰🇷',
+    'BR': '🇧🇷',
+    'IN': '🇮🇳',
+    'IT': '🇮🇹',
+    'ES': '🇪🇸',
+    'CH': '🇨🇭',
+    'SE': '🇸🇪',
+    'NO': '🇳🇴',
+    'FI': '🇫🇮',
+    'DK': '🇩🇰',
+    'PL': '🇵🇱',
+    'UA': '🇺🇦',
+    'KZ': '🇰🇿',
+    'LV': '🇱🇻',
+    'EE': '🇪🇪',
+    'LT': '🇱🇹',
+    'BY': '🇧🇾',
+    'TR': '🇹🇷',
+    'AE': '🇦🇪',
+    'IL': '🇮🇱',
+    'ZA': '🇿🇦',
+    'AR': '🇦🇷',
+    'MX': '🇲🇽'
+}
+
+def detect_country(key):
+    """Определение страны по ключу"""
+    # Ищем флаг в ключе
+    for flag in COUNTRIES.keys():
+        if flag in key:
+            return flag, COUNTRIES[flag]
+    
+    # Ищем код страны в названии (например, #RU, #US)
+    for code, flag in COUNTRY_CODES.items():
+        if f'#{code}' in key or f'_{code}_' in key or f'-{code}-' in key:
+            return flag, COUNTRIES.get(flag, code)
+    
+    # Ищем код страны в домене
     try:
-        print(f"Downloading: {url}")
-        r = requests.get(url, timeout=10)
-        if r.status_code == 200:
-            lines = r.text.split('\n')
+        if '://' in key:
+            parsed = urllib.parse.urlparse(key)
+            hostname = parsed.hostname or ''
+            # Проверяем окончания доменов
+            for code, flag in COUNTRY_CODES.items():
+                if hostname.endswith(f'.{code.lower()}') or hostname.endswith(f'.{code.lower()}'):
+                    return flag, COUNTRIES.get(flag, code)
+    except:
+        pass
+    
+    # Если не найдено - возвращаем 🌍
+    return '🌍', 'Мир'
+
+def rename_key(key):
+    """Переименование ключа с добавлением флага и страны"""
+    flag, country = detect_country(key)
+    
+    # Удаляем старые названия после #
+    if '#' in key:
+        base = key.split('#')[0]
+        old_name = key.split('#')[1] if len(key.split('#')) > 1 else ''
+    else:
+        base = key
+        old_name = ''
+    
+    # Создаем новое имя
+    new_name = f"{flag} {country} | VPN From Kirill"
+    
+    # Если в старом имени был номер, добавляем его
+    if old_name and old_name[-1].isdigit():
+        new_name += f" #{old_name[-1]}"
+    
+    return f"{base}#{new_name}"
+
+print("🚀 Запуск VPN парсера с переименованием...")
+
+# Собираем все ключи
+all_keys = set()
+print(f"📥 Загружаю {len(URLS)} источников...")
+
+for i, url in enumerate(URLS, 1):
+    try:
+        response = requests.get(url, timeout=10)
+        if response.status_code == 200:
+            lines = response.text.split('\n')
             for line in lines:
                 line = line.strip()
                 if line and not line.startswith('#'):
-                    if '://' in line:
-                        all_keys.append(line)
-            print(f"  Found {len(lines)} lines")
+                    # Проверяем наличие протоколов
+                    if any(p in line for p in ['vless://', 'trojan://', 'vmess://', 'ss://', 'h2://']):
+                        all_keys.add(line)
+            print(f"  ✓ [{i}/{len(URLS)}] Загружено")
+        else:
+            print(f"  ✗ [{i}/{len(URLS)}] Ошибка {response.status_code}")
     except Exception as e:
-        print(f"  Error: {e}")
+        print(f"  ✗ [{i}/{len(URLS)}] Ошибка: {str(e)[:30]}")
 
-print(f"Total keys: {len(all_keys)}")
+print(f"📊 Найдено {len(all_keys)} уникальных ключей")
 
-# Сохраняем
-with open("FREE-VPN-FROM-KIRILL.txt", "w") as f:
+# Переименовываем ключи
+renamed_keys = []
+for key in all_keys:
+    try:
+        renamed = rename_key(key)
+        renamed_keys.append(renamed)
+    except:
+        renamed_keys.append(key)
+
+print(f"✏️ Переименовано {len(renamed_keys)} ключей")
+
+# Сохраняем в файл с метаданными
+print("💾 Сохраняю в файл...")
+
+with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
+    # Метаданные для Happ
     f.write("#profile-title: Free Vpn From KIrill\n")
     f.write("#announce: Бесплатная подписка\n")
     f.write("#profile-update-interval: 12\n")
     f.write("#profile-web-page-url: https://t.me/TourFromKirill\n")
     f.write("\n")
-    f.write(f"# Updated: {datetime.now()}\n")
-    f.write(f"# Total: {len(all_keys)}\n\n")
     
-    for key in all_keys[:10]:  # Только первые 10 для теста
-        f.write(key + "\n")
+    # Информация о времени
+    f.write(f"# Обновлено: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}\n")
+    f.write(f"# Всего ключей: {len(renamed_keys)}\n")
+    f.write("#" + "="*50 + "\n\n")
+    
+    # Записываем ключи
+    if renamed_keys:
+        for key in sorted(renamed_keys):
+            f.write(key + '\n')
+        print(f"✅ Сохранено {len(renamed_keys)} ключей")
+    else:
+        f.write("# Ключи не найдены\n")
+        print("⚠️ Ключи не найдены")
 
-print("✅ DONE")
+print("✅ Готово!")
+print("📁 Файл:", OUTPUT_FILE)
