@@ -33,7 +33,7 @@ URLS = [
     "https://gist.githubusercontent.com/j80547013-max/1ed9f2d72fd7613eda3c4a36c96955cb/raw/bfd36277ccf212a8ed2800708a749efbcd5a0885/gistfile1.txt"
 ]
 
-OUTPUT_FILE = "FREE-VPN-FROM-KIRILL.json"
+OUTPUT_FILE = "FREE-VPN-FROM-KIRILL.txt"
 
 # Список плохих доменов
 BAD_DOMAINS = [
