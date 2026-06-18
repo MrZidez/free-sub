@@ -1,0 +1,33 @@
+name: Test Python
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Run test
+      run: python test.py
+    
+    - name: Show files
+      run: ls -la
+    
+    - name: Commit
+      run: |
+        git config user.name "GitHub Action"
+        git config user.email "action@github.com"
+        git add FREE-VPN-FROM-KIRILL.txt
+        git diff --staged --quiet || git commit -m "Test"
+        git push
