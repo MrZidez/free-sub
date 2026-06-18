@@ -1,7 +1,12 @@
 name: VPN Ping Checker
 
 on:
+  schedule:
+    - cron: '0 */6 * * *'
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   check-vpn:
@@ -10,18 +15,23 @@ jobs:
       contents: write
     
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
     
-    - name: Run test
-      run: python test_simple.py
+    - name: Install requests
+      run: pip install requests
     
-    - name: Commit
+    - name: Run VPN checker
+      run: python vpn_checker.py
+    
+    - name: Commit and push
       run: |
-        git config user.name "GitHub Action"
-        git config user.email "action@github.com"
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
         git add FREE-VPN-FROM-KIRILL.txt
-        git diff --staged --quiet || git commit -m "Test update"
-        git push
+        git diff --staged --quiet || (git commit -m "Update VPN keys $(date -u '+%Y-%m-%d %H:%M:%S')" && git push)
