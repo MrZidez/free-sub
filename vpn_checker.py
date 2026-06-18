@@ -20,19 +20,12 @@ URLS = [
     "https://raw.githubusercontent.com/likzil/vless1/main/Treetcpvpn",
     "https://raw.githubusercontent.com/Ilyacom4ik/free-v2ray-2026/main/subscriptions/FreeCFGHub1.txt",
     "https://gist.githubusercontent.com/j80547013-max/1ed9f2d72fd7613eda3c4a36c96955cb/raw/bfd36277ccf212a8ed2800708a749efbcd5a0885/gistfile1.txt",
-
 ]
 
-OUTPUT_FILE = "FREE-VPN-FROM-KIRILL.txt"  # Теперь JSON
+OUTPUT_FILE = "FREE-VPN-FROM-KIRILL.json"
 PING_THRESHOLD = 70
 MAX_WORKERS = 30
 TIMEOUT = 5
-
-# Метаданные для JSON
-PROFILE_TITLE = "Free Vpn From KIrill"
-PROFILE_ANNOUNCE = "Бесплатная подписка"
-PROFILE_UPDATE_INTERVAL = 12
-PROFILE_WEB_PAGE_URL = "https://t.me/TourFromKirill"
 
 # Список плохих доменов
 BAD_DOMAINS = [
@@ -130,78 +123,26 @@ def detect_country(key):
         pass
     return None, None
 
-def convert_to_json_config(key, country):
+def convert_key_to_config(key, country, index):
     """Конвертирует ключ в JSON-конфиг для Sing-Box"""
     try:
-        # Парсим URL
         parsed = urllib.parse.urlparse(key)
         protocol = parsed.scheme
         hostname = parsed.hostname or ''
         port = parsed.port or 443
-        path = parsed.path or ''
         query = urllib.parse.parse_qs(parsed.query)
         
-        # Базовая структура
         config = {
-            "dns": {
-                "servers": ["77.88.8.8", "77.88.8.1"],
-                "queryStrategy": "UseIP",
-                "cacheSize": 512,
-                "readTimeout": "50ms",
-                "writeTimeout": "50ms"
-            },
-            "inbounds": [
-                {
-                    "listen": "127.0.0.1",
-                    "port": 10808,
-                    "protocol": "socks",
-                    "settings": {"udp": True},
-                    "sniffing": {"enabled": True, "destOverride": ["http", "tls"], "routeOnly": True},
-                    "tag": "socks"
-                },
-                {
-                    "listen": "127.0.0.1",
-                    "port": 10809,
-                    "protocol": "http",
-                    "settings": {},
-                    "sniffing": {"enabled": True, "destOverride": ["http", "tls"], "routeOnly": True},
-                    "tag": "http"
-                }
-            ],
-            "log": {"loglevel": "none"},
-            "outbounds": [
-                {
-                    "protocol": protocol,
-                    "settings": {},
-                    "streamSettings": {},
-                    "tag": "proxy"
-                }
-            ],
-            "policy": {
-                "levels": {
-                    "8": {
-                        "connIdle": 60,
-                        "downlinkOnly": 0,
-                        "handshake": 1,
-                        "uplinkOnly": 0,
-                        "bufferSize": 16
-                    }
-                }
-            },
-            "remarks": country,
-            "routing": {
-                "domainStrategy": "AsIs",
-                "rules": [
-                    {"ip": ["geoip:private"], "outboundTag": "direct"},
-                    {"network": "tcp,udp", "outboundTag": "proxy"}
-                ]
-            }
+            "protocol": protocol,
+            "settings": {},
+            "streamSettings": {},
+            "tag": f"proxy-{country}-{index}"
         }
         
         # Настраиваем в зависимости от протокола
         if protocol == 'vless':
             user_id = parsed.username or ''
-            config["outbounds"][0]["settings"] = {
+            config["settings"] = {
                 "vnext": [{
                     "address": hostname,
                     "port": port,
@@ -213,21 +154,12 @@ def convert_to_json_config(key, country):
                 }]
             }
             
-            # Настройка streamSettings
             security = query.get('security', ['none'])[0]
             network = query.get('type', ['tcp'])[0]
             
             stream_settings = {
                 "network": network,
-                "security": security,
-                "sockopt": {
-                    "tcpNoDelay": True,
-                    "tcpKeepAliveIdle": 5,
-                    "tcpKeepAliveInterval": 2,
-                    "tcpKeepAliveProbes": 2,
-                    "mark": 255,
-                    "domainStrategy": "UseIP"
-                }
+                "security": security
             }
             
             if network == 'ws':
@@ -239,43 +171,36 @@ def convert_to_json_config(key, country):
                 stream_settings["wsSettings"] = ws_settings
             
             if security == 'tls':
-                tls_settings = {
+                stream_settings["tlsSettings"] = {
                     "serverName": query.get('sni', [hostname])[0],
                     "fingerprint": query.get('fp', ['chrome'])[0],
                     "allowInsecure": False
                 }
-                if 'alpn' in query:
-                    tls_settings["alpn"] = query['alpn'][0].split(',')
-                stream_settings["tlsSettings"] = tls_settings
             
             if security == 'reality':
-                reality_settings = {
+                stream_settings["realitySettings"] = {
                     "serverName": query.get('sni', [hostname])[0],
                     "publicKey": query.get('pbk', [''])[0],
                     "fingerprint": query.get('fp', ['chrome'])[0],
                     "show": False
                 }
-                if 'sid' in query:
-                    reality_settings["shortId"] = query['sid'][0]
-                stream_settings["realitySettings"] = reality_settings
             
             if network == 'grpc':
-                grpc_settings = {
+                stream_settings["grpcSettings"] = {
                     "serviceName": query.get('serviceName', [''])[0],
                     "multiMode": True
                 }
-                stream_settings["grpcSettings"] = grpc_settings
             
             if network == 'tcp':
                 stream_settings["tcpSettings"] = {
                     "header": {"type": "none"}
                 }
             
-            config["outbounds"][0]["streamSettings"] = stream_settings
+            config["streamSettings"] = stream_settings
             
         elif protocol == 'trojan':
             password = parsed.username or ''
-            config["outbounds"][0]["settings"] = {
+            config["settings"] = {
                 "servers": [{
                     "address": hostname,
                     "port": port,
@@ -288,13 +213,12 @@ def convert_to_json_config(key, country):
         return config
         
     except Exception as e:
-        print(f"  ⚠️ Ошибка конвертации ключа: {e}")
         return None
 
-print("🚀 Запуск VPN парсера с JSON-конвертацией...")
+print("🚀 Запуск VPN парсера (группировка по странам)...")
 
-# Собираем все ключи
-all_keys = {}
+# Собираем ключи по странам
+country_keys = {}
 print(f"📥 Загружаю {len(URLS)} источников...")
 
 for i, url in enumerate(URLS, 1):
@@ -306,18 +230,16 @@ for i, url in enumerate(URLS, 1):
                 line = line.strip()
                 if line and not line.startswith('#'):
                     if any(p in line for p in ['vless://', 'trojan://', 'vmess://', 'ss://', 'h2://']):
-                        # Определяем страну
                         flag, country = detect_country(line)
                         if flag and country:
-                            # Проверяем домен
                             try:
                                 if '://' in line:
                                     parsed = urllib.parse.urlparse(line)
                                     hostname = parsed.hostname or ''
                                     if not is_bad_domain(hostname):
-                                        if country not in all_keys:
-                                            all_keys[country] = []
-                                        all_keys[country].append(line)
+                                        if country not in country_keys:
+                                            country_keys[country] = []
+                                        country_keys[country].append(line)
                             except:
                                 pass
             print(f"  ✓ [{i}/{len(URLS)}] Загружено")
@@ -326,29 +248,44 @@ for i, url in enumerate(URLS, 1):
     except Exception as e:
         print(f"  ✗ [{i}/{len(URLS)}] Ошибка: {str(e)[:30]}")
 
-print(f"📊 Найдено ключей по странам:")
-for country, keys in all_keys.items():
+print(f"\n📊 Найдено ключей по странам:")
+for country, keys in country_keys.items():
     print(f"  🌍 {country}: {len(keys)} ключей")
 
-# Конвертируем в JSON
-json_profiles = []
-total_keys = 0
+# Создаем JSON с группировкой по странам
+json_output = []
 
-for country, keys in all_keys.items():
-    print(f"🔄 Конвертирую {len(keys)} ключей для {country}...")
-    for key in keys:
-        config = convert_to_json_config(key, f"{country} | VPN From Kirill")
+for country, keys in country_keys.items():
+    print(f"\n🔄 Создаю профиль для {country} ({len(keys)} ключей)...")
+    
+    # Создаем один профиль для страны
+    profile = {
+        "remarks": f"{country} | VPN From Kirill",
+        "outbounds": []
+    }
+    
+    # Добавляем все ключи этой страны в outbounds
+    for idx, key in enumerate(keys, 1):
+        config = convert_key_to_config(key, country, idx)
         if config:
-            json_profiles.append(config)
-            total_keys += 1
+            profile["outbounds"].append(config)
+    
+    if profile["outbounds"]:
+        json_output.append(profile)
+        print(f"  ✅ Добавлено {len(profile['outbounds'])} серверов")
 
-print(f"✅ Сконвертировано {total_keys} ключей")
+print(f"\n✅ Создано {len(json_output)} профилей стран")
 
 # Сохраняем в JSON
 print("💾 Сохраняю в JSON...")
 
 with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-    json.dump(json_profiles, f, ensure_ascii=False, indent=2)
+    json.dump(json_output, f, ensure_ascii=False, indent=2)
 
-print(f"✅ Сохранено {len(json_profiles)} профилей в {OUTPUT_FILE}")
-print(f"📁 Файл: {OUTPUT_FILE}")
+print(f"✅ Сохранено в {OUTPUT_FILE}")
+
+# Показываем статистику
+total_servers = sum(len(p['outbounds']) for p in json_output)
+print(f"\n📊 Итоговая статистика:")
+print(f"  🌍 Стран: {len(json_output)}")
+print(f"  🔗 Всего серверов: {total_servers}")
