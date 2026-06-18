@@ -9,32 +9,32 @@ import urllib.parse
 print("🚀 Запуск VPN парсера...")
 
 try:
-    # Список URL для парсинга
+    # НОВЫЙ СПИСОК URL ДЛЯ ПАРСИНГА
     URLS = [
-    "https://gitlab.com/zieng2/wl/raw/main/vless_universal.txt",
-    "https://storage.yandexcloud.net/mystorage123/whitelist.txt",
-    "https://gist.githubusercontent.com/HalyavusVPNUS/a93def732d3c624029c09c393dd0772e/raw/e310946a53d9cd7910bb4381e7fceab83e1f8462/%25D0%25BA%25D0%25BE%25D0%25BD%25D1%2584%25D0%25B8%25D0%25B3%25D0%25B8",
-    "https://gist.githubusercontent.com/HalyavusVPNUS/a93def732d3c624029c09c393dd0772e/raw/0f61abfd23bfc411b14385a95cfdb90498514a45/%25D0%25BA%25D0%25BE%25D0%25BD%25D1%2584%25D0%25B8%25D0%25B3%25D0%25B8",
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt",
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt",
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt",
-    "https://raw.githubusercontent.com/cinev505/VlessTrogan-vpn-key/refs/heads/main/WhiteList-VPN-Vless",
-    "https://raw.githubusercontent.com/mahdibland/ShadowsocksAggregator/master/sub/splitted/trojan.txt",
-    "https://hub.mos.ru/zieng2/wl/raw/main/list_universal.txt",
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt",
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt",
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt",
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt",
-    "https://github.com/KiryaScript/white-lists/raw/refs/heads/main/githubmirror/26.txt",
-    "https://github.com/KiryaScript/white-lists/raw/refs/heads/main/githubmirror/27.txt",
-    "https://github.com/KiryaScript/white-lists/raw/refs/heads/main/githubmirror/28.txt",
-    "https://github.com/AvenCores/goida-vpn-configs/raw/refs/heads/main/githubmirror/26.txt",
-    "https://gist.githubusercontent.com/j80547013-max/e1fb675de8bbdc2225f98b5c2302b52b/raw/0820188e0baae9923ed86f6dee0625a33c4555a4/gistfile1.txt",
-    "https://gist.githubusercontent.com/HalyavusVPNUS/a93def732d3c624029c09c393dd0772e/raw/d2c8359ceba149c1129c2c57d43c84e85e8baff3/%25D0%25BA%25D0%25BE%25D0%25BD%25D1%2584%25D0%25B8%25D0%25B3%25D0%25B8",
-    "https://raw.githubusercontent.com/po5p/DLDBL/refs/heads/main/lutvpn.txt",
-    "https://raw.githubusercontent.com/likzil/vless1/main/Treetcpvpn",
-    "https://raw.githubusercontent.com/Ilyacom4ik/free-v2ray-2026/main/subscriptions/FreeCFGHub1.txt",
-    "https://gist.githubusercontent.com/j80547013-max/1ed9f2d72fd7613eda3c4a36c96955cb/raw/bfd36277ccf212a8ed2800708a749efbcd5a0885/gistfile1.txt"
+        "https://gitlab.com/zieng2/wl/raw/main/vless_universal.txt",
+        "https://storage.yandexcloud.net/mystorage123/whitelist.txt",
+        "https://gist.githubusercontent.com/HalyavusVPNUS/a93def732d3c624029c09c393dd0772e/raw/e310946a53d9cd7910bb4381e7fceab83e1f8462/%25D0%25BA%25D0%25BE%25D0%25BD%25D1%2584%25D0%25B8%25D0%25B3%25D0%25B8",
+        "https://gist.githubusercontent.com/HalyavusVPNUS/a93def732d3c624029c09c393dd0772e/raw/0f61abfd23bfc411b14385a95cfdb90498514a45/%25D0%25BA%25D0%25BE%25D0%25BD%25D1%2584%25D0%25B8%25D0%25B3%25D0%25B8",
+        "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt",
+        "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt",
+        "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt",
+        "https://raw.githubusercontent.com/cinev505/VlessTrogan-vpn-key/refs/heads/main/WhiteList-VPN-Vless",
+        "https://raw.githubusercontent.com/mahdibland/ShadowsocksAggregator/master/sub/splitted/trojan.txt",
+        "https://hub.mos.ru/zieng2/wl/raw/main/list_universal.txt",
+        "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt",
+        "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt",
+        "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt",
+        "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt",
+        "https://github.com/KiryaScript/white-lists/raw/refs/heads/main/githubmirror/26.txt",
+        "https://github.com/KiryaScript/white-lists/raw/refs/heads/main/githubmirror/27.txt",
+        "https://github.com/KiryaScript/white-lists/raw/refs/heads/main/githubmirror/28.txt",
+        "https://github.com/AvenCores/goida-vpn-configs/raw/refs/heads/main/githubmirror/26.txt",
+        "https://gist.githubusercontent.com/j80547013-max/e1fb675de8bbdc2225f98b5c2302b52b/raw/0820188e0baae9923ed86f6dee0625a33c4555a4/gistfile1.txt",
+        "https://gist.githubusercontent.com/HalyavusVPNUS/a93def732d3c624029c09c393dd0772e/raw/d2c8359ceba149c1129c2c57d43c84e85e8baff3/%25D0%25BA%25D0%25BE%25D0%25BD%25D1%2584%25D0%25B8%25D0%25B3%25D0%25B8",
+        "https://raw.githubusercontent.com/po5p/DLDBL/refs/heads/main/lutvpn.txt",
+        "https://raw.githubusercontent.com/likzil/vless1/main/Treetcpvpn",
+        "https://raw.githubusercontent.com/Ilyacom4ik/free-v2ray-2026/main/subscriptions/FreeCFGHub1.txt",
+        "https://gist.githubusercontent.com/j80547013-max/1ed9f2d72fd7613eda3c4a36c96955cb/raw/bfd36277ccf212a8ed2800708a749efbcd5a0885/gistfile1.txt"
     ]
 
     OUTPUT_FILE = "FREE-VPN-FROM-KIRILL.json"
@@ -285,6 +285,53 @@ try:
                 
                 outbound["streamSettings"] = stream_settings
             
+            elif protocol == 'vmess':
+                # Для VMess нужно декодировать base64
+                try:
+                    import base64
+                    decoded = base64.b64decode(parsed.username or '').decode('utf-8')
+                    vmess_data = json.loads(decoded)
+                    outbound["settings"] = {
+                        "vnext": [{
+                            "address": vmess_data.get('add', hostname),
+                            "port": vmess_data.get('port', port),
+                            "users": [{
+                                "id": vmess_data.get('id', ''),
+                                "security": vmess_data.get('scy', 'auto'),
+                                "alterId": vmess_data.get('aid', 0)
+                            }]
+                        }]
+                    }
+                    # Добавляем streamSettings для VMess
+                    network = vmess_data.get('net', 'tcp')
+                    security = vmess_data.get('tls', 'none')
+                    stream_settings = {
+                        "network": network,
+                        "security": security if security != 'none' else 'none',
+                        "sockopt": {
+                            "tcpNoDelay": True,
+                            "tcpKeepAliveIdle": 5,
+                            "tcpKeepAliveInterval": 2,
+                            "tcpKeepAliveProbes": 2,
+                            "mark": 255,
+                            "domainStrategy": "UseIP"
+                        }
+                    }
+                    if network == 'ws':
+                        ws_settings = {"path": vmess_data.get('path', '/')}
+                        if 'host' in vmess_data:
+                            ws_settings["headers"] = {"Host": vmess_data['host']}
+                        stream_settings["wsSettings"] = ws_settings
+                    if security == 'tls':
+                        stream_settings["tlsSettings"] = {
+                            "serverName": vmess_data.get('sni', hostname),
+                            "fingerprint": "chrome",
+                            "allowInsecure": False
+                        }
+                    outbound["streamSettings"] = stream_settings
+                except:
+                    pass
+            
             return outbound
             
         except Exception as e:
@@ -297,7 +344,7 @@ try:
 
     for i, url in enumerate(URLS, 1):
         try:
-            response = requests.get(url, timeout=10)
+            response = requests.get(url, timeout=15)
             if response.status_code == 200:
                 lines = response.text.split('\n')
                 for line in lines:
@@ -378,7 +425,6 @@ try:
     # Статистика
     total_servers = 0
     for profile in json_output:
-        # Считаем только proxy outbounds (не freedom и blackhole)
         proxy_count = len([o for o in profile['outbounds'] if o['tag'].startswith('proxy-')])
         total_servers += proxy_count
     
