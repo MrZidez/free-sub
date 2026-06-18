@@ -5,12 +5,13 @@ import json
 import sys
 import urllib.parse
 from datetime import datetime
+import os
 
 print("🚀 Запуск VPN парсера...")
 print(f"⏰ Время запуска: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
 try:
-    # НОВЫЙ СПИСОК URL ДЛЯ ПАРСИНГА (с добавленными источниками)
+    # НОВЫЙ СПИСОК URL ДЛЯ ПАРСИНГА
     URLS = [
         "https://raw.githubusercontent.com/uretkavpn/Uretkavpn/refs/heads/main/UretkaVpn.txt",
         "https://github.com/Remiuc0ff/ya-nikogo-ne-ubival/raw/refs/heads/Remiuc0ff-patch-1/okak",
@@ -115,46 +116,52 @@ try:
     for country, keys in country_keys.items():
         print(f"  🌍 {country}: {len(keys)} ключей")
 
-    if not country_keys:
-        print("\n⚠️ НЕ НАЙДЕНО НИ ОДНОГО КЛЮЧА!")
-        print("💾 Сохраняю пустой JSON...")
-        with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-            json.dump([], f, ensure_ascii=False, indent=2)
-        sys.exit(0)
-
-    # Создаем JSON с группировкой по странам
+    # ВСЕГДА создаем файл, даже если ключей нет
     json_output = []
 
-    for country, keys in country_keys.items():
-        print(f"\n🔄 Создаю профиль для {country} ({len(keys)} ключей)...")
-        
-        # Находим флаг для страны
-        flag = None
-        for f, c in COUNTRIES.items():
-            if c == country:
-                flag = f
-                break
-        if not flag:
-            flag = '🌍'
-        
-        # Простой формат - сохраняем оригинальные ссылки
-        profile = {
-            "remarks": f"{flag} {country}",
-            "servers": keys
-        }
-        
-        json_output.append(profile)
-        print(f"  ✅ Добавлено {len(keys)} серверов в профиль {country}")
+    if country_keys:
+        # Создаем JSON с группировкой по странам
+        for country, keys in country_keys.items():
+            print(f"\n🔄 Создаю профиль для {country} ({len(keys)} ключей)...")
+            
+            flag = None
+            for f, c in COUNTRIES.items():
+                if c == country:
+                    flag = f
+                    break
+            if not flag:
+                flag = '🌍'
+            
+            profile = {
+                "remarks": f"{flag} {country}",
+                "servers": keys
+            }
+            json_output.append(profile)
+            print(f"  ✅ Добавлено {len(keys)} серверов")
+    else:
+        # Если ключей нет - создаем пустой массив с информацией
+        print("\n⚠️ КЛЮЧИ НЕ НАЙДЕНЫ! Создаю пустой файл...")
+        json_output = []
 
     print(f"\n✅ Создано {len(json_output)} профилей стран")
 
-    # Сохраняем в JSON
+    # ПРИНУДИТЕЛЬНО сохраняем в JSON (перезаписываем файл)
     print("💾 Сохраняю в JSON...")
-
+    
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         json.dump(json_output, f, ensure_ascii=False, indent=2)
-
-    print(f"✅ Сохранено в {OUTPUT_FILE}")
+    
+    # Проверяем, что файл создался
+    if os.path.exists(OUTPUT_FILE):
+        file_size = os.path.getsize(OUTPUT_FILE)
+        print(f"✅ Файл создан! Размер: {file_size} байт")
+        
+        # Показываем содержимое для проверки
+        with open(OUTPUT_FILE, 'r', encoding='utf-8') as f:
+            content = f.read()
+            print(f"📄 Первые 200 символов: {content[:200]}...")
+    else:
+        print(f"❌ ОШИБКА: Файл {OUTPUT_FILE} не создан!")
 
     # Статистика
     total_servers = sum(len(p['servers']) for p in json_output)
@@ -170,7 +177,8 @@ except Exception as e:
     import traceback
     traceback.print_exc()
     
-    # Создаем пустой JSON чтобы не ломать workflow
+    # ПРИНУДИТЕЛЬНО создаем файл даже при ошибке
+    print("💾 Создаю пустой JSON из-за ошибки...")
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         json.dump([], f, ensure_ascii=False, indent=2)
     
