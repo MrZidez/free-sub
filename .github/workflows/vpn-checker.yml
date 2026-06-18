@@ -1,64 +1,27 @@
 name: VPN Ping Checker
 
 on:
-  schedule:
-    # Запуск каждые 6 часов
-    - cron: '0 */6 * * *'
-  # Для ручного запуска
   workflow_dispatch:
-  # Запуск при пуше в main
-  push:
-    branches:
-      - main
 
 jobs:
   check-vpn:
     runs-on: ubuntu-latest
-    
     permissions:
       contents: write
     
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
       with:
-        python-version: '3.11'  # Меняем на 3.11 для совместимости
+        python-version: '3.11'
     
-    - name: Install dependencies
+    - name: Run test
+      run: python test_simple.py
+    
+    - name: Commit
       run: |
-        python -m pip install --upgrade pip
-        pip install requests
-    
-    - name: Run VPN checker
-      id: check
-      run: python vpn_checker.py
-      continue-on-error: true  # Продолжаем даже если есть ошибки
-    
-    - name: Check if file exists
-      id: check_file
-      run: |
-        if [ -f "FREE-VPN-FROM-KIRILL.txt" ]; then
-          echo "file_exists=true" >> $GITHUB_OUTPUT
-          echo "Файл существует"
-        else
-          echo "file_exists=false" >> $GITHUB_OUTPUT
-          echo "Файл не найден, создаем заглушку"
-          echo "#profile-title: Free Vpn From KIrill" > FREE-VPN-FROM-KIRILL.txt
-          echo "#announce: Бесплатная подписка" >> FREE-VPN-FROM-KIRILL.txt
-          echo "#profile-update-interval: 12" >> FREE-VPN-FROM-KIRILL.txt
-          echo "#profile-web-page-url: https://t.me/TourFromKirill" >> FREE-VPN-FROM-KIRILL.txt
-          echo "" >> FREE-VPN-FROM-KIRILL.txt
-          echo "# Ключи не найдены, попробуйте позже" >> FREE-VPN-FROM-KIRILL.txt
-        fi
-    
-    - name: Commit and push if changed
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
+        git config user.name "GitHub Action"
+        git config user.email "action@github.com"
         git add FREE-VPN-FROM-KIRILL.txt
-        git diff --staged --quiet || git commit -m "Обновление VPN ключей $(date '+%Y-%m-%d %H:%M:%S')"
+        git diff --staged --quiet || git commit -m "Test update"
         git push
-      continue-on-error: true
