@@ -3,23 +3,17 @@
 
 import requests
 import subprocess
-import time
 import re
 from datetime import datetime
 import os
 import sys
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import threading
 
 # Настройка логирования
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('vpn_checker.log'),
-        logging.StreamHandler()
-    ]
+    format='%(asctime)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
@@ -66,14 +60,13 @@ URLS = [
 ]
 
 OUTPUT_FILE = "FREE-VPN-FROM-KIRILL.txt"
-PING_THRESHOLD = 70  # мс
-MAX_WORKERS = 20  # количество потоков для пинга
-TIMEOUT = 5  # таймаут пинга в секундах
+PING_THRESHOLD = 70
+MAX_WORKERS = 30
+TIMEOUT = 5
 
 class VPNPingChecker:
     def __init__(self):
-        self.good_keys = set()
-        self.lock = threading.Lock()
+        self.good_keys = []
         
     def fetch_urls(self):
         """Загрузка всех ссылок и извлечение ключей"""
@@ -82,19 +75,17 @@ class VPNPingChecker:
         
         for i, url in enumerate(URLS, 1):
             try:
-                response = requests.get(url, timeout=10)
+                response = requests.get(url, timeout=15)
                 if response.status_code == 200:
                     content = response.text
-                    # Извлекаем строки, которые выглядят как конфиги VPN
                     keys = self.extract_keys(content)
                     all_keys.extend(keys)
-                    logger.info(f"Загружено {len(keys)} ключей из {url} ({i}/{len(URLS)})")
+                    logger.info(f"✓ Загружено {len(keys)} ключей из URL {i}/{len(URLS)}")
                 else:
-                    logger.warning(f"Не удалось загрузить {url}: статус {response.status_code}")
+                    logger.warning(f"✗ Не удалось загрузить {url}: статус {response.status_code}")
             except Exception as e:
-                logger.error(f"Ошибка при загрузке {url}: {e}")
+                logger.error(f"✗ Ошибка при загрузке {url}: {e}")
         
-        # Удаляем дубликаты
         unique_keys = list(set(all_keys))
         logger.info(f"Всего собрано {len(unique_keys)} уникальных ключей")
         return unique_keys
@@ -110,13 +101,10 @@ class VPNPingChecker:
                 continue
             
             # Проверяем разные форматы ключей
-            # VLESS, Trojan, VMess, Shadowsocks, H2
             if any(protocol in line.lower() for protocol in ['vless://', 'trojan://', 'vmess://', 'ss://', 'h2://']):
                 keys.append(line)
-            # Также проверяем на IP:PORT форматы
             elif re.match(r'^\d+\.\d+\.\d+\.\d+:\d+', line):
                 keys.append(line)
-            # Проверка на другие форматы
             elif '://' in line:
                 keys.append(line)
                 
@@ -125,54 +113,36 @@ class VPNPingChecker:
     def ping_key(self, key):
         """Проверка пинга для ключа"""
         try:
-            # Извлекаем IP или домен из ключа
             server = self.extract_server(key)
             if not server:
                 return None, None
             
-            # Пинг через системную команду
-            if sys.platform.startswith('win'):
-                cmd = ['ping', '-n', '1', '-w', str(TIMEOUT * 1000), server]
-            else:
-                cmd = ['ping', '-c', '1', '-W', str(TIMEOUT), server]
+            # В GitHub Actions используем ping
+            cmd = ['ping', '-c', '1', '-W', str(TIMEOUT), server]
             
-            start_time = time.time()
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=TIMEOUT + 1)
-            end_time = time.time()
             
-            # Парсим время пинга
             if result.returncode == 0:
-                # Извлекаем время пинга из вывода
-                if sys.platform.startswith('win'):
-                    match = re.search(r'время[=<](\d+)[мс]', result.stdout, re.IGNORECASE)
-                else:
-                    match = re.search(r'time[=<](\d+\.?\d*)\s*ms', result.stdout, re.IGNORECASE)
-                
+                match = re.search(r'time[=<](\d+\.?\d*)\s*ms', result.stdout, re.IGNORECASE)
                 if match:
                     ping_time = float(match.group(1))
                     return key, ping_time
             
             return None, None
             
-        except subprocess.TimeoutExpired:
-            return None, None
-        except Exception as e:
-            logger.debug(f"Ошибка пинга для {key[:50]}...: {e}")
+        except Exception:
             return None, None
     
     def extract_server(self, key):
         """Извлечение сервера из ключа"""
         try:
-            # Для URL форматов
             if '://' in key:
-                # Извлекаем домен/IP из URL
                 import urllib.parse
                 parsed = urllib.parse.urlparse(key)
                 hostname = parsed.hostname
                 if hostname:
                     return hostname
             
-            # Для IP:PORT форматов
             ip_match = re.match(r'^(\d+\.\d+\.\d+\.\d+):\d+', key)
             if ip_match:
                 return ip_match.group(1)
@@ -190,10 +160,9 @@ class VPNPingChecker:
             logger.warning("Нет ключей для проверки")
             return []
         
-        logger.info(f"Начинаю проверку {total} ключей...")
+        logger.info(f"Начинаю проверку {total} ключей (порог: {PING_THRESHOLD}ms)...")
         
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-            # Запускаем все проверки
             future_to_key = {executor.submit(self.ping_key, key): key for key in keys}
             
             for i, future in enumerate(as_completed(future_to_key), 1):
@@ -202,14 +171,12 @@ class VPNPingChecker:
                     result_key, ping_time = future.result()
                     if result_key and ping_time is not None and ping_time <= PING_THRESHOLD:
                         good_keys.append(result_key)
-                        logger.info(f"[{i}/{total}] ✓ {key[:50]}... - {ping_time:.1f}ms")
+                        logger.info(f"[{i}/{total}] ✓ Пинг: {ping_time:.1f}ms")
                     elif result_key:
-                        logger.debug(f"[{i}/{total}] ✗ {key[:50]}... - {ping_time:.1f}ms (превышает порог)")
-                    else:
-                        if i % 100 == 0:
+                        if i % 50 == 0:
                             logger.info(f"Обработано {i}/{total} ключей...")
                 except Exception as e:
-                    logger.error(f"Ошибка при обработке ключа: {e}")
+                    logger.error(f"Ошибка при обработке: {e}")
         
         logger.info(f"Найдено {len(good_keys)} ключей с пингом < {PING_THRESHOLD}ms")
         return good_keys
@@ -220,8 +187,7 @@ class VPNPingChecker:
             logger.warning("Нет ключей для сохранения")
             return
         
-        # Формируем строку с датой
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")
         
         with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
             f.write(f"# Обновлено: {timestamp}\n")
@@ -229,69 +195,39 @@ class VPNPingChecker:
             f.write(f"# Порог пинга: < {PING_THRESHOLD}ms\n")
             f.write("#" + "="*50 + "\n\n")
             
-            # Сортируем ключи для удобства
             for key in sorted(keys):
                 f.write(key + '\n')
         
-        logger.info(f"Сохранено {len(keys)} ключей в {OUTPUT_FILE}")
+        logger.info(f"✅ Сохранено {len(keys)} ключей в {OUTPUT_FILE}")
     
     def run(self):
         """Основной процесс"""
         logger.info("="*50)
-        logger.info("Запуск проверки VPN ключей")
-        logger.info(f"Порог пинга: {PING_THRESHOLD}ms")
+        logger.info("🚀 Запуск проверки VPN ключей")
+        logger.info(f"📊 Порог пинга: {PING_THRESHOLD}ms")
         logger.info("="*50)
         
-        # Загружаем ключи
         keys = self.fetch_urls()
         if not keys:
-            logger.warning("Не удалось загрузить ни одного ключа")
-            return
+            logger.warning("❌ Не удалось загрузить ни одного ключа")
+            return False
         
-        # Проверяем пинг
         good_keys = self.check_all_keys(keys)
         
-        # Сохраняем результаты
         if good_keys:
             self.save_good_keys(good_keys)
+            return True
         else:
-            logger.warning("Не найдено ключей с хорошим пингом")
-        
-        logger.info("Проверка завершена")
-
-def run_scheduler():
-    """Запуск скрипта с интервалом 6 часов"""
-    checker = VPNPingChecker()
-    
-    while True:
-        try:
-            checker.run()
-            logger.info("Следующая проверка через 6 часов...")
-            time.sleep(6 * 3600)  # 6 часов в секундах
-        except KeyboardInterrupt:
-            logger.info("Скрипт остановлен пользователем")
-            break
-        except Exception as e:
-            logger.error(f"Критическая ошибка: {e}")
-            logger.info("Повторная попытка через 1 час...")
-            time.sleep(3600)
+            logger.warning("❌ Не найдено ключей с хорошим пингом")
+            return False
 
 if __name__ == "__main__":
-    # Проверяем наличие необходимых модулей
-    try:
-        import requests
-    except ImportError:
-        print("Установите requests: pip install requests")
-        sys.exit(1)
+    # Устанавливаем таймаут для requests
+    import socket
+    socket.setdefaulttimeout(30)
     
-    # Проверяем аргументы командной строки
-    if len(sys.argv) > 1 and sys.argv[1] == "--once":
-        # Одноразовый запуск
-        checker = VPNPingChecker()
-        checker.run()
-    else:
-        # Запуск с расписанием
-        print("Запуск с расписанием (каждые 6 часов)")
-        print("Для одноразового запуска используйте: python script.py --once")
-        print("Для остановки нажмите Ctrl+C")
-        run_scheduler()
+    checker = VPNPingChecker()
+    success = checker.run()
+    
+    # Выход с кодом ошибки если не удалось
+    sys.exit(0 if success else 1)
