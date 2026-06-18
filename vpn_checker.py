@@ -53,9 +53,34 @@ BAD_DOMAINS = [
     'roc-taiwan',
     'taipeicitygovernment',
     'seoulcitygovernment',
+    'seoulcityhall', 
     'kdns.fr',
     'hllfly.kdns.fr',
-    'org.ua', 
+    'org.ua',
+    
+    'tokyometropolis',
+    'chernigov.ua',
+    'ivano-frankivsk',
+    'kharkov.ua',
+    'kherson.ua',
+    'kiev.ua',
+    'kyiv.ua',
+    'odesa.ua',
+    'odessa.ua',
+    
+    'chernivtsi',
+    'dnipro',
+    'donetsk',
+    'lviv',
+    'mariupol',
+    'mykolaiv',
+    'rivne',
+    'sumy',
+    'ternopil',
+    'uzhhorod',
+    'vinnitsa',
+    'zaporizhzhia',
+    'zhytomyr',
     
     'duckdns',
     'no-ip',
@@ -118,7 +143,16 @@ BAD_DOMAINS = [
     '.review',
     '.trade',
     '.webcam',
-    '.party'
+    '.party',
+    '.gdn',
+    '.science',
+    '.faith',
+    '.trade',
+    '.webcam',
+    '.accountant',
+    '.stream',
+    '.ovh',
+    '.download'
 ]
 
 COUNTRIES = {
