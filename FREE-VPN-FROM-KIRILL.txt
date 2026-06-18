@@ -1,10 +1,7 @@
 #profile-title: Free Vpn From KIrill
 #announce: Бесплатная подписка
 #profile-update-interval: 12
-#support-url: https://t.me/TourFromKirill
+#profile-web-page-url: https://t.me/TourFromKirill
 
-# Обновлено: 2026-06-18
-# Файл создан вручную, автоматическое обновление настраивается
-
-vless://example@example.com:443?encryption=none&security=reality&sni=google.com#TestServer
-trojan://test@example.com:443?security=tls#TestTrojan
+# Test file created successfully!
+vless://test@example.com:443?encryption=none#Test
