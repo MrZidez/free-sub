@@ -1,3 +1,8 @@
+#profile-title: Free Vpn From KIrill
+#announce: Бесплатная подписка
+#profile-update-interval: 12
+#profile-web-page-url: https://t.me/TourFromKirill
+
 vless://1f5ab7c8-26e7-4fe6-b0e4-ccbd742f9d6f@51.250.114.26:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=qq&sni=wl-6-2.nodes.ac&pbk=HHmhCp_qS_hIgIniZwaNwqI5CFH2_QmES4dFO41BRWo&sid=64038de1ca7aad86#1.%20%F0%9F%87%A9%F0%9F%87%AA%20Germany
 vless://1f5ab7c8-26e7-4fe6-b0e4-ccbd742f9d6f@46.254.17.72:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=qq&sni=wl-1-1.legendary.ac&pbk=Ce2abow3fU3pN2_mlX3uJW93sBMgTI9qNo5q7_EgFTA&sid=c4a70eddb745b1ea#2.%20%F0%9F%87%A9%F0%9F%87%AA%20Germany
 vless://1f5ab7c8-26e7-4fe6-b0e4-ccbd742f9d6f@130.193.56.148:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=qq&sni=wl-11-1.nodes.ac&pbk=aslw-Ex_i_q59e0eu126qM7UnEHhlpKuz8vMN-ibjkw&sid=3130197867c23edb#3.%20%F0%9F%87%A9%F0%9F%87%AA%20Germany
