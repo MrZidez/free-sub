@@ -127,6 +127,12 @@ try:
         ]
     }
 
+    # Базовые outbounds (freedom и blackhole)
+    BASE_OUTBOUNDS_EXTRA = [
+        {"protocol": "freedom", "settings": {"domainStrategy": "UseIP"}, "tag": "direct"},
+        {"protocol": "blackhole", "tag": "block"}
+    ]
+
     def is_bad_domain(hostname):
         if not hostname:
             return True
@@ -157,8 +163,8 @@ try:
             pass
         return None, None
 
-    def convert_to_singbox_config(key, flag, country_name):
-        """Конвертирует ключ в Sing-Box конфиг"""
+    def create_outbound_for_key(key):
+        """Создает outbound для одного ключа"""
         try:
             parsed = urllib.parse.urlparse(key)
             protocol = parsed.scheme
@@ -166,17 +172,11 @@ try:
             port = parsed.port or 443
             query = urllib.parse.parse_qs(parsed.query)
             
-            # Базовая структура outbounds
-            outbounds = [
-                {"protocol": protocol, "settings": {}, "streamSettings": {}, "tag": "proxy"},
-                {"protocol": "freedom", "settings": {"domainStrategy": "UseIP"}, "tag": "direct"},
-                {"protocol": "blackhole", "tag": "block"}
-            ]
+            outbound = {"protocol": protocol, "settings": {}, "streamSettings": {}, "tag": f"proxy-{hostname}"}
             
-            # Настраиваем в зависимости от протокола
             if protocol == 'vless':
                 user_id = parsed.username or ''
-                outbounds[0]["settings"] = {
+                outbound["settings"] = {
                     "vnext": [{
                         "address": hostname,
                         "port": port,
@@ -240,11 +240,11 @@ try:
                 if network == 'tcp':
                     stream_settings["tcpSettings"] = {"header": {"type": "none"}}
                 
-                outbounds[0]["streamSettings"] = stream_settings
+                outbound["streamSettings"] = stream_settings
                 
             elif protocol == 'trojan':
                 password = parsed.username or ''
-                outbounds[0]["settings"] = {
+                outbound["settings"] = {
                     "servers": [{
                         "address": hostname,
                         "port": port,
@@ -283,30 +283,18 @@ try:
                         ws_settings["headers"] = {"Host": query['host'][0]}
                     stream_settings["wsSettings"] = ws_settings
                 
-                outbounds[0]["streamSettings"] = stream_settings
+                outbound["streamSettings"] = stream_settings
             
-            # Собираем полный конфиг
-            config = {
-                "dns": BASE_DNS,
-                "inbounds": BASE_INBOUNDS,
-                "log": {"loglevel": "none"},
-                "outbounds": outbounds,
-                "policy": BASE_POLICY,
-                "remarks": f"{flag} {country_name}",
-                "routing": BASE_ROUTING
-            }
-            
-            return config
+            return outbound
             
         except Exception as e:
-            print(f"  ⚠️ Ошибка конвертации ключа: {e}")
             return None
 
     print(f"📥 Загружаю {len(URLS)} источников...")
 
-    # Собираем ключи
-    all_keys = []
-    
+    # Собираем ключи по странам
+    country_keys = {}
+
     for i, url in enumerate(URLS, 1):
         try:
             response = requests.get(url, timeout=10)
@@ -316,55 +304,87 @@ try:
                     line = line.strip()
                     if line and not line.startswith('#'):
                         if any(p in line for p in ['vless://', 'trojan://', 'vmess://', 'ss://', 'h2://']):
-                            all_keys.append(line)
+                            flag, country = detect_country(line)
+                            if flag and country:
+                                try:
+                                    if '://' in line:
+                                        parsed = urllib.parse.urlparse(line)
+                                        hostname = parsed.hostname or ''
+                                        if not is_bad_domain(hostname):
+                                            if country not in country_keys:
+                                                country_keys[country] = []
+                                            country_keys[country].append(line)
+                                except:
+                                    pass
                 print(f"  ✓ [{i}/{len(URLS)}] Загружено")
             else:
                 print(f"  ✗ [{i}/{len(URLS)}] Ошибка {response.status_code}")
         except Exception as e:
             print(f"  ✗ [{i}/{len(URLS)}] Ошибка: {str(e)[:30]}")
 
-    print(f"\n📊 Найдено {len(all_keys)} ключей")
+    print(f"\n📊 Найдено ключей по странам:")
+    for country, keys in country_keys.items():
+        print(f"  🌍 {country}: {len(keys)} ключей")
 
-    # Фильтруем и конвертируем
+    # Создаем JSON с группировкой по странам
     json_output = []
-    country_stats = {}
 
-    for key in all_keys:
-        flag, country = detect_country(key)
-        if flag and country:
-            # Проверяем домен
-            try:
-                if '://' in key:
-                    parsed = urllib.parse.urlparse(key)
-                    hostname = parsed.hostname or ''
-                    if is_bad_domain(hostname):
-                        continue
-            except:
-                continue
-            
-            # Конвертируем в Sing-Box конфиг
-            config = convert_to_singbox_config(key, flag, country)
-            if config:
-                json_output.append(config)
-                if country not in country_stats:
-                    country_stats[country] = 0
-                country_stats[country] += 1
+    for country, keys in country_keys.items():
+        print(f"\n🔄 Создаю профиль для {country} ({len(keys)} ключей)...")
+        
+        # Находим флаг для страны
+        flag = None
+        for f, c in COUNTRIES.items():
+            if c == country:
+                flag = f
+                break
+        if not flag:
+            flag = '🌍'
+        
+        # Создаем outbounds для всех ключей страны
+        outbounds = []
+        for key in keys:
+            outbound = create_outbound_for_key(key)
+            if outbound:
+                outbounds.append(outbound)
+        
+        # Добавляем freedom и blackhole
+        outbounds.extend(BASE_OUTBOUNDS_EXTRA)
+        
+        # Создаем один профиль для страны
+        profile = {
+            "dns": BASE_DNS,
+            "inbounds": BASE_INBOUNDS,
+            "log": {"loglevel": "none"},
+            "outbounds": outbounds,
+            "policy": BASE_POLICY,
+            "remarks": f"{flag} {country}",
+            "routing": BASE_ROUTING
+        }
+        
+        json_output.append(profile)
+        print(f"  ✅ Добавлено {len(keys)} серверов в профиль {country}")
 
-    print(f"\n📊 Сконвертировано {len(json_output)} профилей")
-    print("\n🌍 Статистика по странам:")
-    for country, count in sorted(country_stats.items(), key=lambda x: -x[1]):
-        print(f"  {country}: {count} ключей")
+    print(f"\n✅ Создано {len(json_output)} профилей стран")
 
     # Сохраняем в JSON
-    print("\n💾 Сохраняю в JSON...")
+    print("💾 Сохраняю в JSON...")
 
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         json.dump(json_output, f, ensure_ascii=False, indent=2)
 
     print(f"✅ Сохранено в {OUTPUT_FILE}")
+
+    # Статистика
+    total_servers = 0
+    for profile in json_output:
+        # Считаем только proxy outbounds (не freedom и blackhole)
+        proxy_count = len([o for o in profile['outbounds'] if o['tag'].startswith('proxy-')])
+        total_servers += proxy_count
+    
     print(f"\n📊 Итоговая статистика:")
-    print(f"  🔗 Всего серверов: {len(json_output)}")
-    print(f"  🌍 Стран: {len(country_stats)}")
+    print(f"  🌍 Стран: {len(json_output)}")
+    print(f"  🔗 Всего серверов: {total_servers}")
     
     print("\n✅ Скрипт выполнен успешно!")
     sys.exit(0)
