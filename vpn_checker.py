@@ -3,10 +3,11 @@ import requests
 import re
 import json
 import sys
-from datetime import datetime
 import urllib.parse
+from datetime import datetime
 
 print("🚀 Запуск VPN парсера...")
+print(f"⏰ Время запуска: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
 try:
     # НОВЫЙ СПИСОК URL ДЛЯ ПАРСИНГА
@@ -21,10 +22,6 @@ try:
         "https://raw.githubusercontent.com/cinev505/VlessTrogan-vpn-key/refs/heads/main/WhiteList-VPN-Vless",
         "https://raw.githubusercontent.com/mahdibland/ShadowsocksAggregator/master/sub/splitted/trojan.txt",
         "https://hub.mos.ru/zieng2/wl/raw/main/list_universal.txt",
-        "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt",
-        "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt",
-        "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt",
-        "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt",
         "https://github.com/KiryaScript/white-lists/raw/refs/heads/main/githubmirror/26.txt",
         "https://github.com/KiryaScript/white-lists/raw/refs/heads/main/githubmirror/27.txt",
         "https://github.com/KiryaScript/white-lists/raw/refs/heads/main/githubmirror/28.txt",
@@ -38,18 +35,10 @@ try:
     ]
 
     OUTPUT_FILE = "FREE-VPN-FROM-KIRILL.json"
-
-    # Список плохих доменов
-    BAD_DOMAINS = [
-        'mirror', 'github', 'gist', 'raw.githubusercontent', 'yandexcloud', 'storage',
-        'gist.githubusercontent', 'githubusercontent', 'cloudflare', 'amazon', 'aws',
-        'azure', 'google', 'googleapis', 'cloudfront', 'heroku', 'netlify', 'vercel',
-        'example', 'test', 'localhost', '127.0.0.1', '0.0.0.0',
-        'roc-taiwan', 'taipeicitygovernment', 'seoulcitygovernment', 'seoulcityhall',
-        'kdns.fr', 'hllfly.kdns.fr', 'org.ua', 'tokyometropolis',
-        'duckdns', 'no-ip', 'dyndns', 'ddns', 'serveo', 'ngrok',
-        '.tk', '.ml', '.ga', '.cf', '.gq', '.top', '.xyz', '.club'
-    ]
+    
+    # Удаляем дубликаты URL
+    URLS = list(dict.fromkeys(URLS))
+    print(f"📋 Уникальных источников: {len(URLS)}")
 
     # Словарь стран с флагами
     COUNTRIES = {
@@ -79,7 +68,7 @@ try:
         'AR': '🇦🇷', 'MX': '🇲🇽'
     }
 
-    # Базовая структура DNS и INBOUNDS (общая для всех)
+    # Базовая структура
     BASE_DNS = {
         "servers": ["77.88.8.8", "77.88.8.1"],
         "queryStrategy": "UseIP",
@@ -127,20 +116,10 @@ try:
         ]
     }
 
-    # Базовые outbounds (freedom и blackhole)
     BASE_OUTBOUNDS_EXTRA = [
         {"protocol": "freedom", "settings": {"domainStrategy": "UseIP"}, "tag": "direct"},
         {"protocol": "blackhole", "tag": "block"}
     ]
-
-    def is_bad_domain(hostname):
-        if not hostname:
-            return True
-        hostname_lower = hostname.lower()
-        for bad in BAD_DOMAINS:
-            if bad in hostname_lower:
-                return True
-        return False
 
     def detect_country(key):
         try:
@@ -286,7 +265,6 @@ try:
                 outbound["streamSettings"] = stream_settings
             
             elif protocol == 'vmess':
-                # Для VMess нужно декодировать base64
                 try:
                     import base64
                     decoded = base64.b64decode(parsed.username or '').decode('utf-8')
@@ -302,33 +280,6 @@ try:
                             }]
                         }]
                     }
-                    # Добавляем streamSettings для VMess
-                    network = vmess_data.get('net', 'tcp')
-                    security = vmess_data.get('tls', 'none')
-                    stream_settings = {
-                        "network": network,
-                        "security": security if security != 'none' else 'none',
-                        "sockopt": {
-                            "tcpNoDelay": True,
-                            "tcpKeepAliveIdle": 5,
-                            "tcpKeepAliveInterval": 2,
-                            "tcpKeepAliveProbes": 2,
-                            "mark": 255,
-                            "domainStrategy": "UseIP"
-                        }
-                    }
-                    if network == 'ws':
-                        ws_settings = {"path": vmess_data.get('path', '/')}
-                        if 'host' in vmess_data:
-                            ws_settings["headers"] = {"Host": vmess_data['host']}
-                        stream_settings["wsSettings"] = ws_settings
-                    if security == 'tls':
-                        stream_settings["tlsSettings"] = {
-                            "serverName": vmess_data.get('sni', hostname),
-                            "fingerprint": "chrome",
-                            "allowInsecure": False
-                        }
-                    outbound["streamSettings"] = stream_settings
                 except:
                     pass
             
@@ -339,39 +290,56 @@ try:
 
     print(f"📥 Загружаю {len(URLS)} источников...")
 
-    # Собираем ключи по странам
+    # Собираем все ключи
+    all_raw_keys = []
     country_keys = {}
 
     for i, url in enumerate(URLS, 1):
         try:
+            print(f"  [{i}/{len(URLS)}] Загрузка: {url[:60]}...")
             response = requests.get(url, timeout=15)
             if response.status_code == 200:
                 lines = response.text.split('\n')
+                found = 0
                 for line in lines:
                     line = line.strip()
                     if line and not line.startswith('#'):
                         if any(p in line for p in ['vless://', 'trojan://', 'vmess://', 'ss://', 'h2://']):
-                            flag, country = detect_country(line)
-                            if flag and country:
-                                try:
-                                    if '://' in line:
-                                        parsed = urllib.parse.urlparse(line)
-                                        hostname = parsed.hostname or ''
-                                        if not is_bad_domain(hostname):
-                                            if country not in country_keys:
-                                                country_keys[country] = []
-                                            country_keys[country].append(line)
-                                except:
-                                    pass
-                print(f"  ✓ [{i}/{len(URLS)}] Загружено")
+                            all_raw_keys.append(line)
+                            found += 1
+                print(f"    ✅ Найдено {found} ключей")
             else:
-                print(f"  ✗ [{i}/{len(URLS)}] Ошибка {response.status_code}")
+                print(f"    ❌ Ошибка {response.status_code}")
         except Exception as e:
-            print(f"  ✗ [{i}/{len(URLS)}] Ошибка: {str(e)[:30]}")
+            print(f"    ❌ Ошибка: {str(e)[:50]}")
+
+    print(f"\n📊 Всего найдено сырых ключей: {len(all_raw_keys)}")
+
+    # Удаляем дубликаты
+    all_raw_keys = list(dict.fromkeys(all_raw_keys))
+    print(f"📊 Уникальных ключей: {len(all_raw_keys)}")
+
+    # Сортируем по странам
+    for key in all_raw_keys:
+        flag, country = detect_country(key)
+        if flag and country:
+            if country not in country_keys:
+                country_keys[country] = []
+            country_keys[country].append(key)
+        else:
+            # Если страна не определена - пропускаем
+            pass
 
     print(f"\n📊 Найдено ключей по странам:")
     for country, keys in country_keys.items():
         print(f"  🌍 {country}: {len(keys)} ключей")
+
+    if not country_keys:
+        print("\n⚠️ НЕ НАЙДЕНО НИ ОДНОГО КЛЮЧА!")
+        print("💾 Сохраняю пустой JSON...")
+        with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
+            json.dump([], f, ensure_ascii=False, indent=2)
+        sys.exit(0)
 
     # Создаем JSON с группировкой по странам
     json_output = []
@@ -379,7 +347,6 @@ try:
     for country, keys in country_keys.items():
         print(f"\n🔄 Создаю профиль для {country} ({len(keys)} ключей)...")
         
-        # Находим флаг для страны
         flag = None
         for f, c in COUNTRIES.items():
             if c == country:
@@ -388,17 +355,14 @@ try:
         if not flag:
             flag = '🌍'
         
-        # Создаем outbounds для всех ключей страны
         outbounds = []
         for key in keys:
             outbound = create_outbound_for_key(key)
             if outbound:
                 outbounds.append(outbound)
         
-        # Добавляем freedom и blackhole
         outbounds.extend(BASE_OUTBOUNDS_EXTRA)
         
-        # Создаем один профиль для страны
         profile = {
             "dns": BASE_DNS,
             "inbounds": BASE_INBOUNDS,
@@ -410,7 +374,7 @@ try:
         }
         
         json_output.append(profile)
-        print(f"  ✅ Добавлено {len(keys)} серверов в профиль {country}")
+        print(f"  ✅ Добавлено {len(keys)} серверов")
 
     print(f"\n✅ Создано {len(json_output)} профилей стран")
 
@@ -422,7 +386,6 @@ try:
 
     print(f"✅ Сохранено в {OUTPUT_FILE}")
 
-    # Статистика
     total_servers = 0
     for profile in json_output:
         proxy_count = len([o for o in profile['outbounds'] if o['tag'].startswith('proxy-')])
@@ -440,7 +403,6 @@ except Exception as e:
     import traceback
     traceback.print_exc()
     
-    # Создаем пустой JSON чтобы не ломать workflow
     with open("FREE-VPN-FROM-KIRILL.json", 'w', encoding='utf-8') as f:
         json.dump([], f, ensure_ascii=False, indent=2)
     
