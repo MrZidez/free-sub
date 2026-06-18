@@ -6,7 +6,6 @@ import urllib.parse
 
 # Список URL для парсинга
 URLS = [
-    "",
     "https://gitlab.com/zieng2/wl/raw/main/vless_universal.txt",
     "https://storage.yandexcloud.net/mystorage123/whitelist.txt",
     "https://gist.githubusercontent.com/HalyavusVPNUS/a93def732d3c624029c09c393dd0772e/raw/e310946a53d9cd7910bb4381e7fceab83e1f8462/%25D0%25BA%25D0%25BE%25D0%25BD%25D1%2584%25D0%25B8%25D0%25B3%25D0%25B8",
@@ -119,12 +118,16 @@ def detect_country(key):
     except:
         pass
     
-    # Если не найдено - возвращаем 🌍
-    return '🌍', 'Мир'
+    # Если не найдено - возвращаем None (ключ будет удален)
+    return None, None
 
 def rename_key(key):
     """Переименование ключа с добавлением флага и страны"""
     flag, country = detect_country(key)
+    
+    # Если страна не определена - возвращаем None (ключ будет удален)
+    if flag is None or country is None:
+        return None
     
     # Удаляем старые названия после #
     if '#' in key:
@@ -144,6 +147,7 @@ def rename_key(key):
     return f"{base}#{new_name}"
 
 print("🚀 Запуск VPN парсера с переименованием...")
+print("🗑️ Ключи без определения страны будут удалены")
 
 # Собираем все ключи
 all_keys = set()
@@ -168,16 +172,22 @@ for i, url in enumerate(URLS, 1):
 
 print(f"📊 Найдено {len(all_keys)} уникальных ключей")
 
-# Переименовываем ключи
+# Переименовываем ключи и фильтруем
 renamed_keys = []
+deleted_count = 0
+
 for key in all_keys:
     try:
         renamed = rename_key(key)
-        renamed_keys.append(renamed)
+        if renamed is not None:
+            renamed_keys.append(renamed)
+        else:
+            deleted_count += 1
     except:
-        renamed_keys.append(key)
+        deleted_count += 1
 
 print(f"✏️ Переименовано {len(renamed_keys)} ключей")
+print(f"🗑️ Удалено {deleted_count} ключей (без определения страны)")
 
 # Сохраняем в файл с метаданными
 print("💾 Сохраняю в файл...")
@@ -193,6 +203,7 @@ with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
     # Информация о времени
     f.write(f"# Обновлено: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}\n")
     f.write(f"# Всего ключей: {len(renamed_keys)}\n")
+    f.write(f"# Удалено ключей (Мир): {deleted_count}\n")
     f.write("#" + "="*50 + "\n\n")
     
     # Записываем ключи
@@ -205,4 +216,5 @@ with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         print("⚠️ Ключи не найдены")
 
 print("✅ Готово!")
-print("📁 Файл:", OUTPUT_FILE)
+print(f"📁 Файл: {OUTPUT_FILE}")
+print(f"📊 Итог: {len(renamed_keys)} ключей сохранено, {deleted_count} удалено")
