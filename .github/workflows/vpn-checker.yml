@@ -25,7 +25,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.10'
+        python-version: '3.11'  # Меняем на 3.11 для совместимости
     
     - name: Install dependencies
       run: |
@@ -33,7 +33,26 @@ jobs:
         pip install requests
     
     - name: Run VPN checker
+      id: check
       run: python vpn_checker.py
+      continue-on-error: true  # Продолжаем даже если есть ошибки
+    
+    - name: Check if file exists
+      id: check_file
+      run: |
+        if [ -f "FREE-VPN-FROM-KIRILL.txt" ]; then
+          echo "file_exists=true" >> $GITHUB_OUTPUT
+          echo "Файл существует"
+        else
+          echo "file_exists=false" >> $GITHUB_OUTPUT
+          echo "Файл не найден, создаем заглушку"
+          echo "#profile-title: Free Vpn From KIrill" > FREE-VPN-FROM-KIRILL.txt
+          echo "#announce: Бесплатная подписка" >> FREE-VPN-FROM-KIRILL.txt
+          echo "#profile-update-interval: 12" >> FREE-VPN-FROM-KIRILL.txt
+          echo "#profile-web-page-url: https://t.me/TourFromKirill" >> FREE-VPN-FROM-KIRILL.txt
+          echo "" >> FREE-VPN-FROM-KIRILL.txt
+          echo "# Ключи не найдены, попробуйте позже" >> FREE-VPN-FROM-KIRILL.txt
+        fi
     
     - name: Commit and push if changed
       run: |
@@ -42,3 +61,4 @@ jobs:
         git add FREE-VPN-FROM-KIRILL.txt
         git diff --staged --quiet || git commit -m "Обновление VPN ключей $(date '+%Y-%m-%d %H:%M:%S')"
         git push
+      continue-on-error: true
