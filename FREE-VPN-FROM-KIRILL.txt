@@ -3,16 +3,16 @@
 #profile-update-interval: 12
 #profile-web-page-url: https://t.me/TourFromKirill
 
-# Updated: 2026-06-18 09:18:04.058378
-# Total: 180988
+# Updated: 2026-06-18 09:26:44.235046
+# Total: 451
 
-ss://MjAyMi1ibGFrZTMtYWVzLTEyOC1nY206M1VlYlltOEhXOERVN2lNczFPMHBldz09@47.80.24.245:8127#%5BOpenRay%5D%20%F0%9F%87%B0%F0%9F%87%B7%20KR-1886
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTo0OFJ6M3Zkd0pjcVhUREhwUWIyMm43Uko3MnU0RjZDWjdkUVYxUHlzN2NlM2JTenFqQUN4QW5IVkpEa0tqWXZYZXlLOFRMR3JCSnJXV1ZGb0FEVVdYUHJOUHNIb3o2eE4=@185.5.38.111:55988#%5BOpenRay%5D%20%F0%9F%87%AB%F0%9F%87%AE%20FI-2860
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTo0YTJyZml4b3BoZGpmZmE4S1ZBNEFhQDE5My4yOS4xMzkuMTU3OjgwODA=#%5BOpenRay%5D%20%F0%9F%87%B3%F0%9F%87%B1%20NL-764
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTo0YTJyZml4b3BoZGpmZmE4S1ZBNEFhQDE5My4yOS4xMzkuMjA2OjgwODA=#%5BOpenRay%5D%20%F0%9F%87%B3%F0%9F%87%B1%20NL-766
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTo0YTJyZml4b3BoZGpmZmE4S1ZBNEFhQDE5My4yOS4xMzkuMjI3OjgwODA=#%5BOpenRay%5D%20%F0%9F%87%B3%F0%9F%87%B1%20NL-7298
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTo0ZTI4NzYzMWRjNGZjOGZjQDYyLjE0Ni4yMzEuMTEyOjEyMDEy#%5BOpenRay%5D%20%F0%9F%87%BA%F0%9F%87%B8%20US-17009
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTo0anU4NzNldnBqZWFBaThacTEyWW9SSFdwNjNvNWV4ZG5aNzFhVWcxWUVDaGlQVGMySGthc1loVUJ4Uno3VUdpNEs2Y0xyc0dhVTZiNDRINFFhNmY0Y0puM3pCcDJjblg@185.5.38.111:55988#%5BOpenRay%5D%20%F0%9F%87%AB%F0%9F%87%AE%20FI-279
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTo1REpYUnBtaTNpeXF4UTc5UGZLdjNC@195.93.253.240:14130/?outline=1#%5BOpenRay%5D%20%F0%9F%87%B3%F0%9F%87%B1%20NL-7148
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTo1UU1aS1pvWE1zQ2JoRThHSEFnN0xpeGk3dFZNbXczeEgyQTNiaWl2VVRnczN1bzludGJINjg1akE4cGo5OG40cEpqaTN5dzZhanpuMnF6SlVhNGRGaWoxdXBhY0N0S1c=@185.5.38.111:55988#%5BOpenRay%5D%20%F0%9F%87%AB%F0%9F%87%AE%20FI-3358
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTo2NHBGd3VsMXBrNXh1RnI2VDA1UzVT@109.107.182.229:51544#%5BOpenRay%5D%20%F0%9F%87%AB%F0%9F%87%AE%20FI-3431
+vless://bfd6c195-e37e-40ed-b962-c3ea4ac0f5df@37.139.34.63:23356?encryption=none&type=grpc&security=reality&mode=gun&serviceName=api&fp=edge&sni=apple.com&pbk=KtHJA0ZiW3VEPTjGQOlT3NlXZWlqAPHKHqki_IGX3Wk&sid=483d116ad48a4091#%F0%9F%87%B7%F0%9F%87%BA%20VK%20%E2%80%94%20%231
+vless://bfd6c195-e37e-40ed-b962-c3ea4ac0f5df@37.139.34.63:23356?encryption=none&type=grpc&security=reality&mode=gun&serviceName=api&fp=chrome&sni=apple.com&pbk=KtHJA0ZiW3VEPTjGQOlT3NlXZWlqAPHKHqki_IGX3Wk&sid=483d116ad48a4091#%F0%9F%87%B7%F0%9F%87%BA%20VK%20%E2%80%94%20%232
+vless://bfd6c195-e37e-40ed-b962-c3ea4ac0f5df@37.139.34.63:23356?encryption=none&type=grpc&security=reality&mode=gun&serviceName=api&fp=firefox&sni=apple.com&pbk=KtHJA0ZiW3VEPTjGQOlT3NlXZWlqAPHKHqki_IGX3Wk&sid=483d116ad48a4091#%F0%9F%87%B7%F0%9F%87%BA%20VK%20%E2%80%94%20%233
+vless://a8c1d71f-2fa5-07d0-9e9e-60f38b6d9ff6@89.208.231.191:52006?flow=xtls-rprx-vision&encryption=none&type=tcp&security=tls&fp=chrome&alpn=h2%2Chttp%2F1.1#%F0%9F%87%B7%F0%9F%87%BA%20VK%20%E2%80%94%20%234
+vless://c993f444-c646-4329-8634-4b8d34cb224c@193.168.46.180:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=qq&sni=rruu.persik.host&pbk=D0FqzTuVSzCF8IcFo64SFIpMsaGV47LW3el2GCCVoFY&sid=c1a7e9b4711d5f60#%F0%9F%87%B7%F0%9F%87%BA%20Beget%20%E2%80%94%20%235
+vless://e3d91903-101f-46d6-8bbe-2e610d501c99@193.168.46.180:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=qq&sni=rruu.persik.host&pbk=D0FqzTuVSzCF8IcFo64SFIpMsaGV47LW3el2GCCVoFY&sid=c1a7e9b4711d5f60#%F0%9F%87%B7%F0%9F%87%BA%20Beget%20%E2%80%94%20%236
+vless://7b49a4db-807b-406e-aa11-966ad2f4edba@193.168.46.180:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=qq&sni=rruu.persik.host&pbk=D0FqzTuVSzCF8IcFo64SFIpMsaGV47LW3el2GCCVoFY&sid=c1a7e9b4711d5f60#%F0%9F%87%B7%F0%9F%87%BA%20Beget%20%E2%80%94%20%237
+vless://8887fe7c-c1d2-4757-b844-d123c7c0d5f1@193.168.46.180:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=qq&sni=rruu.persik.host&pbk=D0FqzTuVSzCF8IcFo64SFIpMsaGV47LW3el2GCCVoFY&sid=c1a7e9b4711d5f60#%F0%9F%87%B7%F0%9F%87%BA%20Beget%20%E2%80%94%20%238
+vless://b54f8893-f4ad-437c-a330-903ec4e90de0@193.168.46.180:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=qq&sni=rruu.persik.host&pbk=D0FqzTuVSzCF8IcFo64SFIpMsaGV47LW3el2GCCVoFY&sid=c1a7e9b4711d5f60#%F0%9F%87%B7%F0%9F%87%BA%20Beget%20%E2%80%94%20%239
+vless://633f424e-2b11-48da-a6b3-a849dd71456f@45.12.75.242:26424?encryption=none&type=tcp&security=reality&fp=chrome&sni=ya.ru&pbk=l8AubqcxQO-HRFJy4pZL1vbLOo-eXit69s-XulSELE0&sid=23103e1e#%F0%9F%87%B7%F0%9F%87%BA%20Beget%20%E2%80%94%20%2310
