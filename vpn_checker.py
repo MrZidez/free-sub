@@ -7,7 +7,6 @@ import urllib.parse
 from datetime import datetime
 
 print("🚀 Запуск VPN парсера...")
-print(f"⏰ Время запуска: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
 try:
     # НОВЫЙ СПИСОК URL ДЛЯ ПАРСИНГА
@@ -35,10 +34,6 @@ try:
     ]
 
     OUTPUT_FILE = "FREE-VPN-FROM-KIRILL.json"
-    
-    # Удаляем дубликаты URL
-    URLS = list(dict.fromkeys(URLS))
-    print(f"📋 Уникальных источников: {len(URLS)}")
 
     # Словарь стран с флагами
     COUNTRIES = {
@@ -68,59 +63,6 @@ try:
         'AR': '🇦🇷', 'MX': '🇲🇽'
     }
 
-    # Базовая структура
-    BASE_DNS = {
-        "servers": ["77.88.8.8", "77.88.8.1"],
-        "queryStrategy": "UseIP",
-        "cacheSize": 512,
-        "readTimeout": "50ms",
-        "writeTimeout": "50ms"
-    }
-
-    BASE_INBOUNDS = [
-        {
-            "listen": "127.0.0.1",
-            "port": 10808,
-            "protocol": "socks",
-            "settings": {"udp": True},
-            "sniffing": {"enabled": True, "destOverride": ["http", "tls"], "routeOnly": True},
-            "tag": "socks"
-        },
-        {
-            "listen": "127.0.0.1",
-            "port": 10809,
-            "protocol": "http",
-            "settings": {},
-            "sniffing": {"enabled": True, "destOverride": ["http", "tls"], "routeOnly": True},
-            "tag": "http"
-        }
-    ]
-
-    BASE_POLICY = {
-        "levels": {
-            "8": {
-                "connIdle": 60,
-                "downlinkOnly": 0,
-                "handshake": 1,
-                "uplinkOnly": 0,
-                "bufferSize": 16
-            }
-        }
-    }
-
-    BASE_ROUTING = {
-        "domainStrategy": "AsIs",
-        "rules": [
-            {"ip": ["geoip:private"], "outboundTag": "direct"},
-            {"network": "tcp,udp", "outboundTag": "proxy"}
-        ]
-    }
-
-    BASE_OUTBOUNDS_EXTRA = [
-        {"protocol": "freedom", "settings": {"domainStrategy": "UseIP"}, "tag": "direct"},
-        {"protocol": "blackhole", "tag": "block"}
-    ]
-
     def detect_country(key):
         try:
             # Ищем флаг в ключе
@@ -142,156 +84,16 @@ try:
             pass
         return None, None
 
-    def create_outbound_for_key(key):
-        """Создает outbound для одного ключа"""
-        try:
-            parsed = urllib.parse.urlparse(key)
-            protocol = parsed.scheme
-            hostname = parsed.hostname or ''
-            port = parsed.port or 443
-            query = urllib.parse.parse_qs(parsed.query)
-            
-            outbound = {"protocol": protocol, "settings": {}, "streamSettings": {}, "tag": f"proxy-{hostname}"}
-            
-            if protocol == 'vless':
-                user_id = parsed.username or ''
-                outbound["settings"] = {
-                    "vnext": [{
-                        "address": hostname,
-                        "port": port,
-                        "users": [{
-                            "id": user_id,
-                            "encryption": query.get('encryption', ['none'])[0],
-                            "flow": query.get('flow', [''])[0]
-                        }]
-                    }]
-                }
-                
-                security = query.get('security', ['none'])[0]
-                network = query.get('type', ['tcp'])[0]
-                
-                stream_settings = {
-                    "network": network,
-                    "security": security,
-                    "sockopt": {
-                        "tcpNoDelay": True,
-                        "tcpKeepAliveIdle": 5,
-                        "tcpKeepAliveInterval": 2,
-                        "tcpKeepAliveProbes": 2,
-                        "mark": 255,
-                        "domainStrategy": "UseIP"
-                    }
-                }
-                
-                if network == 'ws':
-                    ws_settings = {"path": query.get('path', ['/'])[0]}
-                    if 'host' in query:
-                        ws_settings["headers"] = {"Host": query['host'][0]}
-                    stream_settings["wsSettings"] = ws_settings
-                
-                if security == 'tls':
-                    tls_settings = {
-                        "serverName": query.get('sni', [hostname])[0],
-                        "fingerprint": query.get('fp', ['chrome'])[0],
-                        "allowInsecure": False
-                    }
-                    if 'alpn' in query:
-                        tls_settings["alpn"] = query['alpn'][0].split(',')
-                    stream_settings["tlsSettings"] = tls_settings
-                
-                if security == 'reality':
-                    reality_settings = {
-                        "serverName": query.get('sni', [hostname])[0],
-                        "publicKey": query.get('pbk', [''])[0],
-                        "fingerprint": query.get('fp', ['chrome'])[0],
-                        "show": False
-                    }
-                    if 'sid' in query:
-                        reality_settings["shortId"] = query['sid'][0]
-                    stream_settings["realitySettings"] = reality_settings
-                
-                if network == 'grpc':
-                    stream_settings["grpcSettings"] = {
-                        "serviceName": query.get('serviceName', [''])[0],
-                        "multiMode": True
-                    }
-                
-                if network == 'tcp':
-                    stream_settings["tcpSettings"] = {"header": {"type": "none"}}
-                
-                outbound["streamSettings"] = stream_settings
-                
-            elif protocol == 'trojan':
-                password = parsed.username or ''
-                outbound["settings"] = {
-                    "servers": [{
-                        "address": hostname,
-                        "port": port,
-                        "password": password,
-                        "sni": query.get('sni', [hostname])[0],
-                        "udp": True
-                    }]
-                }
-                
-                security = query.get('security', ['tls'])[0]
-                network = query.get('type', ['tcp'])[0]
-                
-                stream_settings = {
-                    "network": network,
-                    "security": security,
-                    "sockopt": {
-                        "tcpNoDelay": True,
-                        "tcpKeepAliveIdle": 5,
-                        "tcpKeepAliveInterval": 2,
-                        "tcpKeepAliveProbes": 2,
-                        "mark": 255,
-                        "domainStrategy": "UseIP"
-                    }
-                }
-                
-                if security == 'tls':
-                    stream_settings["tlsSettings"] = {
-                        "serverName": query.get('sni', [hostname])[0],
-                        "fingerprint": query.get('fp', ['chrome'])[0],
-                        "allowInsecure": False
-                    }
-                
-                if network == 'ws':
-                    ws_settings = {"path": query.get('path', ['/'])[0]}
-                    if 'host' in query:
-                        ws_settings["headers"] = {"Host": query['host'][0]}
-                    stream_settings["wsSettings"] = ws_settings
-                
-                outbound["streamSettings"] = stream_settings
-            
-            elif protocol == 'vmess':
-                try:
-                    import base64
-                    decoded = base64.b64decode(parsed.username or '').decode('utf-8')
-                    vmess_data = json.loads(decoded)
-                    outbound["settings"] = {
-                        "vnext": [{
-                            "address": vmess_data.get('add', hostname),
-                            "port": vmess_data.get('port', port),
-                            "users": [{
-                                "id": vmess_data.get('id', ''),
-                                "security": vmess_data.get('scy', 'auto'),
-                                "alterId": vmess_data.get('aid', 0)
-                            }]
-                        }]
-                    }
-                except:
-                    pass
-            
-            return outbound
-            
-        except Exception as e:
-            return None
+    def extract_country_from_key(key):
+        """Извлекает название страны из ключа"""
+        flag, country = detect_country(key)
+        if flag and country:
+            return country
+        return None
 
     print(f"📥 Загружаю {len(URLS)} источников...")
 
-    # Собираем все ключи
-    all_raw_keys = []
+    # Собираем ключи по странам
     country_keys = {}
 
     for i, url in enumerate(URLS, 1):
@@ -305,30 +107,17 @@ try:
                     line = line.strip()
                     if line and not line.startswith('#'):
                         if any(p in line for p in ['vless://', 'trojan://', 'vmess://', 'ss://', 'h2://']):
-                            all_raw_keys.append(line)
-                            found += 1
+                            country = extract_country_from_key(line)
+                            if country:
+                                if country not in country_keys:
+                                    country_keys[country] = []
+                                country_keys[country].append(line)
+                                found += 1
                 print(f"    ✅ Найдено {found} ключей")
             else:
                 print(f"    ❌ Ошибка {response.status_code}")
         except Exception as e:
             print(f"    ❌ Ошибка: {str(e)[:50]}")
-
-    print(f"\n📊 Всего найдено сырых ключей: {len(all_raw_keys)}")
-
-    # Удаляем дубликаты
-    all_raw_keys = list(dict.fromkeys(all_raw_keys))
-    print(f"📊 Уникальных ключей: {len(all_raw_keys)}")
-
-    # Сортируем по странам
-    for key in all_raw_keys:
-        flag, country = detect_country(key)
-        if flag and country:
-            if country not in country_keys:
-                country_keys[country] = []
-            country_keys[country].append(key)
-        else:
-            # Если страна не определена - пропускаем
-            pass
 
     print(f"\n📊 Найдено ключей по странам:")
     for country, keys in country_keys.items():
@@ -336,17 +125,17 @@ try:
 
     if not country_keys:
         print("\n⚠️ НЕ НАЙДЕНО НИ ОДНОГО КЛЮЧА!")
-        print("💾 Сохраняю пустой JSON...")
         with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
             json.dump([], f, ensure_ascii=False, indent=2)
         sys.exit(0)
 
-    # Создаем JSON с группировкой по странам
+    # Создаем JSON с группировкой по странам (ПРОСТОЙ ФОРМАТ)
     json_output = []
 
     for country, keys in country_keys.items():
         print(f"\n🔄 Создаю профиль для {country} ({len(keys)} ключей)...")
         
+        # Находим флаг для страны
         flag = None
         for f, c in COUNTRIES.items():
             if c == country:
@@ -355,22 +144,10 @@ try:
         if not flag:
             flag = '🌍'
         
-        outbounds = []
-        for key in keys:
-            outbound = create_outbound_for_key(key)
-            if outbound:
-                outbounds.append(outbound)
-        
-        outbounds.extend(BASE_OUTBOUNDS_EXTRA)
-        
+        # ПРОСТОЙ ФОРМАТ - сохраняем оригинальные ссылки
         profile = {
-            "dns": BASE_DNS,
-            "inbounds": BASE_INBOUNDS,
-            "log": {"loglevel": "none"},
-            "outbounds": outbounds,
-            "policy": BASE_POLICY,
             "remarks": f"{flag} {country}",
-            "routing": BASE_ROUTING
+            "servers": keys  # Оригинальные ссылки
         }
         
         json_output.append(profile)
@@ -386,11 +163,7 @@ try:
 
     print(f"✅ Сохранено в {OUTPUT_FILE}")
 
-    total_servers = 0
-    for profile in json_output:
-        proxy_count = len([o for o in profile['outbounds'] if o['tag'].startswith('proxy-')])
-        total_servers += proxy_count
-    
+    total_servers = sum(len(p['servers']) for p in json_output)
     print(f"\n📊 Итоговая статистика:")
     print(f"  🌍 Стран: {len(json_output)}")
     print(f"  🔗 Всего серверов: {total_servers}")
@@ -403,7 +176,7 @@ except Exception as e:
     import traceback
     traceback.print_exc()
     
-    with open("FREE-VPN-FROM-KIRILL.json", 'w', encoding='utf-8') as f:
+    with open("OUTPUT_FILE", 'w', encoding='utf-8') as f:
         json.dump([], f, ensure_ascii=False, indent=2)
     
     sys.exit(0)
