@@ -9,6 +9,7 @@ import os
 import sys
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import urllib.parse
 
 # Настройка логирования
 logging.basicConfig(
@@ -63,6 +64,13 @@ OUTPUT_FILE = "FREE-VPN-FROM-KIRILL.txt"
 PING_THRESHOLD = 70
 MAX_WORKERS = 30
 TIMEOUT = 5
+
+# Метаданные для Happ
+METADATA = """#profile-title: Free Vpn From KIrill
+#announce: Бесплатная подписка
+#profile-update-interval: 12
+#profile-web-page-url: https://t.me/TourFromKirill
+"""
 
 class VPNPingChecker:
     def __init__(self):
@@ -137,7 +145,6 @@ class VPNPingChecker:
         """Извлечение сервера из ключа"""
         try:
             if '://' in key:
-                import urllib.parse
                 parsed = urllib.parse.urlparse(key)
                 hostname = parsed.hostname
                 if hostname:
@@ -182,7 +189,7 @@ class VPNPingChecker:
         return good_keys
     
     def save_good_keys(self, keys):
-        """Сохранение хороших ключей в файл"""
+        """Сохранение хороших ключей в файл с метаданными"""
         if not keys:
             logger.warning("Нет ключей для сохранения")
             return
@@ -190,11 +197,17 @@ class VPNPingChecker:
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")
         
         with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
+            # Записываем метаданные
+            f.write(METADATA)
+            f.write("\n")  # Пустая строка для разделения
+            
+            # Записываем информацию о времени обновления
             f.write(f"# Обновлено: {timestamp}\n")
             f.write(f"# Всего ключей: {len(keys)}\n")
             f.write(f"# Порог пинга: < {PING_THRESHOLD}ms\n")
             f.write("#" + "="*50 + "\n\n")
             
+            # Записываем ключи
             for key in sorted(keys):
                 f.write(key + '\n')
         
@@ -222,12 +235,10 @@ class VPNPingChecker:
             return False
 
 if __name__ == "__main__":
-    # Устанавливаем таймаут для requests
     import socket
     socket.setdefaulttimeout(30)
     
     checker = VPNPingChecker()
     success = checker.run()
     
-    # Выход с кодом ошибки если не удалось
     sys.exit(0 if success else 1)
