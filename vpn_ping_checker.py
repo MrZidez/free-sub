@@ -1,24 +1,10 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import requests
-import subprocess
 import re
 from datetime import datetime
-import os
 import sys
-import logging
-from concurrent.futures import ThreadPoolExecutor, as_completed
-import urllib.parse
 
-# Настройка логирования
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
-
-# Конфигурация
+# Список URL для парсинга
 URLS = [
     "https://raw.githubusercontent.com/nikita29a/FreeProxyList/main/mirror/1.txt",
     "https://raw.githubusercontent.com/nikita29a/FreeProxyList/main/mirror/2.txt",
@@ -61,194 +47,56 @@ URLS = [
 ]
 
 OUTPUT_FILE = "FREE-VPN-FROM-KIRILL.txt"
-PING_THRESHOLD = 70
-MAX_WORKERS = 30
-TIMEOUT = 5
 
-# Метаданные для Happ
-METADATA = """#profile-title: Free Vpn From KIrill
-#announce: Бесплатная подписка
-#profile-update-interval: 12
-#profile-web-page-url: https://t.me/TourFromKirill
-"""
+print("🚀 Запуск VPN парсера...")
 
-class VPNPingChecker:
-    def __init__(self):
-        self.good_keys = []
-        
-    def fetch_urls(self):
-        """Загрузка всех ссылок и извлечение ключей"""
-        all_keys = []
-        logger.info(f"Начинаю загрузку {len(URLS)} URL...")
-        
-        for i, url in enumerate(URLS, 1):
-            try:
-                response = requests.get(url, timeout=15)
-                if response.status_code == 200:
-                    content = response.text
-                    keys = self.extract_keys(content)
-                    all_keys.extend(keys)
-                    logger.info(f"✓ Загружено {len(keys)} ключей из URL {i}/{len(URLS)}")
-                else:
-                    logger.warning(f"✗ Не удалось загрузить {url}: статус {response.status_code}")
-            except Exception as e:
-                logger.error(f"✗ Ошибка при загрузке {url}: {e}")
-        
-        unique_keys = list(set(all_keys))
-        logger.info(f"Всего собрано {len(unique_keys)} уникальных ключей")
-        return unique_keys
-    
-    def extract_keys(self, content):
-        """Извлечение ключей из текста"""
-        keys = []
-        lines = content.split('\n')
-        
-        for line in lines:
-            line = line.strip()
-            if not line or line.startswith('#'):
-                continue
-            
-            # Проверяем разные форматы ключей
-            if any(protocol in line.lower() for protocol in ['vless://', 'trojan://', 'vmess://', 'ss://', 'h2://']):
-                keys.append(line)
-            elif re.match(r'^\d+\.\d+\.\d+\.\d+:\d+', line):
-                keys.append(line)
-            elif '://' in line:
-                keys.append(line)
-                
-        return keys
-    
-    def ping_key(self, key):
-        """Проверка пинга для ключа"""
-        try:
-            server = self.extract_server(key)
-            if not server:
-                return None, None
-            
-            # Пинг с таймаутом
-            cmd = ['ping', '-c', '1', '-W', str(TIMEOUT), server]
-            
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=TIMEOUT + 1)
-            
-            if result.returncode == 0:
-                match = re.search(r'time[=<](\d+\.?\d*)\s*ms', result.stdout, re.IGNORECASE)
-                if match:
-                    ping_time = float(match.group(1))
-                    return key, ping_time
-            
-            return None, None
-            
-        except Exception as e:
-            # Подавляем ошибки пинга
-            return None, None
-    
-    def extract_server(self, key):
-        """Извлечение сервера из ключа"""
-        try:
-            if '://' in key:
-                parsed = urllib.parse.urlparse(key)
-                hostname = parsed.hostname
-                if hostname:
-                    return hostname
-            
-            ip_match = re.match(r'^(\d+\.\d+\.\d+\.\d+):\d+', key)
-            if ip_match:
-                return ip_match.group(1)
-            
-            return None
-        except:
-            return None
-    
-    def check_all_keys(self, keys):
-        """Проверка всех ключей с использованием многопоточности"""
-        good_keys = []
-        total = len(keys)
-        
-        if total == 0:
-            logger.warning("Нет ключей для проверки")
-            return []
-        
-        logger.info(f"Начинаю проверку {total} ключей (порог: {PING_THRESHOLD}ms)...")
-        
-        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-            future_to_key = {executor.submit(self.ping_key, key): key for key in keys}
-            
-            for i, future in enumerate(as_completed(future_to_key), 1):
-                key = future_to_key[future]
-                try:
-                    result_key, ping_time = future.result()
-                    if result_key and ping_time is not None and ping_time <= PING_THRESHOLD:
-                        good_keys.append(result_key)
-                        logger.info(f"[{i}/{total}] ✓ Пинг: {ping_time:.1f}ms")
-                    elif result_key:
-                        if i % 50 == 0:
-                            logger.info(f"Обработано {i}/{total} ключей...")
-                except Exception:
-                    pass
-        
-        logger.info(f"Найдено {len(good_keys)} ключей с пингом < {PING_THRESHOLD}ms")
-        return good_keys
-    
-    def save_good_keys(self, keys):
-        """Сохранение хороших ключей в файл с метаданными"""
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")
-        
-        with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-            # Записываем метаданные
-            f.write(METADATA)
-            f.write("\n")
-            
-            # Записываем информацию о времени обновления
-            f.write(f"# Обновлено: {timestamp}\n")
-            f.write(f"# Всего ключей: {len(keys)}\n")
-            f.write(f"# Порог пинга: < {PING_THRESHOLD}ms\n")
-            f.write("#" + "="*50 + "\n\n")
-            
-            # Записываем ключи
-            if keys:
-                for key in sorted(keys):
-                    f.write(key + '\n')
-            else:
-                f.write("# Ключи не найдены\n")
-        
-        logger.info(f"✅ Сохранено {len(keys)} ключей в {OUTPUT_FILE}")
-    
-    def run(self):
-        """Основной процесс"""
-        logger.info("="*50)
-        logger.info("🚀 Запуск проверки VPN ключей")
-        logger.info(f"📊 Порог пинга: {PING_THRESHOLD}ms")
-        logger.info("="*50)
-        
-        try:
-            keys = self.fetch_urls()
-            if not keys:
-                logger.warning("❌ Не удалось загрузить ни одного ключа")
-                # Создаем файл с метаданными даже если нет ключей
-                self.save_good_keys([])
-                return False
-            
-            good_keys = self.check_all_keys(keys)
-            self.save_good_keys(good_keys)
-            
-            if good_keys:
-                return True
-            else:
-                logger.warning("⚠️ Ключи найдены, но все имеют пинг > 70ms")
-                return False
-                
-        except Exception as e:
-            logger.error(f"❌ Критическая ошибка: {e}")
-            # Создаем файл с метаданными даже при ошибке
-            self.save_good_keys([])
-            return False
+# Собираем все ключи
+all_keys = set()
+print(f"📥 Загружаю {len(URLS)} источников...")
 
-if __name__ == "__main__":
-    import socket
-    socket.setdefaulttimeout(30)
+for i, url in enumerate(URLS, 1):
+    try:
+        response = requests.get(url, timeout=10)
+        if response.status_code == 200:
+            lines = response.text.split('\n')
+            for line in lines:
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    # Проверяем наличие протоколов
+                    if any(p in line for p in ['vless://', 'trojan://', 'vmess://', 'ss://', 'h2://']):
+                        all_keys.add(line)
+            print(f"  ✓ [{i}/{len(URLS)}] Загружено")
+        else:
+            print(f"  ✗ [{i}/{len(URLS)}] Ошибка {response.status_code}")
+    except Exception as e:
+        print(f"  ✗ [{i}/{len(URLS)}] Ошибка: {str(e)[:30]}")
+
+print(f"📊 Найдено {len(all_keys)} уникальных ключей")
+
+# Сохраняем в файл с метаданными
+print("💾 Сохраняю в файл...")
+
+with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
+    # Метаданные для Happ
+    f.write("#profile-title: Free Vpn From KIrill\n")
+    f.write("#announce: Бесплатная подписка\n")
+    f.write("#profile-update-interval: 12\n")
+    f.write("#profile-web-page-url: https://t.me/TourFromKirill\n")
+    f.write("\n")
     
-    checker = VPNPingChecker()
-    success = checker.run()
+    # Информация о времени
+    f.write(f"# Обновлено: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}\n")
+    f.write(f"# Всего ключей: {len(all_keys)}\n")
+    f.write("#" + "="*50 + "\n\n")
     
-    # Всегда завершаем с кодом 0, чтобы GitHub Actions не падал
-    sys.exit(0)
+    # Записываем ключи
+    if all_keys:
+        for key in sorted(all_keys):
+            f.write(key + '\n')
+        print(f"✅ Сохранено {len(all_keys)} ключей")
+    else:
+        f.write("# Ключи не найдены\n")
+        print("⚠️ Ключи не найдены")
+
+print("✅ Готово!")
+print("📁 Файл:", OUTPUT_FILE)
