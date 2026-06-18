@@ -7,17 +7,22 @@ import urllib.parse
 from datetime import datetime
 
 print("🚀 Запуск VPN парсера...")
+print(f"⏰ Время запуска: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
 try:
-    # НОВЫЙ СПИСОК URL ДЛЯ ПАРСИНГА
+    # НОВЫЙ СПИСОК URL ДЛЯ ПАРСИНГА (с добавленными источниками)
     URLS = [
         "https://raw.githubusercontent.com/uretkavpn/Uretkavpn/refs/heads/main/UretkaVpn.txt",
         "https://github.com/Remiuc0ff/ya-nikogo-ne-ubival/raw/refs/heads/Remiuc0ff-patch-1/okak",
         "https://raw.githubusercontent.com/btsk161/Freeinternet_byMygalaru.github.io/refs/heads/main/premium.txt",
-        "https://raw.githubusercontent.com/v0id9/vpn-configs/refs/heads/main/vpn.txt",
+        "https://raw.githubusercontent.com/v0id9/vpn-configs/refs/heads/main/vpn.txt"
     ]
 
     OUTPUT_FILE = "FREE-VPN-FROM-KIRILL.json"
+
+    # Удаляем дубликаты URL
+    URLS = list(dict.fromkeys(URLS))
+    print(f"📋 Уникальных источников: {len(URLS)}")
 
     # Словарь стран с флагами
     COUNTRIES = {
@@ -79,6 +84,7 @@ try:
 
     # Собираем ключи по странам
     country_keys = {}
+    total_found = 0
 
     for i, url in enumerate(URLS, 1):
         try:
@@ -97,23 +103,26 @@ try:
                                     country_keys[country] = []
                                 country_keys[country].append(line)
                                 found += 1
+                                total_found += 1
                 print(f"    ✅ Найдено {found} ключей")
             else:
                 print(f"    ❌ Ошибка {response.status_code}")
         except Exception as e:
             print(f"    ❌ Ошибка: {str(e)[:50]}")
 
-    print(f"\n📊 Найдено ключей по странам:")
+    print(f"\n📊 Всего найдено ключей: {total_found}")
+    print(f"\n📊 Распределение по странам:")
     for country, keys in country_keys.items():
         print(f"  🌍 {country}: {len(keys)} ключей")
 
     if not country_keys:
         print("\n⚠️ НЕ НАЙДЕНО НИ ОДНОГО КЛЮЧА!")
+        print("💾 Сохраняю пустой JSON...")
         with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
             json.dump([], f, ensure_ascii=False, indent=2)
         sys.exit(0)
 
-    # Создаем JSON с группировкой по странам (ПРОСТОЙ ФОРМАТ)
+    # Создаем JSON с группировкой по странам
     json_output = []
 
     for country, keys in country_keys.items():
@@ -128,14 +137,14 @@ try:
         if not flag:
             flag = '🌍'
         
-        # ПРОСТОЙ ФОРМАТ - сохраняем оригинальные ссылки
+        # Простой формат - сохраняем оригинальные ссылки
         profile = {
             "remarks": f"{flag} {country}",
-            "servers": keys  # Оригинальные ссылки
+            "servers": keys
         }
         
         json_output.append(profile)
-        print(f"  ✅ Добавлено {len(keys)} серверов")
+        print(f"  ✅ Добавлено {len(keys)} серверов в профиль {country}")
 
     print(f"\n✅ Создано {len(json_output)} профилей стран")
 
@@ -147,6 +156,7 @@ try:
 
     print(f"✅ Сохранено в {OUTPUT_FILE}")
 
+    # Статистика
     total_servers = sum(len(p['servers']) for p in json_output)
     print(f"\n📊 Итоговая статистика:")
     print(f"  🌍 Стран: {len(json_output)}")
@@ -160,7 +170,8 @@ except Exception as e:
     import traceback
     traceback.print_exc()
     
-    with open("OUTPUT_FILE", 'w', encoding='utf-8') as f:
+    # Создаем пустой JSON чтобы не ломать workflow
+    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         json.dump([], f, ensure_ascii=False, indent=2)
     
     sys.exit(0)
