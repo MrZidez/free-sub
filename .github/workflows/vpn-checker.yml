@@ -28,7 +28,6 @@ jobs:
     
     - name: Run VPN checker
       run: python vpn_checker.py
-      continue-on-error: true
     
     - name: Commit and push
       run: |
@@ -36,4 +35,3 @@ jobs:
         git config --local user.name "GitHub Action"
         git add FREE-VPN-FROM-KIRILL.json
         git diff --staged --quiet || (git commit -m "Update VPN keys $(date -u '+%Y-%m-%d %H:%M:%S')" && git push)
-      continue-on-error: true
