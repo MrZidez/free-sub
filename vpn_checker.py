@@ -23,7 +23,6 @@ URLS = [
 
 OUTPUT_FILE = "FREE-VPN-FROM-KIRILL.txt"
 
-# Список доменов для удаления (не рабочие/плохие)
 BAD_DOMAINS = [
     'mirror',
     'github',
@@ -33,19 +32,95 @@ BAD_DOMAINS = [
     'storage',
     'gist.githubusercontent',
     'githubusercontent',
-    'google',
+    
     'cloudflare',
     'amazon',
     'aws',
     'azure',
-    'microsoft',
+    'google',
+    'googleapis',
+    'cloudfront',
+    'heroku',
+    'netlify',
+    'vercel',
+    
     'example',
     'test',
     'localhost',
-    '127.0.0.1'
+    '127.0.0.1',
+    '0.0.0.0',
+    
+    'roc-taiwan',
+    'taipeicitygovernment',
+    'seoulcitygovernment',
+    'kdns.fr',
+    'hllfly.kdns.fr',
+    'org.ua', 
+    
+    'duckdns',
+    'no-ip',
+    'dyndns',
+    'ddns',
+    'serveo',
+    'ngrok',
+    'localtunnel',
+    'zapto',
+    'hopto',
+    'sytes',
+    'myvnc',
+    'strangled',
+    'jumpingcrab',
+    'betainabox',
+    'bonobo',
+    'afraid',
+    'freeddns',
+    'mooo',
+    'dynu',
+    'duckdns.org',
+    'dynv6',
+    'freedns',
+    'noip',
+    'changeip',
+    'dnsomatic',
+    'easydns',
+    'dyn.com',
+    'dyn-o-saur',
+    'dyndns.org',
+    
+    '.tk',
+    '.ml',
+    '.ga',
+    '.cf',
+    '.gq',
+    '.top',
+    '.xyz',
+    '.club',
+    '.work',
+    '.click',
+    '.space',
+    '.online',
+    '.site',
+    '.website',
+    '.tech',
+    '.store',
+    '.pro',
+    '.live',
+    '.fun',
+    '.cloud',
+    '.host',
+    '.press',
+    '.loan',
+    '.men',
+    '.win',
+    '.bid',
+    '.date',
+    '.download',
+    '.review',
+    '.trade',
+    '.webcam',
+    '.party'
 ]
 
-# Словарь стран и флагов
 COUNTRIES = {
     '🇷🇺': 'Россия',
     '🇺🇸': 'США',
@@ -83,7 +158,6 @@ COUNTRIES = {
     '🇲🇽': 'Мексика'
 }
 
-# Сокращения стран для поиска в названиях
 COUNTRY_CODES = {
     'RU': '🇷🇺',
     'US': '🇺🇸',
@@ -128,39 +202,34 @@ def is_bad_domain(hostname):
     
     hostname_lower = hostname.lower()
     
-    # Проверяем точное совпадение
     for bad in BAD_DOMAINS:
         if bad in hostname_lower:
             return True
     
-    # Проверяем IP адреса (удаляем локальные/тестовые)
     ip_pattern = r'^(\d{1,3}\.){3}\d{1,3}$'
     if re.match(ip_pattern, hostname):
-        # Проверяем частные IP
         parts = hostname.split('.')
         if parts[0] in ['10', '127', '192', '172', '169']:
             return True
-        # Проверяем тестовые диапазоны
         if parts[0] == '192' and parts[1] == '168':
             return True
         if parts[0] == '172' and 16 <= int(parts[1]) <= 31:
+            return True
+        if hostname.startswith('127.') or hostname.startswith('0.'):
             return True
     
     return False
 
 def detect_country(key):
     """Определение страны по ключу"""
-    # Ищем флаг в ключе
     for flag in COUNTRIES.keys():
         if flag in key:
             return flag, COUNTRIES[flag]
     
-    # Ищем код страны в названии (например, #RU, #US)
     for code, flag in COUNTRY_CODES.items():
         if f'#{code}' in key or f'_{code}_' in key or f'-{code}-' in key:
             return flag, COUNTRIES.get(flag, code)
     
-    # Ищем код страны в домене
     try:
         if '://' in key:
             parsed = urllib.parse.urlparse(key)
@@ -172,28 +241,24 @@ def detect_country(key):
     except:
         pass
     
-    # Если не найдено - возвращаем None (ключ будет удален)
     return None, None
 
 def rename_key(key):
     """Переименование ключа с добавлением флага и страны"""
-    # Проверяем домен
     try:
         if '://' in key:
             parsed = urllib.parse.urlparse(key)
             hostname = parsed.hostname or ''
             if is_bad_domain(hostname):
-                return None  # Удаляем ключ с плохим доменом
+                return None  
     except:
         return None
     
     flag, country = detect_country(key)
     
-    # Если страна не определена - возвращаем None (ключ будет удален)
     if flag is None or country is None:
         return None
     
-    # Удаляем старые названия после #
     if '#' in key:
         base = key.split('#')[0]
         old_name = key.split('#')[1] if len(key.split('#')) > 1 else ''
@@ -201,10 +266,8 @@ def rename_key(key):
         base = key
         old_name = ''
     
-    # Создаем новое имя
     new_name = f"{flag} {country} | VPN From Kirill"
     
-    # Если в старом имени был номер, добавляем его
     if old_name and old_name[-1].isdigit():
         new_name += f" #{old_name[-1]}"
     
@@ -214,7 +277,6 @@ print("🚀 Запуск VPN парсера с переименованием...
 print("🗑️ Ключи без определения страны будут удалены")
 print("🚫 Ключи с плохими доменами будут удалены")
 
-# Собираем все ключи
 all_keys = set()
 print(f"📥 Загружаю {len(URLS)} источников...")
 
@@ -226,7 +288,6 @@ for i, url in enumerate(URLS, 1):
             for line in lines:
                 line = line.strip()
                 if line and not line.startswith('#'):
-                    # Проверяем наличие протоколов
                     if any(p in line for p in ['vless://', 'trojan://', 'vmess://', 'ss://', 'h2://']):
                         all_keys.add(line)
             print(f"  ✓ [{i}/{len(URLS)}] Загружено")
@@ -237,7 +298,6 @@ for i, url in enumerate(URLS, 1):
 
 print(f"📊 Найдено {len(all_keys)} уникальных ключей")
 
-# Переименовываем ключи и фильтруем
 renamed_keys = []
 deleted_count = 0
 bad_domain_count = 0
@@ -248,7 +308,6 @@ for key in all_keys:
         if renamed is not None:
             renamed_keys.append(renamed)
         else:
-            # Проверяем, почему удален
             if '://' in key:
                 try:
                     parsed = urllib.parse.urlparse(key)
@@ -268,25 +327,19 @@ print(f"✏️ Переименовано {len(renamed_keys)} ключей")
 print(f"🗑️ Удалено {deleted_count} ключей (без определения страны)")
 print(f"🚫 Удалено {bad_domain_count} ключей (плохой домен)")
 
-# Сохраняем в файл с метаданными
 print("💾 Сохраняю в файл...")
 
 with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-    # Метаданные для Happ
     f.write("#profile-title: Free Vpn From KIrill\n")
     f.write("#announce: Бесплатная подписка\n")
     f.write("#profile-update-interval: 12\n")
     f.write("#profile-web-page-url: https://t.me/TourFromKirill\n")
     f.write("\n")
     
-    # Информация о времени
     f.write(f"# Обновлено: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}\n")
     f.write(f"# Всего ключей: {len(renamed_keys)}\n")
-    f.write(f"# Удалено ключей (Мир): {deleted_count}\n")
-    f.write(f"# Удалено ключей (плохой домен): {bad_domain_count}\n")
     f.write("#" + "="*50 + "\n\n")
     
-    # Записываем ключи
     if renamed_keys:
         for key in sorted(renamed_keys):
             f.write(key + '\n')
