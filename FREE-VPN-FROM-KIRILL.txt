@@ -3,22 +3,12 @@
 #profile-update-interval: 12
 #profile-web-page-url: https://t.me/TourFromKirill
 
-# Обновлено: 2026-06-18 09:56:06 UTC
-# Всего ключей: 108
+# Обновлено: 2026-06-18 09:58:38 UTC
+# Всего ключей: 98
 #==================================================
 
 ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTp5dTJYblNQV2htUWp4bjgzaUpBM0RB@207.2.120.46:3478?#🇸🇪 Швеция | VPN From Kirill
 trojan://4c3164ee-abcf-4091-abea-d1cd4937a68d@da.mfa.gov.ua:443?security=tls&sni=jy.hhllfly.kdns.fr&type=ws&path=%2F%3Fed%3D2048&Host=jy.hhllfly.kdns.fr#🇺🇦 Украина | VPN From Kirill #3
-trojan://96983eb4-c8f1-316e-ab00-500014ed3d8b@official.seoulcityhall.com.ua:2053?security=tls#🇺🇦 Украина | VPN From Kirill #4
-trojan://96983eb4-c8f1-316e-ab00-500014ed3d8b@official.seoulcityhall.com.ua:8443?security=tls#🇺🇦 Украина | VPN From Kirill #5
-trojan://96983eb4-c8f1-316e-ab00-500014ed3d8b@official.tokyometropolis.chernigov.ua:2053?security=tls#🇺🇦 Украина | VPN From Kirill #7
-trojan://96983eb4-c8f1-316e-ab00-500014ed3d8b@official.tokyometropolis.ivano-frankivsk.ua:2053?security=tls#🇺🇦 Украина | VPN From Kirill #4
-trojan://96983eb4-c8f1-316e-ab00-500014ed3d8b@official.tokyometropolis.kharkov.ua:2053?security=tls#🇺🇦 Украина | VPN From Kirill #7
-trojan://96983eb4-c8f1-316e-ab00-500014ed3d8b@official.tokyometropolis.kherson.ua:2053?security=tls#🇺🇦 Украина | VPN From Kirill #8
-trojan://96983eb4-c8f1-316e-ab00-500014ed3d8b@official.tokyometropolis.kiev.ua:2053?security=tls#🇺🇦 Украина | VPN From Kirill #5
-trojan://96983eb4-c8f1-316e-ab00-500014ed3d8b@official.tokyometropolis.kyiv.ua:2053?security=tls#🇺🇦 Украина | VPN From Kirill #0
-trojan://96983eb4-c8f1-316e-ab00-500014ed3d8b@official.tokyometropolis.odesa.ua:2053?security=tls#🇺🇦 Украина | VPN From Kirill #5
-trojan://96983eb4-c8f1-316e-ab00-500014ed3d8b@official.tokyometropolis.odessa.ua:2053?security=tls#🇺🇦 Украина | VPN From Kirill #6
 trojan://NMp4K%3Df5gD-yP8QgrWR1AS_60GEyw9dclo@79.108.162.90:443?security=tls&fp=chrome&insecure=1&allowInsecure=1&type=tcp&headerType=none#🇩🇪 Германия | VPN From Kirill
 trojan://NMp4K%3Df5gD-yP8QgrWR1AS_60GEyw9dclo@79.108.162.90:443?security=tls&sni=79.108.162.90&fp=chrome&insecure=1&allowInsecure=1&type=tcp&headerType=none#🇩🇪 Германия | VPN From Kirill
 trojan://NMp4K%3Df5gD-yP8QgrWR1AS_60GEyw9dclo@79.108.162.90:443?security=tls&sni=79.108.162.90&insecure=0&allowInsecure=0&type=tcp&headerType=none#🇩🇪 Германия | VPN From Kirill
