@@ -1,52 +1,6 @@
 [
   {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
-      },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
+    "remarks": "Россия | VPN From Kirill",
     "outbounds": [
       {
         "protocol": "vless",
@@ -68,102 +22,15 @@
         "streamSettings": {
           "network": "xhttp",
           "security": "reality",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "realitySettings": {
             "serverName": "vk.com",
             "publicKey": "LRAFOiJmqIVMJu9pr1LG4WnaWHJHDtT-vnTHL9iFT3M",
             "fingerprint": "chrome",
-            "show": false,
-            "shortId": "578fe8"
+            "show": false
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Россия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Россия-1"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -184,20 +51,11 @@
         "streamSettings": {
           "network": "tcp",
           "security": "reality",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "realitySettings": {
             "serverName": "sun6-22.userapi.com",
             "publicKey": "3JGwSDrfkiCPdU3rvQP5m0z4Ag_UB_2w8Qq3VMXmo28",
             "fingerprint": "chrome",
-            "show": false,
-            "shortId": "abc323"
+            "show": false
           },
           "tcpSettings": {
             "header": {
@@ -205,86 +63,8 @@
             }
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Россия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Россия-2"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -305,20 +85,11 @@
         "streamSettings": {
           "network": "tcp",
           "security": "reality",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "realitySettings": {
             "serverName": "yandex.ru",
             "publicKey": "kCCkO87l5dyii0T3azOBG3NyLkIyxG-EO73OFrD84wA",
             "fingerprint": "chrome",
-            "show": false,
-            "shortId": "58d75a36e67da736"
+            "show": false
           },
           "tcpSettings": {
             "header": {
@@ -326,86 +97,8 @@
             }
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Россия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Россия-3"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -426,20 +119,11 @@
         "streamSettings": {
           "network": "tcp",
           "security": "reality",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "realitySettings": {
             "serverName": "sun6-22.userapi.com",
             "publicKey": "3JGwSDrfkiCPdU3rvQP5m0z4Ag_UB_2w8Qq3VMXmo28",
             "fingerprint": "chrome",
-            "show": false,
-            "shortId": "abc323"
+            "show": false
           },
           "tcpSettings": {
             "header": {
@@ -447,86 +131,8 @@
             }
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Россия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Россия-4"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -547,14 +153,6 @@
         "streamSettings": {
           "network": "ws",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "wsSettings": {
             "path": "/v1/data/sync/",
             "headers": {
@@ -564,92 +162,11 @@
           "tlsSettings": {
             "serverName": "s86255.cdn.ngenix.net",
             "fingerprint": "chrome",
-            "allowInsecure": false,
-            "alpn": [
-              "http/1.1"
-            ]
+            "allowInsecure": false
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Россия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Россия-5"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -670,106 +187,17 @@
         "streamSettings": {
           "network": "ws",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "wsSettings": {
             "path": "/v1/data/sync/"
           },
           "tlsSettings": {
             "serverName": "s28479.cdn.ngenix.net",
             "fingerprint": "edge",
-            "allowInsecure": false,
-            "alpn": [
-              "http/1.1"
-            ]
+            "allowInsecure": false
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Россия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Россия-6"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -790,102 +218,15 @@
         "streamSettings": {
           "network": "xhttp",
           "security": "reality",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "realitySettings": {
             "serverName": "okko.tv",
             "publicKey": "tFKuLI3W0VZ7IxAL6hFQhD7DWmxAl0_NCjLya_I64zQ",
             "fingerprint": "firefox",
-            "show": false,
-            "shortId": "cafe12345678babe"
+            "show": false
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Россия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Россия-7"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -906,20 +247,11 @@
         "streamSettings": {
           "network": "tcp",
           "security": "reality",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "realitySettings": {
             "serverName": "nl4.panel11.ru",
             "publicKey": "n4TFeuXAigmWJ9sXqnyicRkw3vcXy27ARfvhhsA61kI",
             "fingerprint": "firefox",
-            "show": false,
-            "shortId": "0bd0285f0c4f8f05"
+            "show": false
           },
           "tcpSettings": {
             "header": {
@@ -927,86 +259,8 @@
             }
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Россия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Россия-8"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -1027,20 +281,11 @@
         "streamSettings": {
           "network": "tcp",
           "security": "reality",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "realitySettings": {
             "serverName": "nl4.panel11.ru",
             "publicKey": "n4TFeuXAigmWJ9sXqnyicRkw3vcXy27ARfvhhsA61kI",
             "fingerprint": "firefox",
-            "show": false,
-            "shortId": "0bd0285f0c4f8f05"
+            "show": false
           },
           "tcpSettings": {
             "header": {
@@ -1048,85 +293,12 @@
             }
           }
         },
-        "tag": "proxy"
+        "tag": "proxy-Россия-9"
       }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Россия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
+    ]
   },
   {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
-      },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
+    "remarks": "Украина | VPN From Kirill",
     "outbounds": [
       {
         "protocol": "trojan",
@@ -1142,85 +314,12 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
+        "tag": "proxy-Украина-1"
       }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Украина | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
+    ]
   },
   {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
-      },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
+    "remarks": "Финляндия | VPN From Kirill",
     "outbounds": [
       {
         "protocol": "vless",
@@ -1242,20 +341,11 @@
         "streamSettings": {
           "network": "tcp",
           "security": "reality",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "realitySettings": {
             "serverName": "sberbank.ru",
             "publicKey": "7sRyn95DXAxnGKRapwfydC6nRmj1IgH-QQQ3ctwC5k8",
             "fingerprint": "chrome",
-            "show": false,
-            "shortId": "5e841fab"
+            "show": false
           },
           "tcpSettings": {
             "header": {
@@ -1263,86 +353,8 @@
             }
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Финляндия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Финляндия-1"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -1363,20 +375,11 @@
         "streamSettings": {
           "network": "tcp",
           "security": "reality",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "realitySettings": {
             "serverName": "auto.malina24.xyz",
             "publicKey": "V6FabatADtcX7aO9KMjGCadJC4LuQ_5nRViab-z-nFQ",
             "fingerprint": "firefox",
-            "show": false,
-            "shortId": "abcd"
+            "show": false
           },
           "tcpSettings": {
             "header": {
@@ -1384,86 +387,8 @@
             }
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Финляндия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Финляндия-2"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -1484,14 +409,6 @@
         "streamSettings": {
           "network": "tcp",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "tlsSettings": {
             "serverName": "ams1.fromblancwithlove.com",
             "fingerprint": "chrome",
@@ -1503,86 +420,8 @@
             }
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Финляндия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Финляндия-3"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -1603,14 +442,6 @@
         "streamSettings": {
           "network": "tcp",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "tlsSettings": {
             "serverName": "ams1.fromblancwithlove.com",
             "fingerprint": "chrome",
@@ -1622,86 +453,8 @@
             }
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Финляндия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Финляндия-4"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -1722,14 +475,6 @@
         "streamSettings": {
           "network": "tcp",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "tlsSettings": {
             "serverName": "ams1.fromblancwithlove.com",
             "fingerprint": "chrome",
@@ -1741,86 +486,8 @@
             }
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Финляндия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Финляндия-5"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -1841,14 +508,6 @@
         "streamSettings": {
           "network": "tcp",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "tlsSettings": {
             "serverName": "ams1.fromblancwithlove.com",
             "fingerprint": "chrome",
@@ -1860,86 +519,8 @@
             }
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Финляндия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Финляндия-6"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -1960,14 +541,6 @@
         "streamSettings": {
           "network": "tcp",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "tlsSettings": {
             "serverName": "ams1.fromblancwithlove.com",
             "fingerprint": "chrome",
@@ -1979,86 +552,8 @@
             }
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Финляндия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Финляндия-7"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -2079,14 +574,6 @@
         "streamSettings": {
           "network": "tcp",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "tlsSettings": {
             "serverName": "ams1.fromblancwithlove.com",
             "fingerprint": "chrome",
@@ -2098,86 +585,8 @@
             }
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Финляндия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Финляндия-8"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -2198,14 +607,6 @@
         "streamSettings": {
           "network": "tcp",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "tlsSettings": {
             "serverName": "ams1.fromblancwithlove.com",
             "fingerprint": "chrome",
@@ -2217,86 +618,8 @@
             }
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Финляндия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Финляндия-9"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -2317,14 +640,6 @@
         "streamSettings": {
           "network": "tcp",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "tlsSettings": {
             "serverName": "ams1.fromblancwithlove.com",
             "fingerprint": "chrome",
@@ -2336,86 +651,8 @@
             }
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Финляндия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Финляндия-10"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -2436,14 +673,6 @@
         "streamSettings": {
           "network": "tcp",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "tlsSettings": {
             "serverName": "ams1.fromblancwithlove.com",
             "fingerprint": "chrome",
@@ -2455,86 +684,8 @@
             }
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Финляндия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Финляндия-11"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -2555,14 +706,6 @@
         "streamSettings": {
           "network": "tcp",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "tlsSettings": {
             "serverName": "ams1.fromblancwithlove.com",
             "fingerprint": "chrome",
@@ -2574,85 +717,12 @@
             }
           }
         },
-        "tag": "proxy"
+        "tag": "proxy-Финляндия-12"
       }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Финляндия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
+    ]
   },
   {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
-      },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
+    "remarks": "Великобритания | VPN From Kirill",
     "outbounds": [
       {
         "protocol": "vless",
@@ -2674,20 +744,11 @@
         "streamSettings": {
           "network": "tcp",
           "security": "reality",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "realitySettings": {
             "serverName": "storage.yandex.net",
             "publicKey": "dY9SNEllJMW63xo-JdXufhmjAxB_4uFw_QMjgufjiD8",
             "fingerprint": "firefox",
-            "show": false,
-            "shortId": "ea10cd5686751ec5"
+            "show": false
           },
           "tcpSettings": {
             "header": {
@@ -2695,86 +756,8 @@
             }
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Великобритания | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Великобритания-1"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -2789,86 +772,8 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Великобритания | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Великобритания-2"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -2883,86 +788,8 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Великобритания | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Великобритания-3"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -2977,86 +804,8 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Великобритания | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Великобритания-4"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -3071,86 +820,8 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Великобритания | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Великобритания-5"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -3165,85 +836,12 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
+        "tag": "proxy-Великобритания-6"
       }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Великобритания | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
+    ]
   },
   {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
-      },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
+    "remarks": "Турция | VPN From Kirill",
     "outbounds": [
       {
         "protocol": "vless",
@@ -3265,20 +863,11 @@
         "streamSettings": {
           "network": "tcp",
           "security": "reality",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "realitySettings": {
             "serverName": "storage.yandex.net",
             "publicKey": "IdqrygjwHBEMCOamBl7a504TVk6uMAtTRj0xLWcFcxY",
             "fingerprint": "firefox",
-            "show": false,
-            "shortId": "cf9d145ad8f1ea55"
+            "show": false
           },
           "tcpSettings": {
             "header": {
@@ -3286,85 +875,12 @@
             }
           }
         },
-        "tag": "proxy"
+        "tag": "proxy-Турция-1"
       }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Турция | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
+    ]
   },
   {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
-      },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
+    "remarks": "ОАЭ | VPN From Kirill",
     "outbounds": [
       {
         "protocol": "trojan",
@@ -3380,85 +896,12 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
+        "tag": "proxy-ОАЭ-1"
       }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "ОАЭ | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
+    ]
   },
   {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
-      },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
+    "remarks": "Канада | VPN From Kirill",
     "outbounds": [
       {
         "protocol": "vless",
@@ -3480,14 +923,6 @@
         "streamSettings": {
           "network": "ws",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "wsSettings": {
             "path": "/",
             "headers": {
@@ -3500,86 +935,8 @@
             "allowInsecure": false
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Канада | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Канада-1"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -3594,86 +951,8 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Канада | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Канада-2"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -3694,14 +973,6 @@
         "streamSettings": {
           "network": "ws",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "wsSettings": {
             "path": "/eyJqdW5rIjoiZkdaQ1NuQW45akRFIiwicHJvdG9jb2wiOiJ2bCIsIm1vZGUiOiJwcm94eWlwIiwicGFuZWxJUHMiOltdfQ==",
             "headers": {
@@ -3714,86 +985,8 @@
             "allowInsecure": false
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Канада | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Канада-3"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -3808,86 +1001,8 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Канада | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Канада-4"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -3908,14 +1023,6 @@
         "streamSettings": {
           "network": "ws",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "wsSettings": {
             "path": "/",
             "headers": {
@@ -3928,86 +1035,8 @@
             "allowInsecure": false
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Канада | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Канада-5"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -4028,14 +1057,6 @@
         "streamSettings": {
           "network": "ws",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "wsSettings": {
             "path": "/",
             "headers": {
@@ -4045,93 +1066,11 @@
           "tlsSettings": {
             "serverName": "bold-term-4edd.mbigspot.workers.dev",
             "fingerprint": "chrome",
-            "allowInsecure": false,
-            "alpn": [
-              "h2",
-              "http/1.1"
-            ]
+            "allowInsecure": false
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Канада | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Канада-6"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -4146,86 +1085,8 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Канада | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Канада-7"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -4240,86 +1101,8 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Канада | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Канада-8"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -4334,86 +1117,8 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Канада | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Канада-9"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -4434,14 +1139,6 @@
         "streamSettings": {
           "network": "ws",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "wsSettings": {
             "path": "/",
             "headers": {
@@ -4454,86 +1151,8 @@
             "allowInsecure": false
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Канада | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Канада-10"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -4554,14 +1173,6 @@
         "streamSettings": {
           "network": "ws",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "wsSettings": {
             "path": "/",
             "headers": {
@@ -4574,86 +1185,8 @@
             "allowInsecure": false
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Канада | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Канада-11"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -4674,14 +1207,6 @@
         "streamSettings": {
           "network": "ws",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "wsSettings": {
             "path": "/eyJqdW5rIjoiVG9CMkc4c0hXRFk5RFJtOSIsInByb3RvY29sIjoidmwiLCJtb2RlIjoicHJveHlpcCIsInBhbmVsSVBzIjpbXX0",
             "headers": {
@@ -4694,86 +1219,8 @@
             "allowInsecure": false
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Канада | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Канада-12"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -4788,86 +1235,8 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Канада | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Канада-13"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -4888,14 +1257,6 @@
         "streamSettings": {
           "network": "ws",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "wsSettings": {
             "path": "/",
             "headers": {
@@ -4908,86 +1269,8 @@
             "allowInsecure": false
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Канада | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Канада-14"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -5008,14 +1291,6 @@
         "streamSettings": {
           "network": "ws",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "wsSettings": {
             "path": "/",
             "headers": {
@@ -5028,86 +1303,8 @@
             "allowInsecure": false
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Канада | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Канада-15"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -5122,86 +1319,8 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Канада | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Канада-16"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -5216,86 +1335,8 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Канада | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Канада-17"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -5316,14 +1357,6 @@
         "streamSettings": {
           "network": "ws",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "wsSettings": {
             "path": "/",
             "headers": {
@@ -5336,86 +1369,8 @@
             "allowInsecure": false
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Канада | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Канада-18"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -5430,86 +1385,8 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Канада | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Канада-19"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -5530,98 +1407,12 @@
         "streamSettings": {
           "network": "ws",
           "security": "none",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "wsSettings": {
             "path": "/"
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Канада | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Канада-20"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -5642,14 +1433,6 @@
         "streamSettings": {
           "network": "ws",
           "security": "none",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "wsSettings": {
             "path": "/ws-vlees",
             "headers": {
@@ -5657,85 +1440,12 @@
             }
           }
         },
-        "tag": "proxy"
+        "tag": "proxy-Канада-21"
       }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Канада | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
+    ]
   },
   {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
-      },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
+    "remarks": "Швейцария | VPN From Kirill",
     "outbounds": [
       {
         "protocol": "vless",
@@ -5757,14 +1467,6 @@
         "streamSettings": {
           "network": "tcp",
           "security": "reality",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "realitySettings": {
             "serverName": "sellflow.org",
             "publicKey": "SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc",
@@ -5777,85 +1479,12 @@
             }
           }
         },
-        "tag": "proxy"
+        "tag": "proxy-Швейцария-1"
       }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Швейцария | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
+    ]
   },
   {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
-      },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
+    "remarks": "Германия | VPN From Kirill",
     "outbounds": [
       {
         "protocol": "vless",
@@ -5877,100 +1506,14 @@
         "streamSettings": {
           "network": "tcp",
           "security": "none",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "tcpSettings": {
             "header": {
               "type": "none"
             }
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Германия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Германия-1"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -5991,100 +1534,14 @@
         "streamSettings": {
           "network": "tcp",
           "security": "none",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "tcpSettings": {
             "header": {
               "type": "none"
             }
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Германия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Германия-2"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -6099,86 +1556,8 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Германия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Германия-3"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -6193,85 +1572,12 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
+        "tag": "proxy-Германия-4"
       }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Германия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
+    ]
   },
   {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
-      },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
+    "remarks": "Франция | VPN From Kirill",
     "outbounds": [
       {
         "protocol": "vless",
@@ -6293,20 +1599,11 @@
         "streamSettings": {
           "network": "tcp",
           "security": "reality",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "realitySettings": {
             "serverName": "www.microsoft.com",
             "publicKey": "GRxGFwibgoUjG9OL5Dl1OLyK56yw8WaG5BdFP8ifVgQ",
             "fingerprint": "chrome",
-            "show": false,
-            "shortId": "26f7082dd0e36ca1"
+            "show": false
           },
           "tcpSettings": {
             "header": {
@@ -6314,86 +1611,8 @@
             }
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Франция | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Франция-1"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -6408,86 +1627,8 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Франция | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Франция-2"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -6502,169 +1643,23 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
+        "tag": "proxy-Франция-3"
       }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Франция | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
+    ]
   },
   {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
-      },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
+    "remarks": "Италия | VPN From Kirill",
     "outbounds": [
       {
         "protocol": "ss",
         "settings": {},
         "streamSettings": {},
-        "tag": "proxy"
+        "tag": "proxy-Италия-1"
       }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Италия | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
+    ]
   },
   {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
-      },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
+    "remarks": "Япония | VPN From Kirill",
     "outbounds": [
       {
         "protocol": "trojan",
@@ -6680,86 +1675,8 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Япония | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Япония-1"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -6780,14 +1697,6 @@
         "streamSettings": {
           "network": "ws",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "wsSettings": {
             "path": "/",
             "headers": {
@@ -6800,86 +1709,8 @@
             "allowInsecure": false
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Япония | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Япония-2"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -6894,86 +1725,8 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Япония | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Япония-3"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -6994,14 +1747,6 @@
         "streamSettings": {
           "network": "ws",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "wsSettings": {
             "path": "/",
             "headers": {
@@ -7014,86 +1759,8 @@
             "allowInsecure": false
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Япония | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Япония-4"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -7114,14 +1781,6 @@
         "streamSettings": {
           "network": "ws",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "wsSettings": {
             "path": "/proxyip=ProxyIP.CMLiussss.net",
             "headers": {
@@ -7134,85 +1793,12 @@
             "allowInsecure": false
           }
         },
-        "tag": "proxy"
+        "tag": "proxy-Япония-5"
       }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Япония | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
+    ]
   },
   {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
-      },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
+    "remarks": "Польша | VPN From Kirill",
     "outbounds": [
       {
         "protocol": "vless",
@@ -7234,20 +1820,11 @@
         "streamSettings": {
           "network": "tcp",
           "security": "reality",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "realitySettings": {
             "serverName": "www.microsoft.com",
             "publicKey": "GRxGFwibgoUjG9OL5Dl1OLyK56yw8WaG5BdFP8ifVgQ",
             "fingerprint": "chrome",
-            "show": false,
-            "shortId": "26f7082dd0e36ca1"
+            "show": false
           },
           "tcpSettings": {
             "header": {
@@ -7255,170 +1832,19 @@
             }
           }
         },
-        "tag": "proxy"
+        "tag": "proxy-Польша-1"
       }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Польша | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
+    ]
   },
   {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
-      },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
+    "remarks": "Швеция | VPN From Kirill",
     "outbounds": [
       {
         "protocol": "ss",
         "settings": {},
         "streamSettings": {},
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Швеция | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Швеция-1"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -7439,100 +1865,14 @@
         "streamSettings": {
           "network": "tcp",
           "security": "none",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "tcpSettings": {
             "header": {
               "type": "none"
             }
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Швеция | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Швеция-2"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -7553,14 +1893,6 @@
         "streamSettings": {
           "network": "tcp",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "tlsSettings": {
             "serverName": "ams1.fromblancwithlove.com",
             "fingerprint": "chrome",
@@ -7572,86 +1904,8 @@
             }
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Швеция | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Швеция-3"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -7672,14 +1926,6 @@
         "streamSettings": {
           "network": "tcp",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "tlsSettings": {
             "serverName": "ams1.fromblancwithlove.com",
             "fingerprint": "chrome",
@@ -7691,86 +1937,8 @@
             }
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Швеция | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Швеция-4"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -7791,20 +1959,11 @@
         "streamSettings": {
           "network": "tcp",
           "security": "reality",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "realitySettings": {
             "serverName": "cdn.jsdelivr.net",
             "publicKey": "GRxGFwibgoUjG9OL5Dl1OLyK56yw8WaG5BdFP8ifVgQ",
             "fingerprint": "chrome",
-            "show": false,
-            "shortId": "26f7082dd0e36ca1"
+            "show": false
           },
           "tcpSettings": {
             "header": {
@@ -7812,86 +1971,8 @@
             }
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Швеция | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Швеция-5"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -7912,14 +1993,6 @@
         "streamSettings": {
           "network": "tcp",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "tlsSettings": {
             "serverName": "ams1.fromblancwithlove.com",
             "fingerprint": "chrome",
@@ -7931,85 +2004,12 @@
             }
           }
         },
-        "tag": "proxy"
+        "tag": "proxy-Швеция-6"
       }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Швеция | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
+    ]
   },
   {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
-      },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
+    "remarks": "Сингапур | VPN From Kirill",
     "outbounds": [
       {
         "protocol": "vless",
@@ -8031,14 +2031,6 @@
         "streamSettings": {
           "network": "ws",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "wsSettings": {
             "path": "/",
             "headers": {
@@ -8051,86 +2043,8 @@
             "allowInsecure": false
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Сингапур | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Сингапур-1"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -8151,14 +2065,6 @@
         "streamSettings": {
           "network": "ws",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "wsSettings": {
             "path": "/",
             "headers": {
@@ -8171,86 +2077,8 @@
             "allowInsecure": false
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Сингапур | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Сингапур-2"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -8265,86 +2093,8 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Сингапур | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Сингапур-3"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -8359,86 +2109,8 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Сингапур | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Сингапур-4"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -8453,86 +2125,8 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Сингапур | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Сингапур-5"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -8547,86 +2141,8 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Сингапур | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-Сингапур-6"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -8641,85 +2157,12 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
+        "tag": "proxy-Сингапур-7"
       }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "Сингапур | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
+    ]
   },
   {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
-      },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
+    "remarks": "США | VPN From Kirill",
     "outbounds": [
       {
         "protocol": "vless",
@@ -8741,14 +2184,6 @@
         "streamSettings": {
           "network": "ws",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "wsSettings": {
             "path": "/",
             "headers": {
@@ -8761,86 +2196,8 @@
             "allowInsecure": false
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "США | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-США-1"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -8861,14 +2218,6 @@
         "streamSettings": {
           "network": "ws",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "wsSettings": {
             "path": "/",
             "headers": {
@@ -8881,86 +2230,8 @@
             "allowInsecure": false
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "США | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-США-2"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -8981,14 +2252,6 @@
         "streamSettings": {
           "network": "ws",
           "security": "tls",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "wsSettings": {
             "path": "/7bd180e8",
             "headers": {
@@ -9001,86 +2264,8 @@
             "allowInsecure": false
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "США | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-США-3"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -9095,86 +2280,8 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "США | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-США-4"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "vless",
         "settings": {
@@ -9195,20 +2302,11 @@
         "streamSettings": {
           "network": "tcp",
           "security": "reality",
-          "sockopt": {
-            "tcpNoDelay": true,
-            "tcpKeepAliveIdle": 5,
-            "tcpKeepAliveInterval": 2,
-            "tcpKeepAliveProbes": 2,
-            "mark": 255,
-            "domainStrategy": "UseIP"
-          },
           "realitySettings": {
             "serverName": "us1.panel11.ru",
             "publicKey": "MFuAxjdSnjCk_8Vi_-KGyWryFfSmm902nVhACDSIzBw",
             "fingerprint": "firefox",
-            "show": false,
-            "shortId": "d9d688fc488ae13b"
+            "show": false
           },
           "tcpSettings": {
             "header": {
@@ -9216,86 +2314,8 @@
             }
           }
         },
-        "tag": "proxy"
-      }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "США | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
-  },
-  {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
+        "tag": "proxy-США-5"
       },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
-    "outbounds": [
       {
         "protocol": "trojan",
         "settings": {
@@ -9310,85 +2330,12 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
+        "tag": "proxy-США-6"
       }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "США | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
+    ]
   },
   {
-    "dns": {
-      "servers": [
-        "77.88.8.8",
-        "77.88.8.1"
-      ],
-      "queryStrategy": "UseIP",
-      "cacheSize": 512,
-      "readTimeout": "50ms",
-      "writeTimeout": "50ms"
-    },
-    "inbounds": [
-      {
-        "listen": "127.0.0.1",
-        "port": 10808,
-        "protocol": "socks",
-        "settings": {
-          "udp": true
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "socks"
-      },
-      {
-        "listen": "127.0.0.1",
-        "port": 10809,
-        "protocol": "http",
-        "settings": {},
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ],
-          "routeOnly": true
-        },
-        "tag": "http"
-      }
-    ],
-    "log": {
-      "loglevel": "none"
-    },
+    "remarks": "ЮАР | VPN From Kirill",
     "outbounds": [
       {
         "protocol": "trojan",
@@ -9404,35 +2351,8 @@
           ]
         },
         "streamSettings": {},
-        "tag": "proxy"
+        "tag": "proxy-ЮАР-1"
       }
-    ],
-    "policy": {
-      "levels": {
-        "8": {
-          "connIdle": 60,
-          "downlinkOnly": 0,
-          "handshake": 1,
-          "uplinkOnly": 0,
-          "bufferSize": 16
-        }
-      }
-    },
-    "remarks": "ЮАР | VPN From Kirill",
-    "routing": {
-      "domainStrategy": "AsIs",
-      "rules": [
-        {
-          "ip": [
-            "geoip:private"
-          ],
-          "outboundTag": "direct"
-        },
-        {
-          "network": "tcp,udp",
-          "outboundTag": "proxy"
-        }
-      ]
-    }
+    ]
   }
 ]
