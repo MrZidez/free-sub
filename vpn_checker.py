@@ -23,6 +23,28 @@ URLS = [
 
 OUTPUT_FILE = "FREE-VPN-FROM-KIRILL.txt"
 
+# Список доменов для удаления (не рабочие/плохие)
+BAD_DOMAINS = [
+    'mirror',
+    'github',
+    'gist',
+    'raw.githubusercontent',
+    'yandexcloud',
+    'storage',
+    'gist.githubusercontent',
+    'githubusercontent',
+    'google',
+    'cloudflare',
+    'amazon',
+    'aws',
+    'azure',
+    'microsoft',
+    'example',
+    'test',
+    'localhost',
+    '127.0.0.1'
+]
+
 # Словарь стран и флагов
 COUNTRIES = {
     '🇷🇺': 'Россия',
@@ -99,6 +121,33 @@ COUNTRY_CODES = {
     'MX': '🇲🇽'
 }
 
+def is_bad_domain(hostname):
+    """Проверка, является ли домен плохим"""
+    if not hostname:
+        return True
+    
+    hostname_lower = hostname.lower()
+    
+    # Проверяем точное совпадение
+    for bad in BAD_DOMAINS:
+        if bad in hostname_lower:
+            return True
+    
+    # Проверяем IP адреса (удаляем локальные/тестовые)
+    ip_pattern = r'^(\d{1,3}\.){3}\d{1,3}$'
+    if re.match(ip_pattern, hostname):
+        # Проверяем частные IP
+        parts = hostname.split('.')
+        if parts[0] in ['10', '127', '192', '172', '169']:
+            return True
+        # Проверяем тестовые диапазоны
+        if parts[0] == '192' and parts[1] == '168':
+            return True
+        if parts[0] == '172' and 16 <= int(parts[1]) <= 31:
+            return True
+    
+    return False
+
 def detect_country(key):
     """Определение страны по ключу"""
     # Ищем флаг в ключе
@@ -128,6 +177,16 @@ def detect_country(key):
 
 def rename_key(key):
     """Переименование ключа с добавлением флага и страны"""
+    # Проверяем домен
+    try:
+        if '://' in key:
+            parsed = urllib.parse.urlparse(key)
+            hostname = parsed.hostname or ''
+            if is_bad_domain(hostname):
+                return None  # Удаляем ключ с плохим доменом
+    except:
+        return None
+    
     flag, country = detect_country(key)
     
     # Если страна не определена - возвращаем None (ключ будет удален)
@@ -153,6 +212,7 @@ def rename_key(key):
 
 print("🚀 Запуск VPN парсера с переименованием...")
 print("🗑️ Ключи без определения страны будут удалены")
+print("🚫 Ключи с плохими доменами будут удалены")
 
 # Собираем все ключи
 all_keys = set()
@@ -180,6 +240,7 @@ print(f"📊 Найдено {len(all_keys)} уникальных ключей")
 # Переименовываем ключи и фильтруем
 renamed_keys = []
 deleted_count = 0
+bad_domain_count = 0
 
 for key in all_keys:
     try:
@@ -187,12 +248,25 @@ for key in all_keys:
         if renamed is not None:
             renamed_keys.append(renamed)
         else:
-            deleted_count += 1
+            # Проверяем, почему удален
+            if '://' in key:
+                try:
+                    parsed = urllib.parse.urlparse(key)
+                    hostname = parsed.hostname or ''
+                    if is_bad_domain(hostname):
+                        bad_domain_count += 1
+                    else:
+                        deleted_count += 1
+                except:
+                    deleted_count += 1
+            else:
+                deleted_count += 1
     except:
         deleted_count += 1
 
 print(f"✏️ Переименовано {len(renamed_keys)} ключей")
 print(f"🗑️ Удалено {deleted_count} ключей (без определения страны)")
+print(f"🚫 Удалено {bad_domain_count} ключей (плохой домен)")
 
 # Сохраняем в файл с метаданными
 print("💾 Сохраняю в файл...")
@@ -209,6 +283,7 @@ with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
     f.write(f"# Обновлено: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}\n")
     f.write(f"# Всего ключей: {len(renamed_keys)}\n")
     f.write(f"# Удалено ключей (Мир): {deleted_count}\n")
+    f.write(f"# Удалено ключей (плохой домен): {bad_domain_count}\n")
     f.write("#" + "="*50 + "\n\n")
     
     # Записываем ключи
@@ -222,4 +297,4 @@ with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
 
 print("✅ Готово!")
 print(f"📁 Файл: {OUTPUT_FILE}")
-print(f"📊 Итог: {len(renamed_keys)} ключей сохранено, {deleted_count} удалено")
+print(f"📊 Итог: {len(renamed_keys)} ключей сохранено, {deleted_count + bad_domain_count} удалено")
