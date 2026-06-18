@@ -29,9 +29,21 @@ jobs:
     - name: Run VPN checker
       run: python vpn_checker.py
     
+    - name: Check if file exists
+      run: |
+        if [ -f "FREE-VPN-FROM-KIRILL.json" ]; then
+          echo "✅ Файл существует"
+          cat FREE-VPN-FROM-KIRILL.json | head -50
+        else
+          echo "❌ Файл НЕ существует"
+          exit 1
+        fi
+    
     - name: Commit and push
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add FREE-VPN-FROM-KIRILL.json
+        git status
         git diff --staged --quiet || (git commit -m "Update VPN keys $(date -u '+%Y-%m-%d %H:%M:%S')" && git push)
+      continue-on-error: true
