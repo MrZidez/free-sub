@@ -1,7 +1,7 @@
 #profile-title: Free Vpn From KIrill
 #announce: Бесплатная подписка
 #profile-update-interval: 12
-#profile-web-page-url: https://t.me/TourFromKirill
+#support-url: https://t.me/TourFromKirill
 
 # Обновлено: 2026-06-18
 # Файл создан вручную, автоматическое обновление настраивается
