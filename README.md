@@ -15,7 +15,7 @@
 
 ## Использование
 
-Просто вставьте в свой клиент ссылку https://raw.githubusercontent.com/MrZidez/free-sub/refs/heads/main/FREE-VPN-FROM-KIRILL.txt
+Просто вставьте в свой клиент ссылку https://free.vpnfromkirill.workers.dev/
 
 
 
