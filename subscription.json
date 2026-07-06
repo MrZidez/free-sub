@@ -3,7 +3,6 @@
 #profile-title: Fixnet
 #support-url: https://t.me/fixnet_help_bot
 #announce: По умолчанию конфигурация пропускает весь трафик устройства  через частный защищённый маршрутизатор. Для отключения под местные сервисы необходимо настроить роутинг, подробнее читайте в нашем боте
-#hide-settings: 1
 #subscription-autoconnect: 1
 #subscription-autoconnect-type: lowestdelay
 #ping-result: time
