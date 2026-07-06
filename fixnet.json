@@ -1,8 +1,7 @@
-#providerid: mraAsvHf
 #profile-update-interval: 3
 #profile-title: Fixnet
-#support-url: https://t.me/fixnet_help_bot
-#announce: По умолчанию конфигурация пропускает весь трафик устройства  через частный защищённый маршрутизатор. Для отключения под местные сервисы необходимо настроить роутинг, подробнее читайте в нашем боте
+#support-url: https://t.me/TourFromKirill
+#announce: взлом Fixnet vpn от Кирилла                                   для вас доступно для копирования
 #subscription-autoconnect: 1
 #subscription-autoconnect-type: lowestdelay
 #ping-result: time
