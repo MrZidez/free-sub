@@ -1,4 +1,4 @@
 - name: Run parser
   run: |
-    python vpn_checker.py
-  continue-on-error: false # Останавливаем выполнение при ошибке, но лог будет полным
+    python -u vpn_checker.py 2>&1 | tee output.log
+    exit ${PIPESTATUS[0]}
