@@ -20,7 +20,7 @@ except ImportError:
 # ==================== КОНФИГУРАЦИЯ ====================
 SOURCE_URL = "https://raw.githubusercontent.com/MrZidez/free-sub/refs/heads/main/source"
 USER_AGENT = "happ"
-PING_THRESHOLD_MS = 100
+PING_THRESHOLD_MS = 150
 MAX_KEYS_PER_GROUP = 15
 OUTPUT_FILE = "FREE-VPN-FROM-KIRILL.json"
 
