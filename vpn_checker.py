@@ -24,7 +24,7 @@ PING_THRESHOLD_MS = 90
 MAX_KEYS_PER_GROUP = 20
 OUTPUT_FILE = "FREE-VPN-FROM-KIRILL.json"
 
-# Расширенный список ключевых слов стран (русские, английские, транслит, опечатки)
+# Расширенный список ключевых слов стран (включая опечатки)
 COUNTRY_KEYWORDS = [
     "россия", "russia", "ru",
     "сша", "usa", "us", "америка", "america",
@@ -33,7 +33,7 @@ COUNTRY_KEYWORDS = [
     "франция", "france", "fr",
     "великобритания", "uk", "united kingdom", "gb",
     "канада", "canada", "ca",
-    "австралия", "australia", "au", "avstralia",  # добавлено avstralia
+    "австралия", "australia", "au", "avstralia",  # опечатка
     "япония", "japan", "jp",
     "сингапур", "singapore", "sg",
     "гонконг", "hong kong", "hk",
@@ -44,7 +44,7 @@ COUNTRY_KEYWORDS = [
     "италия", "italy", "it",
     "испания", "spain", "es",
     "швеция", "sweden", "se",
-    "норвегия", "norway", "no", "norwegia",  # добавлено norwegia
+    "норвегия", "norway", "no", "norwegia",  # опечатка
     "дания", "denmark", "dk",
     "финляндия", "finland", "fi",
     "польша", "poland", "pl",
@@ -432,10 +432,22 @@ def parse_subscription_content(content: str) -> Dict[str, Dict[str, Any]]:
 
 # ==================== ОБРАБОТКА ГРУПП ====================
 def process_groups(groups: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
-    # Переименовываем группу "Unknown" в "авто сервер" всегда
-    if "Unknown" in groups:
-        groups["авто сервер"] = groups.pop("Unknown")
-        groups["авто сервер"]["remarks"] = "авто сервер"
+    # Переименовываем все группы, содержащие "Unknown" (регистронезависимо)
+    new_groups = {}
+    for gname, gdata in groups.items():
+        if "unknown" in gname.lower():
+            base = "авто сервер"
+            counter = 1
+            new_name = base
+            # Убедимся, что имя уникально
+            while new_name in new_groups or new_name in groups:
+                new_name = f"{base} {counter}"
+                counter += 1
+            gdata["remarks"] = new_name
+            new_groups[new_name] = gdata
+        else:
+            new_groups[gname] = gdata
+    groups = new_groups
 
     final = []
     for gname, gdata in groups.items():
