@@ -1,49 +1,35 @@
-name: VPN Ping Checker
+name: Update VPN Subscription
 
 on:
   schedule:
-    - cron: '0 */6 * * *'
-  workflow_dispatch:
-  push:
-    branches:
-      - main
+    - cron: '0 0 1 */2 *'   # каждый первый день каждого второго месяца (примерно 60 дней)
+  workflow_dispatch:        # чтобы можно было запустить вручную
 
 jobs:
-  check-vpn:
+  build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-    
-    - name: Install requests
-      run: pip install requests
-    
-    - name: Run VPN checker
-      run: python vpn_checker.py
-    
-    - name: Check if file exists
-      run: |
-        if [ -f "FREE-VPN-FROM-KIRILL.json" ]; then
-          echo "✅ Файл существует"
-          cat FREE-VPN-FROM-KIRILL.json | head -50
-        else
-          echo "❌ Файл НЕ существует"
-          exit 1
-        fi
-    
-    - name: Commit and push
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add FREE-VPN-FROM-KIRILL.json
-        git status
-        git diff --staged --quiet || (git commit -m "Update VPN keys $(date -u '+%Y-%m-%d %H:%M:%S')" && git push)
-      continue-on-error: true
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: |
+          pip install requests
+          # ping3 не обязателен, но если нужен ICMP, установим
+          pip install ping3 || true
+      - name: Run parser
+        run: python vpn_checker.py
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: vpn-subscription
+          path: FREE-VPN-FROM-KIRILL.json
+      - name: Commit and push if changed
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add FREE-VPN-FROM-KIRILL.json
+          git diff --staged --quiet || git commit -m "Auto-update subscription"
+          git push
