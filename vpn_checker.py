@@ -24,39 +24,111 @@ PING_THRESHOLD_MS = 90
 MAX_KEYS_PER_GROUP = 20
 OUTPUT_FILE = "FREE-VPN-FROM-KIRILL.json"
 
-# Расширенный список ключевых слов стран (включая опечатки и варианты)
-COUNTRY_KEYWORDS = [
-    "россия", "russia", "ru",
-    "сша", "usa", "us", "америка", "america",
-    "германия", "germany", "de",
-    "нидерланды", "netherlands", "nl", "голландия", "holland",
-    "франция", "france", "fr",
-    "великобритания", "uk", "united kingdom", "gb",
-    "канада", "canada", "ca",
-    "австралия", "australia", "au", "avstralia",
-    "япония", "japan", "jp",
-    "сингапур", "singapore", "sg",
-    "гонконг", "hong kong", "hk",
-    "тайвань", "taiwan", "tw",
-    "индия", "india", "in",
-    "бразилия", "brazil", "br",
-    "южная корея", "south korea", "kr",
-    "италия", "italy", "it",
-    "испания", "spain", "es",
-    "швеция", "sweden", "se",
-    "норвегия", "norway", "no", "norwegia",
-    "дания", "denmark", "dk",
-    "финляндия", "finland", "fi",
-    "польша", "poland", "pl",
-    "украина", "ukraine", "ua",
-    "казахстан", "kazakhstan", "kz",
-    "беларусь", "belarus", "by",
-    "турция", "turkey", "tr",
-    "египет", "egypt", "eg",
-    "оаэ", "uae", "ae",
-    "саудовская аравия", "saudi", "sa",
-    "израиль", "israel", "il",
-]
+# Словарь соответствий: ключ – название (в нижнем регистре, без пробелов), значение – (флаг, русское_название)
+# Включаем варианты на разных языках и опечатки.
+COUNTRY_MAP = {
+    "russia": ("🇷🇺", "Россия"),
+    "россия": ("🇷🇺", "Россия"),
+    "ru": ("🇷🇺", "Россия"),
+    "usa": ("🇺🇸", "США"),
+    "us": ("🇺🇸", "США"),
+    "сша": ("🇺🇸", "США"),
+    "america": ("🇺🇸", "США"),
+    "америка": ("🇺🇸", "США"),
+    "germany": ("🇩🇪", "Германия"),
+    "de": ("🇩🇪", "Германия"),
+    "германия": ("🇩🇪", "Германия"),
+    "netherlands": ("🇳🇱", "Нидерланды"),
+    "nl": ("🇳🇱", "Нидерланды"),
+    "нидерланды": ("🇳🇱", "Нидерланды"),
+    "holland": ("🇳🇱", "Нидерланды"),
+    "голландия": ("🇳🇱", "Нидерланды"),
+    "france": ("🇫🇷", "Франция"),
+    "fr": ("🇫🇷", "Франция"),
+    "франция": ("🇫🇷", "Франция"),
+    "uk": ("🇬🇧", "Великобритания"),
+    "great britain": ("🇬🇧", "Великобритания"),
+    "united kingdom": ("🇬🇧", "Великобритания"),
+    "великобритания": ("🇬🇧", "Великобритания"),
+    "canada": ("🇨🇦", "Канада"),
+    "ca": ("🇨🇦", "Канада"),
+    "канада": ("🇨🇦", "Канада"),
+    "australia": ("🇦🇺", "Австралия"),
+    "au": ("🇦🇺", "Австралия"),
+    "австралия": ("🇦🇺", "Австралия"),
+    "avstralia": ("🇦🇺", "Австралия"),  # опечатка
+    "japan": ("🇯🇵", "Япония"),
+    "jp": ("🇯🇵", "Япония"),
+    "япония": ("🇯🇵", "Япония"),
+    "singapore": ("🇸🇬", "Сингапур"),
+    "sg": ("🇸🇬", "Сингапур"),
+    "сингапур": ("🇸🇬", "Сингапур"),
+    "hong kong": ("🇭🇰", "Гонконг"),
+    "hk": ("🇭🇰", "Гонконг"),
+    "гонконг": ("🇭🇰", "Гонконг"),
+    "taiwan": ("🇹🇼", "Тайвань"),
+    "tw": ("🇹🇼", "Тайвань"),
+    "тайвань": ("🇹🇼", "Тайвань"),
+    "india": ("🇮🇳", "Индия"),
+    "in": ("🇮🇳", "Индия"),
+    "индия": ("🇮🇳", "Индия"),
+    "brazil": ("🇧🇷", "Бразилия"),
+    "br": ("🇧🇷", "Бразилия"),
+    "бразилия": ("🇧🇷", "Бразилия"),
+    "south korea": ("🇰🇷", "Южная Корея"),
+    "kr": ("🇰🇷", "Южная Корея"),
+    "южная корея": ("🇰🇷", "Южная Корея"),
+    "italy": ("🇮🇹", "Италия"),
+    "it": ("🇮🇹", "Италия"),
+    "италия": ("🇮🇹", "Италия"),
+    "spain": ("🇪🇸", "Испания"),
+    "es": ("🇪🇸", "Испания"),
+    "испания": ("🇪🇸", "Испания"),
+    "sweden": ("🇸🇪", "Швеция"),
+    "se": ("🇸🇪", "Швеция"),
+    "швеция": ("🇸🇪", "Швеция"),
+    "norway": ("🇳🇴", "Норвегия"),
+    "no": ("🇳🇴", "Норвегия"),
+    "норвегия": ("🇳🇴", "Норвегия"),
+    "norwegia": ("🇳🇴", "Норвегия"),  # опечатка
+    "denmark": ("🇩🇰", "Дания"),
+    "dk": ("🇩🇰", "Дания"),
+    "дания": ("🇩🇰", "Дания"),
+    "finland": ("🇫🇮", "Финляндия"),
+    "fi": ("🇫🇮", "Финляндия"),
+    "финляндия": ("🇫🇮", "Финляндия"),
+    "poland": ("🇵🇱", "Польша"),
+    "pl": ("🇵🇱", "Польша"),
+    "польша": ("🇵🇱", "Польша"),
+    "ukraine": ("🇺🇦", "Украина"),
+    "ua": ("🇺🇦", "Украина"),
+    "украина": ("🇺🇦", "Украина"),
+    "kazakhstan": ("🇰🇿", "Казахстан"),
+    "kz": ("🇰🇿", "Казахстан"),
+    "казахстан": ("🇰🇿", "Казахстан"),
+    "belarus": ("🇧🇾", "Беларусь"),
+    "by": ("🇧🇾", "Беларусь"),
+    "беларусь": ("🇧🇾", "Беларусь"),
+    "turkey": ("🇹🇷", "Турция"),
+    "tr": ("🇹🇷", "Турция"),
+    "турция": ("🇹🇷", "Турция"),
+    "egypt": ("🇪🇬", "Египет"),
+    "eg": ("🇪🇬", "Египет"),
+    "египет": ("🇪🇬", "Египет"),
+    "uae": ("🇦🇪", "ОАЭ"),
+    "ae": ("🇦🇪", "ОАЭ"),
+    "оаэ": ("🇦🇪", "ОАЭ"),
+    "saudi arabia": ("🇸🇦", "Саудовская Аравия"),
+    "saudi": ("🇸🇦", "Саудовская Аравия"),
+    "sa": ("🇸🇦", "Саудовская Аравия"),
+    "саудовская аравия": ("🇸🇦", "Саудовская Аравия"),
+    "israel": ("🇮🇱", "Израиль"),
+    "il": ("🇮🇱", "Израиль"),
+    "израиль": ("🇮🇱", "Израиль"),
+}
+
+# Список всех ключей (для быстрого поиска)
+COUNTRY_KEYS = list(COUNTRY_MAP.keys())
 
 # ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
 def is_flag_emoji(s: str) -> bool:
@@ -71,39 +143,90 @@ def decode_url_encoded_flags(text: str) -> str:
     except:
         return text
 
-def is_header_line(line: str) -> bool:
-    """Проверяет, является ли строка заголовком группы (флаг или название страны)."""
+def parse_group_header(line: str) -> Optional[str]:
+    """
+    Анализирует строку и возвращает название группы с флагом, если это заголовок.
+    Например: "🇩🇪 Германия (NaiveProxy)" -> "🇩🇪 Германия"
+              "germany" -> "🇩🇪 Германия"
+              "NORWEGIA" -> "🇳🇴 Норвегия"
+              "Канада" -> "🇨🇦 Канада"
+    Возвращает None, если строка не является заголовком группы.
+    """
     line = line.strip()
     if not line:
-        return False
-    # Игнорируем комментарии/метаданные
+        return None
+
+    # Игнорируем строки, начинающиеся с # (метаданные)
     if line.startswith("#"):
-        return False
-    # Игнорируем ссылки
-    if re.search(r'(vless|trojan|hysteria2|ss|naive)\://', line, re.I):
-        return False
-    # Игнорируем JSON
-    if line.startswith(("{","[")):
-        return False
-    # Игнорируем строки, содержащие только информацию о пинге (n/a, ms, цифры)
-    if re.match(r'^[\d\s]*ms$', line, re.I) or re.match(r'^n/a$', line, re.I):
-        return False
-    # Если строка содержит только цифры, пробелы и точки с запятой - пропускаем
-    if re.match(r'^[\d\s;]+$', line):
-        return False
-    # Ищем эмодзи флага
+        return None
+
+    # Игнорируем строки, содержащие ссылки (vless:// и т.д.) и не содержащие флага или ключевого слова страны
+    # Но если есть флаг и ссылка, мы можем извлечь флаг и страну, а ссылку обработаем отдельно позже.
+    # Поэтому проверим наличие флага или ключевого слова.
+
+    # 1. Ищем эмодзи флага в строке
+    flag_found = None
     for i in range(len(line)-1):
         if is_flag_emoji(line[i:i+2]):
-            return True
-    if is_url_encoded_flag(line):
-        return True
-    # Ищем ключевое слово страны
-    lower = line.lower()
-    return any(kw in lower for kw in COUNTRY_KEYWORDS)
+            flag_found = line[i:i+2]
+            # Удаляем флаг из строки для поиска названия
+            rest = line[:i] + line[i+2:]
+            break
+    if flag_found is None and is_url_encoded_flag(line):
+        # Попробуем декодировать URL-кодировку и найти флаг
+        decoded = decode_url_encoded_flags(line)
+        for i in range(len(decoded)-1):
+            if is_flag_emoji(decoded[i:i+2]):
+                flag_found = decoded[i:i+2]
+                rest = decoded[:i] + decoded[i+2:]
+                break
 
-def normalize_header(header: str) -> str:
-    header = decode_url_encoded_flags(header.strip())
-    return re.sub(r'\s+', ' ', header)
+    # Если флаг найден, ищем в оставшейся части ключевое слово страны
+    if flag_found:
+        # Ищем ключевое слово в rest
+        rest_lower = rest.lower()
+        # Удаляем всё, что похоже на ссылку (https://, vless://, и т.д.)
+        rest_clean = re.sub(r'\S+://\S+', '', rest)  # убираем URL
+        # Удаляем лишние символы, оставляем только буквы, пробелы и скобки
+        rest_clean = re.sub(r'[^a-zA-Zа-яА-Я\s()]', ' ', rest_clean)
+        # Разбиваем на слова
+        words = re.findall(r'[a-zA-Zа-яА-Я]+', rest_clean)
+        for word in words:
+            word_lower = word.lower()
+            # Проверяем точное совпадение с ключами
+            for key in COUNTRY_KEYS:
+                if word_lower == key or word_lower in key or key in word_lower:
+                    flag, name_ru = COUNTRY_MAP[key]
+                    return f"{flag} {name_ru}"
+        # Если не нашли ключевое слово, но флаг есть, попробуем взять первые слова как название?
+        # Лучше вернуть флаг + остаток (очищенный), но пользователь хочет русские названия, поэтому лучше пропустить.
+        # Если не нашли страну, не создаём группу с флагом (или создаём "авто сервер"?)
+        # В данном случае лучше вернуть None, чтобы не плодить мусор.
+        return None
+
+    # 2. Если флага нет, ищем ключевое слово страны в строке
+    lower_line = line.lower()
+    # Удаляем ссылки
+    line_clean = re.sub(r'\S+://\S+', '', line)
+    line_clean = re.sub(r'[^a-zA-Zа-яА-Я\s]', ' ', line_clean)
+    words = re.findall(r'[a-zA-Zа-яА-Я]+', line_clean)
+    for word in words:
+        word_lower = word.lower()
+        for key in COUNTRY_KEYS:
+            if word_lower == key or word_lower in key or key in word_lower:
+                flag, name_ru = COUNTRY_MAP[key]
+                return f"{flag} {name_ru}"
+
+    # Если строка содержит только цифры, ms, n/a, протоколы — не считаем заголовком
+    if re.match(r'^[\d\s]+(ms|n/a)?$', line, re.I):
+        return None
+
+    # Если строка содержит только слово "VLESS", "TROJAN" и т.п., это не заголовок
+    if re.match(r'^(VLESS|TROJAN|HYSTERIA|SS|naive)\s*\/', line, re.I):
+        return None
+
+    # Иначе — не заголовок
+    return None
 
 def is_base64_encoded(text: str) -> bool:
     return bool(re.match(r'^[A-Za-z0-9+/=]+$', text.strip()))
@@ -416,14 +539,22 @@ def parse_subscription_content(content: str) -> Dict[str, Dict[str, Any]]:
             except:
                 pass
             continue
-        # Заголовок группы
-        if is_header_line(line):
-            h = normalize_header(line)
-            if h not in groups:
-                groups[h] = {"remarks":h,"dns":None,"routing":None,"inbounds":None,"items":[]}
-            current_group = h
+
+        # Проверка на заголовок группы
+        header = parse_group_header(line)
+        if header is not None:
+            # Если такой группы ещё нет, создаём
+            if header not in groups:
+                groups[header] = {"remarks":header,"dns":None,"routing":None,"inbounds":None,"items":[]}
+            current_group = header
+            # Также проверяем, содержит ли эта строка ссылку (может быть флаг + ссылка)
+            matches = link_pattern.findall(line)
+            if matches:
+                for link in matches:
+                    groups[header]["items"].append(link)
             continue
-        # Ссылки
+
+        # Если строка содержит ссылку, но не является заголовком
         matches = link_pattern.findall(line)
         if matches:
             for link in matches:
@@ -434,26 +565,17 @@ def parse_subscription_content(content: str) -> Dict[str, Dict[str, Any]]:
                     if "Unknown" not in groups:
                         groups["Unknown"] = {"remarks":"Unknown","dns":None,"routing":None,"inbounds":None,"items":[]}
                     groups["Unknown"]["items"].append(link)
+            continue
+
+        # Все остальные строки игнорируем (описания протоколов, пинги и т.п.)
     return groups
 
 # ==================== ОБРАБОТКА ГРУПП ====================
 def process_groups(groups: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
-    # Переименовываем все группы, содержащие "Unknown" (регистронезависимо)
-    new_groups = {}
-    for gname, gdata in groups.items():
-        if "unknown" in gname.lower():
-            base = "авто сервер"
-            counter = 1
-            new_name = base
-            # Убедимся, что имя уникально
-            while new_name in new_groups or new_name in groups:
-                new_name = f"{base} {counter}"
-                counter += 1
-            gdata["remarks"] = new_name
-            new_groups[new_name] = gdata
-        else:
-            new_groups[gname] = gdata
-    groups = new_groups
+    # Переименовываем группу "Unknown" в "авто сервер" (без флага)
+    if "Unknown" in groups:
+        groups["авто сервер"] = groups.pop("Unknown")
+        groups["авто сервер"]["remarks"] = "авто сервер"
 
     final = []
     for gname, gdata in groups.items():
