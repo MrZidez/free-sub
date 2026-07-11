@@ -178,7 +178,6 @@ def parse_ss(link: str) -> dict:
     remarks = ""
     if '#' in link:
         link, remarks = link.split('#', 1)
-    # пробуем как method:pass@host:port
     if '@' in link:
         auth, rest = link.split('@', 1)
         if '?' in rest:
@@ -199,10 +198,9 @@ def parse_ss(link: str) -> dict:
         else:
             address, port = hostport, 443
     else:
-        # base64
         try:
             decoded = base64.b64decode(link, validate=True).decode('utf-8')
-            return parse_ss("ss://" + decoded)  # рекурсия, но с явным '@'
+            return parse_ss("ss://" + decoded)
         except:
             method, password, address, port, params = "", "", "", 443, {}
     return {"protocol":"ss","method":method,"password":password,"address":address,"port":port,"params":params,"remarks":remarks}
@@ -211,7 +209,6 @@ def parse_naive(link: str) -> dict:
     if not link.startswith("naive+"):
         return {}
     link = link[6:]
-    # naive+https://user:pass@host:port?params#remarks
     parsed = urllib.parse.urlparse(link)
     if parsed.scheme not in ('https','http'):
         return {}
@@ -279,7 +276,6 @@ def build_outbound_ss(p: dict) -> dict:
     return {"tag":"proxy","protocol":"shadowsocks","settings":{"servers":[{"address":p["address"],"port":p["port"],"method":p["method"],"password":p["password"],"uot":True}]}}
 
 def build_outbound_naive(p: dict) -> dict:
-    # Превращаем naive+ в обычный http прокси или socks? Используем http.
     return {"tag":"proxy","protocol":"http","settings":{"servers":[{"address":p["address"],"port":p["port"],"user":p["user"],"password":p["password"]}]}}
 
 def build_outbound_from_link(link: str) -> Optional[dict]:
@@ -307,7 +303,6 @@ def build_outbound_from_link(link: str) -> Optional[dict]:
 
 # ==================== Проверка пинга ====================
 def get_host_port_from_link(link: str) -> Tuple[str, int]:
-    # простая эвристика
     for proto in ["vless://","trojan://","hysteria2://","ss://","naive+"]:
         if link.startswith(proto):
             rest = link[len(proto):]
@@ -401,7 +396,6 @@ def parse_subscription_content(content: str) -> Dict[str, Dict[str, Any]]:
                 if current_group and current_group in groups:
                     groups[current_group]["items"].append(link)
                 else:
-                    # создаём "Unknown" если нет группы
                     if "Unknown" not in groups:
                         groups["Unknown"] = {"remarks":"Unknown","dns":None,"routing":None,"inbounds":None,"items":[]}
                     groups["Unknown"]["items"].append(link)
@@ -410,11 +404,15 @@ def parse_subscription_content(content: str) -> Dict[str, Dict[str, Any]]:
 # ==================== Обработка групп ====================
 def process_groups(groups: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
     final = []
+    # Если есть только группа "Unknown", переименуем в "авто сервер"
+    if len(groups) == 1 and "Unknown" in groups:
+        groups["авто сервер"] = groups.pop("Unknown")
+        groups["авто сервер"]["remarks"] = "авто сервер"
+
     for gname, gdata in groups.items():
         items = gdata["items"]
         if not items:
             continue
-        # разделяем на ссылки и готовые outbound-объекты
         links = []
         ready = []
         for item in items:
@@ -422,7 +420,6 @@ def process_groups(groups: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
                 links.append(item)
             elif isinstance(item, dict):
                 ready.append(item)
-        # проверяем пинг
         good_links = []
         with ThreadPoolExecutor(max_workers=20) as executor:
             future_to_link = {executor.submit(check_ping, link): link for link in links}
@@ -433,7 +430,6 @@ def process_groups(groups: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
                         good_links.append(link)
                 except:
                     pass
-        # собираем outbound-объекты
         all_outbounds = ready.copy()
         for link in good_links:
             ob = build_outbound_from_link(link)
@@ -441,7 +437,6 @@ def process_groups(groups: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
                 all_outbounds.append(ob)
         if not all_outbounds:
             continue
-        # разбиваем по 20
         total = len(all_outbounds)
         num_sub = (total + MAX_KEYS_PER_GROUP - 1) // MAX_KEYS_PER_GROUP
         for i in range(num_sub):
@@ -455,12 +450,10 @@ def process_groups(groups: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
                 {"tag":"socks","port":10808,"listen":"127.0.0.1","protocol":"socks","settings":{"udp":True,"auth":"noauth"},"sniffing":{"enabled":True,"routeOnly":False,"destOverride":["http","tls","quic"]}},
                 {"tag":"http","port":10809,"listen":"127.0.0.1","protocol":"http","settings":{"allowTransparent":False},"sniffing":{"enabled":True,"routeOnly":False,"destOverride":["http","tls","quic"]}}
             ]
-            # добавляем direct и block
             if not any(ob.get("tag")=="direct" for ob in sub_obs):
                 sub_obs.append({"tag":"direct","protocol":"freedom"})
             if not any(ob.get("tag")=="block" for ob in sub_obs):
                 sub_obs.append({"tag":"block","protocol":"blackhole"})
-            # переименовываем proxy
             counter = 1
             for ob in sub_obs:
                 if ob.get("tag") == "proxy":
@@ -475,7 +468,6 @@ def main():
     urls = fetch_subscription_list(SOURCE_URL)
     if not urls:
         print("Нет подписок", file=sys.stderr)
-        # сохраняем пустой массив
         with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
             json.dump([], f)
         sys.exit(0)
@@ -491,7 +483,6 @@ def main():
                 all_groups[gname]["items"].extend(gdata["items"])
                 if all_groups[gname]["dns"] is None and gdata["dns"] is not None:
                     all_groups[gname]["dns"] = gdata["dns"]
-                # аналогично для routing/inbounds (можно не трогать, если уже есть)
             else:
                 all_groups[gname] = gdata
     print(f"Собрано групп: {len(all_groups)}", file=sys.stderr)
