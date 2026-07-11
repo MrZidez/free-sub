@@ -1,15 +1,3 @@
-#providerid: free
-#profile-update-interval: 3
-#profile-title: VPN from Kirill
-#support-url: https://t.me/MGFromKirill
-#profile-web-page-url: https://t.me/TourFromKirill
-#announce: это бесплатная подписка она обновляется сама по себе
-#hide-settings: 1
-#subscription-autoconnect: 1
-#subscription-autoconnect-type: lowestdelay
-#ping-result: time
-#subscription-always-hwid-enable: 1
-
 [
   {
     "remarks": "#profile-web-page-url: https://fakeonomics.online",
