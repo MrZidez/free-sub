@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import sys
 import re
 import json
 import base64
@@ -23,48 +24,23 @@ PING_THRESHOLD_MS = 90
 MAX_KEYS_PER_GROUP = 20
 OUTPUT_FILE = "FREE-VPN-FROM-KIRILL.json"
 
-# Ключевые слова стран (русские, английские, сокращения)
 COUNTRY_KEYWORDS = [
-    "россия", "russia", "ru",
-    "сша", "usa", "us", "америка", "america",
-    "германия", "germany", "de",
-    "нидерланды", "netherlands", "nl", "голландия", "holland",
-    "франция", "france", "fr",
-    "великобритания", "uk", "united kingdom", "gb",
-    "канада", "canada", "ca",
-    "австралия", "australia", "au",
-    "япония", "japan", "jp",
-    "сингапур", "singapore", "sg",
-    "гонконг", "hong kong", "hk",
-    "тайвань", "taiwan", "tw",
-    "индия", "india", "in",
-    "бразилия", "brazil", "br",
-    "южная корея", "south korea", "kr",
-    "италия", "italy", "it",
-    "испания", "spain", "es",
-    "швеция", "sweden", "se",
-    "норвегия", "norway", "no",
-    "дания", "denmark", "dk",
-    "финляндия", "finland", "fi",
-    "польша", "poland", "pl",
-    "украина", "ukraine", "ua",
-    "казахстан", "kazakhstan", "kz",
-    "беларусь", "belarus", "by",
-    "турция", "turkey", "tr",
-    "египет", "egypt", "eg",
-    "оаэ", "uae", "ae",
-    "саудовская аравия", "saudi", "sa",
-    "израиль", "israel", "il",
+    "россия","russia","ru","сша","usa","us","америка","america",
+    "германия","germany","de","нидерланды","netherlands","nl","голландия","holland",
+    "франция","france","fr","великобритания","uk","united kingdom","gb",
+    "канада","canada","ca","австралия","australia","au","япония","japan","jp",
+    "сингапур","singapore","sg","гонконг","hong kong","hk","тайвань","taiwan","tw",
+    "индия","india","in","бразилия","brazil","br","южная корея","south korea","kr",
+    "италия","italy","it","испания","spain","es","швеция","sweden","se",
+    "норвегия","norway","no","дания","denmark","dk","финляндия","finland","fi",
+    "польша","poland","pl","украина","ukraine","ua","казахстан","kazakhstan","kz",
+    "беларусь","belarus","by","турция","turkey","tr","египет","egypt","eg",
+    "оаэ","uae","ae","саудовская аравия","saudi","sa","израиль","israel","il",
 ]
 
 # ==================== Вспомогательные функции ====================
-
-def is_flag_emoji(char: str) -> bool:
-    if len(char) != 2:
-        return False
-    cp1 = ord(char[0])
-    cp2 = ord(char[1])
-    return 0x1F1E6 <= cp1 <= 0x1F1FF and 0x1F1E6 <= cp2 <= 0x1F1FF
+def is_flag_emoji(s: str) -> bool:
+    return len(s) == 2 and 0x1F1E6 <= ord(s[0]) <= 0x1F1FF and 0x1F1E6 <= ord(s[1]) <= 0x1F1FF
 
 def is_url_encoded_flag(text: str) -> bool:
     return "%F0%9F%87" in text
@@ -72,40 +48,31 @@ def is_url_encoded_flag(text: str) -> bool:
 def decode_url_encoded_flags(text: str) -> str:
     try:
         return urllib.parse.unquote(text)
-    except Exception:
+    except:
         return text
 
 def is_header_line(line: str) -> bool:
-    """Проверяет, является ли строка заголовком группы."""
     line = line.strip()
     if not line:
         return False
-    # Пропускаем ссылки и JSON
-    if re.search(r'(vless|trojan|hysteria2|ss|naive)\://', line):
+    if re.search(r'(vless|trojan|hysteria2|ss|naive)\://', line, re.I):
         return False
-    if line.startswith(("{", "[")):
+    if line.startswith(("{","[")):
         return False
-    # Проверка на эмодзи флага
     for i in range(len(line)-1):
         if is_flag_emoji(line[i:i+2]):
             return True
     if is_url_encoded_flag(line):
         return True
-    # Проверка на ключевые слова стран
-    lower_line = line.lower()
-    for kw in COUNTRY_KEYWORDS:
-        if kw in lower_line:
-            return True
-    return False
+    lower = line.lower()
+    return any(kw in lower for kw in COUNTRY_KEYWORDS)
 
 def normalize_header(header: str) -> str:
-    header = header.strip()
-    header = decode_url_encoded_flags(header)
-    header = re.sub(r'\s+', ' ', header)
-    return header
+    header = decode_url_encoded_flags(header.strip())
+    return re.sub(r'\s+', ' ', header)
 
 def is_base64_encoded(text: str) -> bool:
-    return bool(re.match(r'^[A-Za-z0-9+/=]+$', text))
+    return bool(re.match(r'^[A-Za-z0-9+/=]+$', text.strip()))
 
 def decode_base64_if_needed(text: str) -> str:
     if is_base64_encoded(text.strip()):
@@ -115,44 +82,141 @@ def decode_base64_if_needed(text: str) -> str:
             pass
     return text
 
-# ==================== Загрузка и парсинг подписок ====================
-
-def fetch_subscription_list(source_url: str) -> List[str]:
+# ==================== Загрузка подписок ====================
+def fetch_subscription_list(url: str) -> List[str]:
     try:
-        resp = requests.get(source_url, headers={"User-Agent": USER_AGENT}, timeout=30)
+        resp = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=30)
         resp.raise_for_status()
-        lines = resp.text.splitlines()
-        return [line.strip() for line in lines if line.strip() and not line.strip().startswith("#")]
+        return [l.strip() for l in resp.text.splitlines() if l.strip() and not l.strip().startswith("#")]
     except Exception as e:
-        print(f"[ERROR] Не удалось загрузить список подписок: {e}", file=sys.stderr)
+        print(f"[ERROR] fetch list: {e}", file=sys.stderr)
         return []
 
 def fetch_subscription_content(url: str) -> str:
     try:
         resp = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=30)
         resp.raise_for_status()
-        content = resp.text
-        # Пробуем декодировать base64, если весь текст похож на base64
-        decoded = decode_base64_if_needed(content.strip())
-        return decoded
+        return decode_base64_if_needed(resp.text)
     except Exception as e:
-        print(f"[ERROR] Не удалось загрузить подписку {url}: {e}", file=sys.stderr)
+        print(f"[ERROR] fetch {url}: {e}", file=sys.stderr)
         return ""
 
-# ==================== Парсинг отдельных ссылок (включая naive+) ====================
+# ==================== Парсеры ссылок ====================
+def parse_vless(link: str) -> dict:
+    if not link.startswith("vless://"):
+        return {}
+    link = link[8:]
+    remarks = ""
+    if '#' in link:
+        link, remarks = link.split('#', 1)
+    base, query = link.split('?', 1) if '?' in link else (link, "")
+    params = urllib.parse.parse_qs(query)
+    for k, v in params.items():
+        if isinstance(v, list):
+            params[k] = v[0]
+    if '@' in base:
+        user, host = base.split('@', 1)
+        if ':' in host:
+            address, port = host.split(':', 1)
+            port = int(port)
+        else:
+            address, port = host, 443
+    else:
+        user, address, port = "", "", 443
+    return {"protocol":"vless","id":user,"address":address,"port":port,"params":params,"remarks":remarks}
 
-def parse_naive_link(link: str) -> Dict[str, Any]:
-    """Парсит naive+https:// ссылку (формат naive+https://user:pass@host:port?params#remarks)"""
+def parse_trojan(link: str) -> dict:
+    if not link.startswith("trojan://"):
+        return {}
+    link = link[9:]
+    remarks = ""
+    if '#' in link:
+        link, remarks = link.split('#', 1)
+    base, query = link.split('?', 1) if '?' in link else (link, "")
+    params = urllib.parse.parse_qs(query)
+    for k, v in params.items():
+        if isinstance(v, list):
+            params[k] = v[0]
+    if '@' in base:
+        password, host = base.split('@', 1)
+        if ':' in host:
+            address, port = host.split(':', 1)
+            port = int(port)
+        else:
+            address, port = host, 443
+    else:
+        password, address, port = "", "", 443
+    return {"protocol":"trojan","password":password,"address":address,"port":port,"params":params,"remarks":remarks}
+
+def parse_hysteria2(link: str) -> dict:
+    if not link.startswith("hysteria2://"):
+        return {}
+    link = link[12:]
+    remarks = ""
+    if '#' in link:
+        link, remarks = link.split('#', 1)
+    base, query = link.split('?', 1) if '?' in link else (link, "")
+    params = urllib.parse.parse_qs(query)
+    for k, v in params.items():
+        if isinstance(v, list):
+            params[k] = v[0]
+    if '@' in base:
+        auth, host = base.split('@', 1)
+        if ':' in host:
+            address, port = host.split(':', 1)
+            port = int(port)
+        else:
+            address, port = host, 443
+    else:
+        auth, address, port = "", "", 443
+    return {"protocol":"hysteria2","auth":auth,"address":address,"port":port,"params":params,"remarks":remarks}
+
+def parse_ss(link: str) -> dict:
+    if not link.startswith("ss://"):
+        return {}
+    link = link[5:]
+    remarks = ""
+    if '#' in link:
+        link, remarks = link.split('#', 1)
+    # пробуем как method:pass@host:port
+    if '@' in link:
+        auth, rest = link.split('@', 1)
+        if '?' in rest:
+            hostport, query = rest.split('?', 1)
+            params = urllib.parse.parse_qs(query)
+            for k, v in params.items():
+                if isinstance(v, list):
+                    params[k] = v[0]
+        else:
+            hostport, query, params = rest, "", {}
+        if ':' in auth:
+            method, password = auth.split(':', 1)
+        else:
+            method, password = "", ""
+        if ':' in hostport:
+            address, port = hostport.split(':', 1)
+            port = int(port)
+        else:
+            address, port = hostport, 443
+    else:
+        # base64
+        try:
+            decoded = base64.b64decode(link, validate=True).decode('utf-8')
+            return parse_ss("ss://" + decoded)  # рекурсия, но с явным '@'
+        except:
+            method, password, address, port, params = "", "", "", 443, {}
+    return {"protocol":"ss","method":method,"password":password,"address":address,"port":port,"params":params,"remarks":remarks}
+
+def parse_naive(link: str) -> dict:
     if not link.startswith("naive+"):
         return {}
-    # Убираем префикс naive+
     link = link[6:]
-    # Дальше парсим как обычный URL
+    # naive+https://user:pass@host:port?params#remarks
     parsed = urllib.parse.urlparse(link)
-    if parsed.scheme not in ('https', 'http'):
+    if parsed.scheme not in ('https','http'):
         return {}
     auth = parsed.netloc.split('@') if '@' in parsed.netloc else None
-    if auth and len(auth) == 2:
+    if auth and len(auth)==2:
         userpass, hostport = auth
         user, password = userpass.split(':') if ':' in userpass else ('', '')
     else:
@@ -165,56 +229,110 @@ def parse_naive_link(link: str) -> Dict[str, Any]:
         if isinstance(v, list):
             params[k] = v[0]
     remarks = parsed.fragment or ''
-    return {
-        "protocol": "naive",
-        "user": user,
-        "password": password,
-        "address": host,
-        "port": port,
-        "params": params,
-        "remarks": remarks
-    }
+    return {"protocol":"naive","user":user,"password":password,"address":host,"port":port,"params":params,"remarks":remarks}
 
-def parse_vless_link(link: str) -> Dict[str, Any]:
-    # ... (как было ранее, без изменений)
-    pass  # здесь полный код, но для краткости опущен
+# ==================== Построители outbound ====================
+def build_outbound_vless(p: dict) -> dict:
+    ob = {"tag":"proxy","protocol":"vless","settings":{"vnext":[{"address":p["address"],"port":p["port"],"users":[{"id":p["id"],"flow":p["params"].get("flow",""),"encryption":"none"}]}]},"streamSettings":{"network":p["params"].get("type","tcp"),"security":p["params"].get("security","none")}}
+    sec = ob["streamSettings"]["security"]
+    if sec == "tls":
+        tls = {}
+        if "sni" in p["params"]: tls["serverName"] = p["params"]["sni"]
+        if "fp" in p["params"]: tls["fingerprint"] = p["params"]["fp"]
+        ob["streamSettings"]["tlsSettings"] = tls
+    elif sec == "reality":
+        reality = {"serverName":p["params"].get("sni",""),"fingerprint":p["params"].get("fp",""),"publicKey":p["params"].get("pbk",""),"shortId":p["params"].get("sid","")}
+        ob["streamSettings"]["realitySettings"] = reality
+    net = ob["streamSettings"]["network"]
+    if net == "ws":
+        ob["streamSettings"]["wsSettings"] = {"path":p["params"].get("path","/"),"headers":{"Host":p["params"].get("host","")}}
+    elif net == "grpc":
+        ob["streamSettings"]["grpcSettings"] = {"serviceName":p["params"].get("serviceName","")}
+    return ob
 
-# (остальные парсеры аналогичны)
+def build_outbound_trojan(p: dict) -> dict:
+    ob = {"tag":"proxy","protocol":"trojan","settings":{"servers":[{"address":p["address"],"port":p["port"],"password":p["password"]}]},"streamSettings":{"network":p["params"].get("type","tcp"),"security":p["params"].get("security","none")}}
+    if ob["streamSettings"]["security"] == "tls":
+        tls = {}
+        if "sni" in p["params"]: tls["serverName"] = p["params"]["sni"]
+        if "fp" in p["params"]: tls["fingerprint"] = p["params"]["fp"]
+        ob["streamSettings"]["tlsSettings"] = tls
+    net = ob["streamSettings"]["network"]
+    if net == "ws":
+        ob["streamSettings"]["wsSettings"] = {"path":p["params"].get("path","/"),"headers":{"Host":p["params"].get("host","")}}
+    elif net == "grpc":
+        ob["streamSettings"]["grpcSettings"] = {"serviceName":p["params"].get("serviceName","")}
+    return ob
 
-# ==================== Построение outbound ====================
+def build_outbound_hysteria2(p: dict) -> dict:
+    ob = {"tag":"proxy","protocol":"hysteria","settings":{"address":p["address"],"port":p["port"],"version":2},"streamSettings":{"network":"hysteria","security":p["params"].get("security","tls"),"hysteriaSettings":{"version":2,"auth":p["auth"]}}}
+    if ob["streamSettings"]["security"] == "tls":
+        tls = {}
+        if "sni" in p["params"]: tls["serverName"] = p["params"]["sni"]
+        if "fp" in p["params"]: tls["fingerprint"] = p["params"]["fp"]
+        if "allowinsecure" in p["params"]:
+            tls["allowInsecure"] = p["params"]["allowinsecure"] == "1"
+        ob["streamSettings"]["tlsSettings"] = tls
+    return ob
 
-def build_outbound_from_link(link: str) -> Optional[Dict[str, Any]]:
+def build_outbound_ss(p: dict) -> dict:
+    return {"tag":"proxy","protocol":"shadowsocks","settings":{"servers":[{"address":p["address"],"port":p["port"],"method":p["method"],"password":p["password"],"uot":True}]}}
+
+def build_outbound_naive(p: dict) -> dict:
+    # Превращаем naive+ в обычный http прокси или socks? Используем http.
+    return {"tag":"proxy","protocol":"http","settings":{"servers":[{"address":p["address"],"port":p["port"],"user":p["user"],"password":p["password"]}]}}
+
+def build_outbound_from_link(link: str) -> Optional[dict]:
     if link.startswith("vless://"):
-        parsed = parse_vless_link(link)
-        if parsed:
-            return build_outbound_vless(parsed)
+        p = parse_vless(link)
+        if p:
+            return build_outbound_vless(p)
     elif link.startswith("trojan://"):
-        parsed = parse_trojan_link(link)
-        if parsed:
-            return build_outbound_trojan(parsed)
+        p = parse_trojan(link)
+        if p:
+            return build_outbound_trojan(p)
     elif link.startswith("hysteria2://"):
-        parsed = parse_hysteria2_link(link)
-        if parsed:
-            return build_outbound_hysteria2(parsed)
+        p = parse_hysteria2(link)
+        if p:
+            return build_outbound_hysteria2(p)
     elif link.startswith("ss://"):
-        parsed = parse_ss_link(link)
-        if parsed:
-            return build_outbound_ss(parsed)
+        p = parse_ss(link)
+        if p and p.get("address"):
+            return build_outbound_ss(p)
     elif link.startswith("naive+"):
-        parsed = parse_naive_link(link)
-        if parsed:
-            return build_outbound_naive(parsed)  # нужно реализовать
+        p = parse_naive(link)
+        if p and p.get("address"):
+            return build_outbound_naive(p)
     return None
 
 # ==================== Проверка пинга ====================
+def get_host_port_from_link(link: str) -> Tuple[str, int]:
+    # простая эвристика
+    for proto in ["vless://","trojan://","hysteria2://","ss://","naive+"]:
+        if link.startswith(proto):
+            rest = link[len(proto):]
+            if '#' in rest:
+                rest = rest.split('#')[0]
+            if '?' in rest:
+                rest = rest.split('?')[0]
+            if '@' in rest:
+                _, host = rest.split('@',1)
+            else:
+                host = rest
+            if ':' in host:
+                addr, port = host.split(':',1)
+                return addr, int(port) if port else 443
+            else:
+                return host, 443
+    return "", 443
 
 def check_ping_icmp(host: str, timeout: float = 2.0) -> Optional[float]:
     if ping is None:
         return None
     try:
-        delay = ping(host, timeout=timeout)
-        if delay is not None and delay > 0:
-            return delay * 1000
+        d = ping(host, timeout=timeout)
+        if d is not None and d > 0:
+            return d * 1000
     except:
         pass
     return None
@@ -228,149 +346,166 @@ def check_ping_tcp(host: str, port: int, timeout: float = 2.0) -> Optional[float
         return None
 
 def check_ping(link: str) -> Optional[float]:
-    # извлечение host/port из ссылки (универсально)
-    # ... (как было)
-    return min(delay_icmp, delay_tcp) if both else ...
+    host, port = get_host_port_from_link(link)
+    if not host:
+        return None
+    d = check_ping_icmp(host)
+    if d is not None and d < PING_THRESHOLD_MS:
+        return d
+    d = check_ping_tcp(host, port)
+    if d is not None and d < PING_THRESHOLD_MS:
+        return d
+    return None
 
-# ==================== Парсинг содержимого подписки (улучшенный) ====================
-
+# ==================== Парсинг содержимого ====================
 def parse_subscription_content(content: str) -> Dict[str, Dict[str, Any]]:
     groups = {}
-    current_group_name = None
-
-    # Регулярка для поиска ссылок в любой строке
-    link_pattern = re.compile(
-        r'(vless://[^\s]+|trojan://[^\s]+|hysteria2://[^\s]+|ss://[^\s]+|naive\+https?://[^\s]+)',
-        re.IGNORECASE
-    )
-
+    current_group = None
+    link_pattern = re.compile(r'(vless://[^\s]+|trojan://[^\s]+|hysteria2://[^\s]+|ss://[^\s]+|naive\+https?://[^\s]+)', re.I)
     lines = content.splitlines()
     for line in lines:
         line = line.strip()
         if not line:
             continue
-
-        # Проверка на готовый JSON
+        # JSON
         if line.startswith("{") or line.startswith("["):
             try:
-                json_obj = json.loads(line)
-                if isinstance(json_obj, dict) and "outbounds" in json_obj:
-                    remarks = json_obj.get("remarks", "")
+                j = json.loads(line)
+                if isinstance(j, dict) and "outbounds" in j:
+                    remarks = j.get("remarks", "")
                     if remarks:
                         if remarks not in groups:
-                            groups[remarks] = {
-                                "remarks": remarks,
-                                "source_type": "json",
-                                "dns": json_obj.get("dns"),
-                                "routing": json_obj.get("routing"),
-                                "inbounds": json_obj.get("inbounds"),
-                                "items": []
-                            }
-                        # добавляем outbounds (кроме direct/block)
-                        for ob in json_obj.get("outbounds", []):
-                            if ob.get("tag") not in ("direct", "block"):
+                            groups[remarks] = {"remarks":remarks,"dns":j.get("dns"),"routing":j.get("routing"),"inbounds":j.get("inbounds"),"items":[]}
+                        for ob in j.get("outbounds", []):
+                            if ob.get("tag") not in ("direct","block"):
                                 groups[remarks]["items"].append(ob)
                     else:
-                        if current_group_name and current_group_name in groups:
-                            for ob in json_obj.get("outbounds", []):
-                                if ob.get("tag") not in ("direct", "block"):
-                                    groups[current_group_name]["items"].append(ob)
-                # иначе игнорируем
-            except json.JSONDecodeError:
+                        if current_group and current_group in groups:
+                            for ob in j.get("outbounds", []):
+                                if ob.get("tag") not in ("direct","block"):
+                                    groups[current_group]["items"].append(ob)
+            except:
                 pass
             continue
-
-        # Проверка на заголовок группы
+        # Заголовок
         if is_header_line(line):
-            header = normalize_header(line)
-            if header not in groups:
-                groups[header] = {
-                    "remarks": header,
-                    "source_type": "header",
-                    "dns": None,
-                    "routing": None,
-                    "inbounds": None,
-                    "items": []
-                }
-            current_group_name = header
+            h = normalize_header(line)
+            if h not in groups:
+                groups[h] = {"remarks":h,"dns":None,"routing":None,"inbounds":None,"items":[]}
+            current_group = h
             continue
-
-        # Поиск ссылок в строке
+        # Ссылки
         matches = link_pattern.findall(line)
         if matches:
             for link in matches:
-                if current_group_name and current_group_name in groups:
-                    groups[current_group_name]["items"].append(link)
+                if current_group and current_group in groups:
+                    groups[current_group]["items"].append(link)
                 else:
-                    # Если нет группы, можно создать временную "Без группы"
-                    # но по заданию лучше игнорировать
-                    pass
-        # иначе пропускаем
-
-    # Дополнительно: если есть ссылки без группы, создаём группу "Unknown"
-    # (на случай, если в начале файла были ссылки без заголовка)
-    for line in content.splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        if not is_header_line(line) and not line.startswith(("{", "[")):
-            matches = link_pattern.findall(line)
-            for link in matches:
-                # пытаемся найти группу по заголовку, идущему перед этой строкой
-                # но если нет, создаём "Unknown"
-                if "Unknown" not in groups:
-                    groups["Unknown"] = {
-                        "remarks": "Unknown",
-                        "source_type": "header",
-                        "dns": None,
-                        "routing": None,
-                        "inbounds": None,
-                        "items": []
-                    }
-                groups["Unknown"]["items"].append(link)
-
+                    # создаём "Unknown" если нет группы
+                    if "Unknown" not in groups:
+                        groups["Unknown"] = {"remarks":"Unknown","dns":None,"routing":None,"inbounds":None,"items":[]}
+                    groups["Unknown"]["items"].append(link)
     return groups
 
-# ==================== Основной процесс ====================
+# ==================== Обработка групп ====================
+def process_groups(groups: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
+    final = []
+    for gname, gdata in groups.items():
+        items = gdata["items"]
+        if not items:
+            continue
+        # разделяем на ссылки и готовые outbound-объекты
+        links = []
+        ready = []
+        for item in items:
+            if isinstance(item, str):
+                links.append(item)
+            elif isinstance(item, dict):
+                ready.append(item)
+        # проверяем пинг
+        good_links = []
+        with ThreadPoolExecutor(max_workers=20) as executor:
+            future_to_link = {executor.submit(check_ping, link): link for link in links}
+            for future in as_completed(future_to_link):
+                link = future_to_link[future]
+                try:
+                    if future.result() is not None:
+                        good_links.append(link)
+                except:
+                    pass
+        # собираем outbound-объекты
+        all_outbounds = ready.copy()
+        for link in good_links:
+            ob = build_outbound_from_link(link)
+            if ob:
+                all_outbounds.append(ob)
+        if not all_outbounds:
+            continue
+        # разбиваем по 20
+        total = len(all_outbounds)
+        num_sub = (total + MAX_KEYS_PER_GROUP - 1) // MAX_KEYS_PER_GROUP
+        for i in range(num_sub):
+            start = i * MAX_KEYS_PER_GROUP
+            end = min((i+1)*MAX_KEYS_PER_GROUP, total)
+            sub_obs = all_outbounds[start:end]
+            sub_remarks = gname if i == 0 else f"{gname} {i+1}"
+            dns = gdata.get("dns") or {"servers":["1.1.1.1","1.0.0.1"],"queryStrategy":"UseIP"}
+            routing = gdata.get("routing") or {"rules":[{"type":"field","protocol":["bittorrent"],"outboundTag":"direct"}],"domainMatcher":"hybrid","domainStrategy":"IPIfNonMatch"}
+            inbounds = gdata.get("inbounds") or [
+                {"tag":"socks","port":10808,"listen":"127.0.0.1","protocol":"socks","settings":{"udp":True,"auth":"noauth"},"sniffing":{"enabled":True,"routeOnly":False,"destOverride":["http","tls","quic"]}},
+                {"tag":"http","port":10809,"listen":"127.0.0.1","protocol":"http","settings":{"allowTransparent":False},"sniffing":{"enabled":True,"routeOnly":False,"destOverride":["http","tls","quic"]}}
+            ]
+            # добавляем direct и block
+            if not any(ob.get("tag")=="direct" for ob in sub_obs):
+                sub_obs.append({"tag":"direct","protocol":"freedom"})
+            if not any(ob.get("tag")=="block" for ob in sub_obs):
+                sub_obs.append({"tag":"block","protocol":"blackhole"})
+            # переименовываем proxy
+            counter = 1
+            for ob in sub_obs:
+                if ob.get("tag") == "proxy":
+                    ob["tag"] = f"proxy-{counter}"
+                    counter += 1
+            final.append({"remarks":sub_remarks,"dns":dns,"routing":routing,"inbounds":inbounds,"outbounds":sub_obs})
+    return final
 
+# ==================== MAIN ====================
 def main():
     print("Загрузка списка подписок...", file=sys.stderr)
-    sub_urls = fetch_subscription_list(SOURCE_URL)
-    if not sub_urls:
-        print("Нет подписок.", file=sys.stderr)
-        return
-
+    urls = fetch_subscription_list(SOURCE_URL)
+    if not urls:
+        print("Нет подписок", file=sys.stderr)
+        # сохраняем пустой массив
+        with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+            json.dump([], f)
+        sys.exit(0)
     all_groups = {}
-    for sub_url in sub_urls:
-        print(f"Обработка: {sub_url}", file=sys.stderr)
-        content = fetch_subscription_content(sub_url)
+    for url in urls:
+        print(f"Обработка: {url}", file=sys.stderr)
+        content = fetch_subscription_content(url)
         if not content:
             continue
-        groups = parse_subscription_content(content)
-        # объединение групп
-        for gname, gdata in groups.items():
+        gs = parse_subscription_content(content)
+        for gname, gdata in gs.items():
             if gname in all_groups:
                 all_groups[gname]["items"].extend(gdata["items"])
                 if all_groups[gname]["dns"] is None and gdata["dns"] is not None:
                     all_groups[gname]["dns"] = gdata["dns"]
-                # аналогично для routing/inbounds
+                # аналогично для routing/inbounds (можно не трогать, если уже есть)
             else:
                 all_groups[gname] = gdata
-
     print(f"Собрано групп: {len(all_groups)}", file=sys.stderr)
-    final_data = process_groups(all_groups)  # та же функция, что была
-    print(f"После фильтрации: {len(final_data)} групп", file=sys.stderr)
-
-    if final_data:
-        with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-            json.dump(final_data, f, ensure_ascii=False, indent=2)
-        print(f"Сохранено в {OUTPUT_FILE}", file=sys.stderr)
-    else:
-        # Сохраняем пустой массив
-        with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-            json.dump([], f)
-        print("Нет подходящих ключей, сохранён пустой массив.", file=sys.stderr)
+    result = process_groups(all_groups)
+    print(f"После фильтрации: {len(result)} групп", file=sys.stderr)
+    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+        json.dump(result, f, ensure_ascii=False, indent=2)
+    print(f"Сохранено в {OUTPUT_FILE}", file=sys.stderr)
 
 if __name__ == "__main__":
-    import sys
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(f"Критическая ошибка: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc(file=sys.stderr)
+        sys.exit(1)
