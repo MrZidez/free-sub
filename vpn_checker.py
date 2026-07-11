@@ -17,28 +17,48 @@ try:
 except ImportError:
     ping = None
 
-# ==================== Конфигурация ====================
+# ==================== КОНФИГУРАЦИЯ ====================
 SOURCE_URL = "https://raw.githubusercontent.com/MrZidez/free-sub/refs/heads/main/source"
 USER_AGENT = "happ"
 PING_THRESHOLD_MS = 90
 MAX_KEYS_PER_GROUP = 20
 OUTPUT_FILE = "FREE-VPN-FROM-KIRILL.json"
 
+# Расширенный список ключевых слов стран (русские, английские, транслит, опечатки)
 COUNTRY_KEYWORDS = [
-    "россия","russia","ru","сша","usa","us","америка","america",
-    "германия","germany","de","нидерланды","netherlands","nl","голландия","holland",
-    "франция","france","fr","великобритания","uk","united kingdom","gb",
-    "канада","canada","ca","австралия","australia","au","япония","japan","jp",
-    "сингапур","singapore","sg","гонконг","hong kong","hk","тайвань","taiwan","tw",
-    "индия","india","in","бразилия","brazil","br","южная корея","south korea","kr",
-    "италия","italy","it","испания","spain","es","швеция","sweden","se",
-    "норвегия","norway","no","дания","denmark","dk","финляндия","finland","fi",
-    "польша","poland","pl","украина","ukraine","ua","казахстан","kazakhstan","kz",
-    "беларусь","belarus","by","турция","turkey","tr","египет","egypt","eg",
-    "оаэ","uae","ae","саудовская аравия","saudi","sa","израиль","israel","il",
+    "россия", "russia", "ru",
+    "сша", "usa", "us", "америка", "america",
+    "германия", "germany", "de",
+    "нидерланды", "netherlands", "nl", "голландия", "holland",
+    "франция", "france", "fr",
+    "великобритания", "uk", "united kingdom", "gb",
+    "канада", "canada", "ca",
+    "австралия", "australia", "au", "avstralia",  # добавлено avstralia
+    "япония", "japan", "jp",
+    "сингапур", "singapore", "sg",
+    "гонконг", "hong kong", "hk",
+    "тайвань", "taiwan", "tw",
+    "индия", "india", "in",
+    "бразилия", "brazil", "br",
+    "южная корея", "south korea", "kr",
+    "италия", "italy", "it",
+    "испания", "spain", "es",
+    "швеция", "sweden", "se",
+    "норвегия", "norway", "no", "norwegia",  # добавлено norwegia
+    "дания", "denmark", "dk",
+    "финляндия", "finland", "fi",
+    "польша", "poland", "pl",
+    "украина", "ukraine", "ua",
+    "казахстан", "kazakhstan", "kz",
+    "беларусь", "belarus", "by",
+    "турция", "turkey", "tr",
+    "египет", "egypt", "eg",
+    "оаэ", "uae", "ae",
+    "саудовская аравия", "saudi", "sa",
+    "израиль", "israel", "il",
 ]
 
-# ==================== Вспомогательные функции ====================
+# ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
 def is_flag_emoji(s: str) -> bool:
     return len(s) == 2 and 0x1F1E6 <= ord(s[0]) <= 0x1F1FF and 0x1F1E6 <= ord(s[1]) <= 0x1F1FF
 
@@ -52,21 +72,26 @@ def decode_url_encoded_flags(text: str) -> str:
         return text
 
 def is_header_line(line: str) -> bool:
+    """Проверяет, является ли строка заголовком группы (флаг или название страны)."""
     line = line.strip()
     if not line:
         return False
-    # Игнорируем строки, начинающиеся с # (метаданные, комментарии)
+    # Игнорируем комментарии/метаданные
     if line.startswith("#"):
         return False
+    # Игнорируем ссылки
     if re.search(r'(vless|trojan|hysteria2|ss|naive)\://', line, re.I):
         return False
+    # Игнорируем JSON
     if line.startswith(("{","[")):
         return False
+    # Ищем эмодзи флага
     for i in range(len(line)-1):
         if is_flag_emoji(line[i:i+2]):
             return True
     if is_url_encoded_flag(line):
         return True
+    # Ищем ключевое слово страны
     lower = line.lower()
     return any(kw in lower for kw in COUNTRY_KEYWORDS)
 
@@ -85,7 +110,7 @@ def decode_base64_if_needed(text: str) -> str:
             pass
     return text
 
-# ==================== Загрузка подписок ====================
+# ==================== ЗАГРУЗКА ПОДПИСОК ====================
 def fetch_subscription_list(url: str) -> List[str]:
     try:
         resp = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=30)
@@ -104,7 +129,7 @@ def fetch_subscription_content(url: str) -> str:
         print(f"[ERROR] fetch {url}: {e}", file=sys.stderr)
         return ""
 
-# ==================== Парсеры ссылок ====================
+# ==================== ПАРСЕРЫ ССЫЛОК ====================
 def parse_vless(link: str) -> dict:
     if not link.startswith("vless://"):
         return {}
@@ -231,7 +256,7 @@ def parse_naive(link: str) -> dict:
     remarks = parsed.fragment or ''
     return {"protocol":"naive","user":user,"password":password,"address":host,"port":port,"params":params,"remarks":remarks}
 
-# ==================== Построители outbound ====================
+# ==================== ПОСТРОИТЕЛИ OUTBOUND ====================
 def build_outbound_vless(p: dict) -> dict:
     ob = {"tag":"proxy","protocol":"vless","settings":{"vnext":[{"address":p["address"],"port":p["port"],"users":[{"id":p["id"],"flow":p["params"].get("flow",""),"encryption":"none"}]}]},"streamSettings":{"network":p["params"].get("type","tcp"),"security":p["params"].get("security","none")}}
     sec = ob["streamSettings"]["security"]
@@ -304,7 +329,7 @@ def build_outbound_from_link(link: str) -> Optional[dict]:
             return build_outbound_naive(p)
     return None
 
-# ==================== Проверка пинга ====================
+# ==================== ПРОВЕРКА ПИНГА ====================
 def get_host_port_from_link(link: str) -> Tuple[str, int]:
     for proto in ["vless://","trojan://","hysteria2://","ss://","naive+"]:
         if link.startswith(proto):
@@ -355,7 +380,7 @@ def check_ping(link: str) -> Optional[float]:
         return d
     return None
 
-# ==================== Парсинг содержимого ====================
+# ==================== ПАРСИНГ СОДЕРЖИМОГО ПОДПИСКИ ====================
 def parse_subscription_content(content: str) -> Dict[str, Dict[str, Any]]:
     groups = {}
     current_group = None
@@ -385,7 +410,7 @@ def parse_subscription_content(content: str) -> Dict[str, Dict[str, Any]]:
             except:
                 pass
             continue
-        # Заголовок (только если не начинается с #)
+        # Заголовок группы
         if is_header_line(line):
             h = normalize_header(line)
             if h not in groups:
@@ -399,19 +424,20 @@ def parse_subscription_content(content: str) -> Dict[str, Dict[str, Any]]:
                 if current_group and current_group in groups:
                     groups[current_group]["items"].append(link)
                 else:
+                    # если нет текущей группы, создаём "Unknown"
                     if "Unknown" not in groups:
                         groups["Unknown"] = {"remarks":"Unknown","dns":None,"routing":None,"inbounds":None,"items":[]}
                     groups["Unknown"]["items"].append(link)
     return groups
 
-# ==================== Обработка групп ====================
+# ==================== ОБРАБОТКА ГРУПП ====================
 def process_groups(groups: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
-    final = []
-    # Если есть только группа "Unknown", переименуем в "авто сервер"
-    if len(groups) == 1 and "Unknown" in groups:
+    # Переименовываем группу "Unknown" в "авто сервер" всегда
+    if "Unknown" in groups:
         groups["авто сервер"] = groups.pop("Unknown")
         groups["авто сервер"]["remarks"] = "авто сервер"
 
+    final = []
     for gname, gdata in groups.items():
         items = gdata["items"]
         if not items:
