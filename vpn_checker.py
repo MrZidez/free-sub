@@ -55,6 +55,9 @@ def is_header_line(line: str) -> bool:
     line = line.strip()
     if not line:
         return False
+    # Игнорируем строки, начинающиеся с # (метаданные, комментарии)
+    if line.startswith("#"):
+        return False
     if re.search(r'(vless|trojan|hysteria2|ss|naive)\://', line, re.I):
         return False
     if line.startswith(("{","[")):
@@ -382,7 +385,7 @@ def parse_subscription_content(content: str) -> Dict[str, Dict[str, Any]]:
             except:
                 pass
             continue
-        # Заголовок
+        # Заголовок (только если не начинается с #)
         if is_header_line(line):
             h = normalize_header(line)
             if h not in groups:
