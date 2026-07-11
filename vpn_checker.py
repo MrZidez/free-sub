@@ -24,7 +24,7 @@ PING_THRESHOLD_MS = 90
 MAX_KEYS_PER_GROUP = 20
 OUTPUT_FILE = "FREE-VPN-FROM-KIRILL.json"
 
-# Расширенный список ключевых слов стран (включая опечатки)
+# Расширенный список ключевых слов стран (включая опечатки и варианты)
 COUNTRY_KEYWORDS = [
     "россия", "russia", "ru",
     "сша", "usa", "us", "америка", "america",
@@ -33,7 +33,7 @@ COUNTRY_KEYWORDS = [
     "франция", "france", "fr",
     "великобритания", "uk", "united kingdom", "gb",
     "канада", "canada", "ca",
-    "австралия", "australia", "au", "avstralia",  # опечатка
+    "австралия", "australia", "au", "avstralia",
     "япония", "japan", "jp",
     "сингапур", "singapore", "sg",
     "гонконг", "hong kong", "hk",
@@ -44,7 +44,7 @@ COUNTRY_KEYWORDS = [
     "италия", "italy", "it",
     "испания", "spain", "es",
     "швеция", "sweden", "se",
-    "норвегия", "norway", "no", "norwegia",  # опечатка
+    "норвегия", "norway", "no", "norwegia",
     "дания", "denmark", "dk",
     "финляндия", "finland", "fi",
     "польша", "poland", "pl",
@@ -84,6 +84,12 @@ def is_header_line(line: str) -> bool:
         return False
     # Игнорируем JSON
     if line.startswith(("{","[")):
+        return False
+    # Игнорируем строки, содержащие только информацию о пинге (n/a, ms, цифры)
+    if re.match(r'^[\d\s]*ms$', line, re.I) or re.match(r'^n/a$', line, re.I):
+        return False
+    # Если строка содержит только цифры, пробелы и точки с запятой - пропускаем
+    if re.match(r'^[\d\s;]+$', line):
         return False
     # Ищем эмодзи флага
     for i in range(len(line)-1):
