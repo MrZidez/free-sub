@@ -22,7 +22,7 @@ SOURCE_URL = "https://raw.githubusercontent.com/MrZidez/free-sub/refs/heads/main
 USER_AGENT = "happ"
 PING_THRESHOLD_MS = 90
 MAX_KEYS_PER_GROUP = 20
-MAX_GROUPS_PER_COUNTRY = 5          # <-- новое ограничение
+MAX_GROUPS_PER_COUNTRY = 5
 OUTPUT_FILE = "FREE-VPN-FROM-KIRILL.json"
 
 # Словарь стран (включая все популярные)
@@ -162,7 +162,7 @@ def fetch_subscription_content(url: str) -> str:
         print(f"[ERROR] fetch {url}: {e}", file=sys.stderr)
         return ""
 
-# ==================== ПАРСЕРЫ ССЫЛОК (с декодированием) ====================
+# ==================== ПАРСЕРЫ ССЫЛОК (с декодированием remarks) ====================
 def parse_vless(link: str) -> dict:
     if not link.startswith("vless://"):
         return {}
@@ -460,10 +460,10 @@ def parse_subscription_content(content: str) -> Dict[str, Dict[str, Any]]:
         matches = link_pattern.findall(line)
         if matches:
             for link in matches:
-                # извлекаем remarks (если есть)
                 if current_group and current_group in groups:
                     groups[current_group]["items"].append(link)
                 else:
+                    # Если нет группы, создаём временную "Unknown" (потом удалим)
                     if "Unknown" not in groups:
                         groups["Unknown"] = {"remarks":"Unknown","dns":None,"routing":None,"inbounds":None,"items":[]}
                     groups["Unknown"]["items"].append(link)
@@ -496,14 +496,9 @@ def main():
 
     print(f"Собрано групп: {len(all_groups)}", file=sys.stderr)
 
-    # Переименовываем "Unknown" в "авто сервер" (если она есть)
-    if "Unknown" in all_groups:
-        all_groups["авто сервер"] = all_groups.pop("Unknown")
-        all_groups["авто сервер"]["remarks"] = "авто сервер"
-
     # Собираем все ссылки из всех групп для проверки пинга
     all_links = []
-    link_to_group = {}  # для обратной привязки
+    link_to_group = {}
     for gname, gdata in all_groups.items():
         for item in gdata["items"]:
             if isinstance(item, str) and item.startswith(("vless://","trojan://","hysteria2://","ss://","naive+")):
@@ -532,88 +527,80 @@ def main():
             json.dump([], f)
         sys.exit(0)
 
-    # Теперь группируем хорошие ссылки по тем же группам (но только те, которые прошли пинг)
-    # Создаём словарь групп с отфильтрованными items
-    filtered_groups = {}
-    for gname, gdata in all_groups.items():
-        filtered_items = [link for link in gdata["items"] if link in good_links]
-        if filtered_items:
-            filtered_groups[gname] = {
-                "remarks": gdata["remarks"],
-                "dns": gdata["dns"],
-                "routing": gdata["routing"],
-                "inbounds": gdata["inbounds"],
-                "items": filtered_items
-            }
-
-    # Теперь обрабатываем группы с учётом ограничения 5 на страну
-    final_groups = []
-    auto_items = []
-    countries = {}
-
-    for gname, gdata in filtered_groups.items():
-        items = gdata["items"]
-        if not items:
-            continue
-        # Определяем авто
-        if re.search(r'(авто|auto)', gname, re.I):
-            auto_items.extend(items)
-            continue
-        # Определяем страну (если есть флаг в названии)
-        has_flag = False
-        for i in range(len(gname)-1):
-            if is_flag_emoji(gname[i:i+2]):
-                has_flag = True
-                break
-        if has_flag:
-            country_name = gname
-            if country_name not in countries:
-                countries[country_name] = []
-            countries[country_name].extend(items)
+    # Группируем хорошие ссылки по странам (без авто-группы)
+    countries = {}  # key: "🇩🇪 Германия", value: список ссылок
+    for link in good_links:
+        # Определяем страну по названию группы, к которой принадлежала ссылка
+        group_name = link_to_group.get(link, "")
+        # Если группа "Unknown" или пустая, пытаемся извлечь страну из remarks
+        if not group_name or group_name == "Unknown":
+            # извлекаем remarks из ссылки
+            remarks = ""
+            if '#' in link:
+                _, remarks = link.split('#', 1)
+                remarks = urllib.parse.unquote(remarks)
+            # ищем страну в remarks
+            if remarks:
+                lower_rem = remarks.lower()
+                found = False
+                for key in COUNTRY_KEYS:
+                    if key in lower_rem:
+                        flag, name_ru = COUNTRY_MAP[key]
+                        country_key = f"{flag} {name_ru}"
+                        if country_key not in countries:
+                            countries[country_key] = []
+                        countries[country_key].append(link)
+                        found = True
+                        break
+                if not found:
+                    # если не нашли, игнорируем
+                    continue
+            else:
+                continue
         else:
-            # Пытаемся найти ключевое слово страны в названии
-            lower = gname.lower()
-            found = False
-            for key in COUNTRY_KEYS:
-                if key in lower:
-                    flag, name_ru = COUNTRY_MAP[key]
-                    new_name = f"{flag} {name_ru}"
-                    if new_name not in countries:
-                        countries[new_name] = []
-                    countries[new_name].extend(items)
-                    found = True
+            # Проверяем, есть ли в названии группы флаг (значит, уже страна)
+            has_flag = False
+            for i in range(len(group_name)-1):
+                if is_flag_emoji(group_name[i:i+2]):
+                    has_flag = True
                     break
-            if not found:
-                # Неизвестная группа – игнорируем (или можно добавить в авто?)
-                # По условию, если нет страны и не авто, то удаляем
-                pass
+            if has_flag:
+                country_key = group_name
+            else:
+                # Пытаемся найти страну в названии группы
+                lower = group_name.lower()
+                found = False
+                for key in COUNTRY_KEYS:
+                    if key in lower:
+                        flag, name_ru = COUNTRY_MAP[key]
+                        country_key = f"{flag} {name_ru}"
+                        found = True
+                        break
+                if not found:
+                    # Игнорируем
+                    continue
+            if country_key not in countries:
+                countries[country_key] = []
+            countries[country_key].append(link)
 
-    # Обрабатываем авто
-    if auto_items:
-        total_auto = len(auto_items)
-        num_auto_groups = (total_auto + MAX_KEYS_PER_GROUP - 1) // MAX_KEYS_PER_GROUP
-        for i in range(num_auto_groups):
-            start = i * MAX_KEYS_PER_GROUP
-            end = min((i+1)*MAX_KEYS_PER_GROUP, total_auto)
-            group_name = "🇸🇴 Авто выбор локации 🚀" if i == 0 else f"🇸🇴 Авто выбор локации 🚀 {i+1}"
-            final_groups.append({
-                "remarks": group_name,
-                "items": auto_items[start:end]
-            })
+    if not countries:
+        print("Нет стран для группировки", file=sys.stderr)
+        with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+            json.dump([], f)
+        sys.exit(0)
 
-    # Обрабатываем страны с ограничением 5 групп
-    country_names = sorted(countries.keys())
-    for country_name in country_names:
-        items = countries[country_name]
+    # Формируем финальные группы с ограничением 5 на страну
+    final_groups = []
+    for country_name, items in sorted(countries.items()):
         total = len(items)
         needed = (total + MAX_KEYS_PER_GROUP - 1) // MAX_KEYS_PER_GROUP
         max_groups = min(needed, MAX_GROUPS_PER_COUNTRY)
         for i in range(max_groups):
             start = i * MAX_KEYS_PER_GROUP
             end = min((i+1)*MAX_KEYS_PER_GROUP, total)
-            group_name = country_name if i == 0 else f"{country_name} {i+1}"
+            group_label = country_name if i == 0 else f"{country_name} {i+1}"
             final_groups.append({
-                "remarks": group_name,
+                "remarks": group_label,
                 "items": items[start:end]
             })
         if needed > MAX_GROUPS_PER_COUNTRY:
