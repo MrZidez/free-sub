@@ -20,114 +20,78 @@ except ImportError:
 # ==================== КОНФИГУРАЦИЯ ====================
 SOURCE_URL = "https://raw.githubusercontent.com/MrZidez/free-sub/refs/heads/main/source"
 USER_AGENT = "happ"
-PING_THRESHOLD_MS = 150
-MAX_KEYS_PER_GROUP = 15
+PING_THRESHOLD_MS = 90
+MAX_KEYS_PER_GROUP = 20
+MAX_GROUPS_PER_COUNTRY = 5          # <-- новое ограничение
 OUTPUT_FILE = "FREE-VPN-FROM-KIRILL.json"
 
-# Словарь соответствий: ключ – название (в нижнем регистре, без пробелов), значение – (флаг, русское_название)
-# Включаем варианты на разных языках и опечатки.
+# Словарь стран (включая все популярные)
 COUNTRY_MAP = {
-    "russia": ("🇷🇺", "Россия"),
-    "россия": ("🇷🇺", "Россия"),
-    "ru": ("🇷🇺", "Россия"),
-    "usa": ("🇺🇸", "США"),
-    "us": ("🇺🇸", "США"),
-    "сша": ("🇺🇸", "США"),
-    "america": ("🇺🇸", "США"),
-    "америка": ("🇺🇸", "США"),
-    "germany": ("🇩🇪", "Германия"),
-    "de": ("🇩🇪", "Германия"),
-    "германия": ("🇩🇪", "Германия"),
-    "netherlands": ("🇳🇱", "Нидерланды"),
-    "nl": ("🇳🇱", "Нидерланды"),
-    "нидерланды": ("🇳🇱", "Нидерланды"),
-    "holland": ("🇳🇱", "Нидерланды"),
-    "голландия": ("🇳🇱", "Нидерланды"),
-    "france": ("🇫🇷", "Франция"),
-    "fr": ("🇫🇷", "Франция"),
-    "франция": ("🇫🇷", "Франция"),
-    "uk": ("🇬🇧", "Великобритания"),
-    "great britain": ("🇬🇧", "Великобритания"),
-    "united kingdom": ("🇬🇧", "Великобритания"),
-    "великобритания": ("🇬🇧", "Великобритания"),
-    "canada": ("🇨🇦", "Канада"),
-    "ca": ("🇨🇦", "Канада"),
-    "канада": ("🇨🇦", "Канада"),
-    "australia": ("🇦🇺", "Австралия"),
-    "au": ("🇦🇺", "Австралия"),
-    "австралия": ("🇦🇺", "Австралия"),
-    "avstralia": ("🇦🇺", "Австралия"),  # опечатка
-    "japan": ("🇯🇵", "Япония"),
-    "jp": ("🇯🇵", "Япония"),
-    "япония": ("🇯🇵", "Япония"),
-    "singapore": ("🇸🇬", "Сингапур"),
-    "sg": ("🇸🇬", "Сингапур"),
-    "сингапур": ("🇸🇬", "Сингапур"),
-    "hong kong": ("🇭🇰", "Гонконг"),
-    "hk": ("🇭🇰", "Гонконг"),
-    "гонконг": ("🇭🇰", "Гонконг"),
-    "taiwan": ("🇹🇼", "Тайвань"),
-    "tw": ("🇹🇼", "Тайвань"),
-    "тайвань": ("🇹🇼", "Тайвань"),
-    "india": ("🇮🇳", "Индия"),
-    "in": ("🇮🇳", "Индия"),
-    "индия": ("🇮🇳", "Индия"),
-    "brazil": ("🇧🇷", "Бразилия"),
-    "br": ("🇧🇷", "Бразилия"),
-    "бразилия": ("🇧🇷", "Бразилия"),
-    "south korea": ("🇰🇷", "Южная Корея"),
-    "kr": ("🇰🇷", "Южная Корея"),
-    "южная корея": ("🇰🇷", "Южная Корея"),
-    "italy": ("🇮🇹", "Италия"),
-    "it": ("🇮🇹", "Италия"),
-    "италия": ("🇮🇹", "Италия"),
-    "spain": ("🇪🇸", "Испания"),
-    "es": ("🇪🇸", "Испания"),
-    "испания": ("🇪🇸", "Испания"),
-    "sweden": ("🇸🇪", "Швеция"),
-    "se": ("🇸🇪", "Швеция"),
-    "швеция": ("🇸🇪", "Швеция"),
-    "norway": ("🇳🇴", "Норвегия"),
-    "no": ("🇳🇴", "Норвегия"),
-    "норвегия": ("🇳🇴", "Норвегия"),
-    "norwegia": ("🇳🇴", "Норвегия"),  # опечатка
-    "denmark": ("🇩🇰", "Дания"),
-    "dk": ("🇩🇰", "Дания"),
-    "дания": ("🇩🇰", "Дания"),
-    "finland": ("🇫🇮", "Финляндия"),
-    "fi": ("🇫🇮", "Финляндия"),
-    "финляндия": ("🇫🇮", "Финляндия"),
-    "poland": ("🇵🇱", "Польша"),
-    "pl": ("🇵🇱", "Польша"),
-    "польша": ("🇵🇱", "Польша"),
-    "ukraine": ("🇺🇦", "Украина"),
-    "ua": ("🇺🇦", "Украина"),
-    "украина": ("🇺🇦", "Украина"),
-    "kazakhstan": ("🇰🇿", "Казахстан"),
-    "kz": ("🇰🇿", "Казахстан"),
-    "казахстан": ("🇰🇿", "Казахстан"),
-    "belarus": ("🇧🇾", "Беларусь"),
-    "by": ("🇧🇾", "Беларусь"),
-    "беларусь": ("🇧🇾", "Беларусь"),
-    "turkey": ("🇹🇷", "Турция"),
-    "tr": ("🇹🇷", "Турция"),
-    "турция": ("🇹🇷", "Турция"),
-    "egypt": ("🇪🇬", "Египет"),
-    "eg": ("🇪🇬", "Египет"),
-    "египет": ("🇪🇬", "Египет"),
-    "uae": ("🇦🇪", "ОАЭ"),
-    "ae": ("🇦🇪", "ОАЭ"),
-    "оаэ": ("🇦🇪", "ОАЭ"),
-    "saudi arabia": ("🇸🇦", "Саудовская Аравия"),
-    "saudi": ("🇸🇦", "Саудовская Аравия"),
-    "sa": ("🇸🇦", "Саудовская Аравия"),
-    "саудовская аравия": ("🇸🇦", "Саудовская Аравия"),
-    "israel": ("🇮🇱", "Израиль"),
-    "il": ("🇮🇱", "Израиль"),
-    "израиль": ("🇮🇱", "Израиль"),
+    "russia": ("🇷🇺", "Россия"), "россия": ("🇷🇺", "Россия"), "ru": ("🇷🇺", "Россия"),
+    "usa": ("🇺🇸", "США"), "us": ("🇺🇸", "США"), "сша": ("🇺🇸", "США"),
+    "america": ("🇺🇸", "США"), "америка": ("🇺🇸", "США"),
+    "germany": ("🇩🇪", "Германия"), "de": ("🇩🇪", "Германия"),
+    "германия": ("🇩🇪", "Германия"), "deutschland": ("🇩🇪", "Германия"), "deu": ("🇩🇪", "Германия"),
+    "netherlands": ("🇳🇱", "Нидерланды"), "nl": ("🇳🇱", "Нидерланды"),
+    "нидерланды": ("🇳🇱", "Нидерланды"), "holland": ("🇳🇱", "Нидерланды"),
+    "голландия": ("🇳🇱", "Нидерланды"), "nld": ("🇳🇱", "Нидерланды"),
+    "france": ("🇫🇷", "Франция"), "fr": ("🇫🇷", "Франция"),
+    "франция": ("🇫🇷", "Франция"), "fra": ("🇫🇷", "Франция"),
+    "uk": ("🇬🇧", "Великобритания"), "great britain": ("🇬🇧", "Великобритания"),
+    "united kingdom": ("🇬🇧", "Великобритания"), "великобритания": ("🇬🇧", "Великобритания"),
+    "gbr": ("🇬🇧", "Великобритания"),
+    "canada": ("🇨🇦", "Канада"), "ca": ("🇨🇦", "Канада"),
+    "канада": ("🇨🇦", "Канада"), "can": ("🇨🇦", "Канада"),
+    "australia": ("🇦🇺", "Австралия"), "au": ("🇦🇺", "Австралия"),
+    "австралия": ("🇦🇺", "Австралия"), "avstralia": ("🇦🇺", "Австралия"),
+    "aus": ("🇦🇺", "Австралия"),
+    "japan": ("🇯🇵", "Япония"), "jp": ("🇯🇵", "Япония"),
+    "япония": ("🇯🇵", "Япония"), "jpn": ("🇯🇵", "Япония"),
+    "singapore": ("🇸🇬", "Сингапур"), "sg": ("🇸🇬", "Сингапур"),
+    "сингапур": ("🇸🇬", "Сингапур"), "sgp": ("🇸🇬", "Сингапур"),
+    "hong kong": ("🇭🇰", "Гонконг"), "hk": ("🇭🇰", "Гонконг"),
+    "гонконг": ("🇭🇰", "Гонконг"), "hkg": ("🇭🇰", "Гонконг"),
+    "taiwan": ("🇹🇼", "Тайвань"), "tw": ("🇹🇼", "Тайвань"),
+    "тайвань": ("🇹🇼", "Тайвань"), "twn": ("🇹🇼", "Тайвань"),
+    "india": ("🇮🇳", "Индия"), "in": ("🇮🇳", "Индия"),
+    "индия": ("🇮🇳", "Индия"), "ind": ("🇮🇳", "Индия"),
+    "brazil": ("🇧🇷", "Бразилия"), "br": ("🇧🇷", "Бразилия"),
+    "бразилия": ("🇧🇷", "Бразилия"), "bra": ("🇧🇷", "Бразилия"),
+    "south korea": ("🇰🇷", "Южная Корея"), "kr": ("🇰🇷", "Южная Корея"),
+    "южная корея": ("🇰🇷", "Южная Корея"), "kor": ("🇰🇷", "Южная Корея"),
+    "italy": ("🇮🇹", "Италия"), "it": ("🇮🇹", "Италия"),
+    "италия": ("🇮🇹", "Италия"), "ita": ("🇮🇹", "Италия"),
+    "spain": ("🇪🇸", "Испания"), "es": ("🇪🇸", "Испания"),
+    "испания": ("🇪🇸", "Испания"), "esp": ("🇪🇸", "Испания"),
+    "sweden": ("🇸🇪", "Швеция"), "se": ("🇸🇪", "Швеция"),
+    "швеция": ("🇸🇪", "Швеция"), "swe": ("🇸🇪", "Швеция"),
+    "norway": ("🇳🇴", "Норвегия"), "no": ("🇳🇴", "Норвегия"),
+    "норвегия": ("🇳🇴", "Норвегия"), "norwegia": ("🇳🇴", "Норвегия"),
+    "nor": ("🇳🇴", "Норвегия"),
+    "denmark": ("🇩🇰", "Дания"), "dk": ("🇩🇰", "Дания"),
+    "дания": ("🇩🇰", "Дания"), "dnk": ("🇩🇰", "Дания"),
+    "finland": ("🇫🇮", "Финляндия"), "fi": ("🇫🇮", "Финляндия"),
+    "финляндия": ("🇫🇮", "Финляндия"), "fin": ("🇫🇮", "Финляндия"),
+    "poland": ("🇵🇱", "Польша"), "pl": ("🇵🇱", "Польша"),
+    "польша": ("🇵🇱", "Польша"), "pol": ("🇵🇱", "Польша"),
+    "ukraine": ("🇺🇦", "Украина"), "ua": ("🇺🇦", "Украина"),
+    "украина": ("🇺🇦", "Украина"), "ukr": ("🇺🇦", "Украина"),
+    "kazakhstan": ("🇰🇿", "Казахстан"), "kz": ("🇰🇿", "Казахстан"),
+    "казахстан": ("🇰🇿", "Казахстан"), "kaz": ("🇰🇿", "Казахстан"),
+    "belarus": ("🇧🇾", "Беларусь"), "by": ("🇧🇾", "Беларусь"),
+    "беларусь": ("🇧🇾", "Беларусь"), "blr": ("🇧🇾", "Беларусь"),
+    "turkey": ("🇹🇷", "Турция"), "tr": ("🇹🇷", "Турция"),
+    "турция": ("🇹🇷", "Турция"), "tur": ("🇹🇷", "Турция"),
+    "egypt": ("🇪🇬", "Египет"), "eg": ("🇪🇬", "Египет"),
+    "египет": ("🇪🇬", "Египет"), "egy": ("🇪🇬", "Египет"),
+    "uae": ("🇦🇪", "ОАЭ"), "ae": ("🇦🇪", "ОАЭ"),
+    "оаэ": ("🇦🇪", "ОАЭ"), "are": ("🇦🇪", "ОАЭ"),
+    "saudi arabia": ("🇸🇦", "Саудовская Аравия"), "saudi": ("🇸🇦", "Саудовская Аравия"),
+    "sa": ("🇸🇦", "Саудовская Аравия"), "саудовская аравия": ("🇸🇦", "Саудовская Аравия"),
+    "sau": ("🇸🇦", "Саудовская Аравия"),
+    "israel": ("🇮🇱", "Израиль"), "il": ("🇮🇱", "Израиль"),
+    "израиль": ("🇮🇱", "Израиль"), "isr": ("🇮🇱", "Израиль"),
 }
-
-# Список всех ключей (для быстрого поиска)
 COUNTRY_KEYS = list(COUNTRY_MAP.keys())
 
 # ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
@@ -143,90 +107,31 @@ def decode_url_encoded_flags(text: str) -> str:
     except:
         return text
 
-def parse_group_header(line: str) -> Optional[str]:
-    """
-    Анализирует строку и возвращает название группы с флагом, если это заголовок.
-    Например: "🇩🇪 Германия (NaiveProxy)" -> "🇩🇪 Германия"
-              "germany" -> "🇩🇪 Германия"
-              "NORWEGIA" -> "🇳🇴 Норвегия"
-              "Канада" -> "🇨🇦 Канада"
-    Возвращает None, если строка не является заголовком группы.
-    """
+def is_header_line(line: str) -> bool:
     line = line.strip()
     if not line:
-        return None
-
-    # Игнорируем строки, начинающиеся с # (метаданные)
+        return False
     if line.startswith("#"):
-        return None
-
-    # Игнорируем строки, содержащие ссылки (vless:// и т.д.) и не содержащие флага или ключевого слова страны
-    # Но если есть флаг и ссылка, мы можем извлечь флаг и страну, а ссылку обработаем отдельно позже.
-    # Поэтому проверим наличие флага или ключевого слова.
-
-    # 1. Ищем эмодзи флага в строке
-    flag_found = None
+        return False
+    if re.search(r'(vless|trojan|hysteria2|ss|naive)\://', line, re.I):
+        return False
+    if line.startswith(("{","[")):
+        return False
+    if re.match(r'^[\d\s]*ms$', line, re.I) or re.match(r'^n/a$', line, re.I):
+        return False
+    if re.match(r'^[\d\s;]+$', line):
+        return False
     for i in range(len(line)-1):
         if is_flag_emoji(line[i:i+2]):
-            flag_found = line[i:i+2]
-            # Удаляем флаг из строки для поиска названия
-            rest = line[:i] + line[i+2:]
-            break
-    if flag_found is None and is_url_encoded_flag(line):
-        # Попробуем декодировать URL-кодировку и найти флаг
-        decoded = decode_url_encoded_flags(line)
-        for i in range(len(decoded)-1):
-            if is_flag_emoji(decoded[i:i+2]):
-                flag_found = decoded[i:i+2]
-                rest = decoded[:i] + decoded[i+2:]
-                break
+            return True
+    if is_url_encoded_flag(line):
+        return True
+    lower = line.lower()
+    return any(kw in lower for kw in COUNTRY_KEYS)
 
-    # Если флаг найден, ищем в оставшейся части ключевое слово страны
-    if flag_found:
-        # Ищем ключевое слово в rest
-        rest_lower = rest.lower()
-        # Удаляем всё, что похоже на ссылку (https://, vless://, и т.д.)
-        rest_clean = re.sub(r'\S+://\S+', '', rest)  # убираем URL
-        # Удаляем лишние символы, оставляем только буквы, пробелы и скобки
-        rest_clean = re.sub(r'[^a-zA-Zа-яА-Я\s()]', ' ', rest_clean)
-        # Разбиваем на слова
-        words = re.findall(r'[a-zA-Zа-яА-Я]+', rest_clean)
-        for word in words:
-            word_lower = word.lower()
-            # Проверяем точное совпадение с ключами
-            for key in COUNTRY_KEYS:
-                if word_lower == key or word_lower in key or key in word_lower:
-                    flag, name_ru = COUNTRY_MAP[key]
-                    return f"{flag} {name_ru}"
-        # Если не нашли ключевое слово, но флаг есть, попробуем взять первые слова как название?
-        # Лучше вернуть флаг + остаток (очищенный), но пользователь хочет русские названия, поэтому лучше пропустить.
-        # Если не нашли страну, не создаём группу с флагом (или создаём "авто сервер"?)
-        # В данном случае лучше вернуть None, чтобы не плодить мусор.
-        return None
-
-    # 2. Если флага нет, ищем ключевое слово страны в строке
-    lower_line = line.lower()
-    # Удаляем ссылки
-    line_clean = re.sub(r'\S+://\S+', '', line)
-    line_clean = re.sub(r'[^a-zA-Zа-яА-Я\s]', ' ', line_clean)
-    words = re.findall(r'[a-zA-Zа-яА-Я]+', line_clean)
-    for word in words:
-        word_lower = word.lower()
-        for key in COUNTRY_KEYS:
-            if word_lower == key or word_lower in key or key in word_lower:
-                flag, name_ru = COUNTRY_MAP[key]
-                return f"{flag} {name_ru}"
-
-    # Если строка содержит только цифры, ms, n/a, протоколы — не считаем заголовком
-    if re.match(r'^[\d\s]+(ms|n/a)?$', line, re.I):
-        return None
-
-    # Если строка содержит только слово "VLESS", "TROJAN" и т.п., это не заголовок
-    if re.match(r'^(VLESS|TROJAN|HYSTERIA|SS|naive)\s*\/', line, re.I):
-        return None
-
-    # Иначе — не заголовок
-    return None
+def normalize_header(header: str) -> str:
+    header = decode_url_encoded_flags(header.strip())
+    return re.sub(r'\s+', ' ', header)
 
 def is_base64_encoded(text: str) -> bool:
     return bool(re.match(r'^[A-Za-z0-9+/=]+$', text.strip()))
@@ -239,7 +144,6 @@ def decode_base64_if_needed(text: str) -> str:
             pass
     return text
 
-# ==================== ЗАГРУЗКА ПОДПИСОК ====================
 def fetch_subscription_list(url: str) -> List[str]:
     try:
         resp = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=30)
@@ -258,7 +162,7 @@ def fetch_subscription_content(url: str) -> str:
         print(f"[ERROR] fetch {url}: {e}", file=sys.stderr)
         return ""
 
-# ==================== ПАРСЕРЫ ССЫЛОК ====================
+# ==================== ПАРСЕРЫ ССЫЛОК (с декодированием) ====================
 def parse_vless(link: str) -> dict:
     if not link.startswith("vless://"):
         return {}
@@ -266,6 +170,7 @@ def parse_vless(link: str) -> dict:
     remarks = ""
     if '#' in link:
         link, remarks = link.split('#', 1)
+        remarks = urllib.parse.unquote(remarks)
     base, query = link.split('?', 1) if '?' in link else (link, "")
     params = urllib.parse.parse_qs(query)
     for k, v in params.items():
@@ -289,6 +194,7 @@ def parse_trojan(link: str) -> dict:
     remarks = ""
     if '#' in link:
         link, remarks = link.split('#', 1)
+        remarks = urllib.parse.unquote(remarks)
     base, query = link.split('?', 1) if '?' in link else (link, "")
     params = urllib.parse.parse_qs(query)
     for k, v in params.items():
@@ -312,6 +218,7 @@ def parse_hysteria2(link: str) -> dict:
     remarks = ""
     if '#' in link:
         link, remarks = link.split('#', 1)
+        remarks = urllib.parse.unquote(remarks)
     base, query = link.split('?', 1) if '?' in link else (link, "")
     params = urllib.parse.parse_qs(query)
     for k, v in params.items():
@@ -335,6 +242,7 @@ def parse_ss(link: str) -> dict:
     remarks = ""
     if '#' in link:
         link, remarks = link.split('#', 1)
+        remarks = urllib.parse.unquote(remarks)
     if '@' in link:
         auth, rest = link.split('@', 1)
         if '?' in rest:
@@ -383,9 +291,10 @@ def parse_naive(link: str) -> dict:
         if isinstance(v, list):
             params[k] = v[0]
     remarks = parsed.fragment or ''
+    remarks = urllib.parse.unquote(remarks)
     return {"protocol":"naive","user":user,"password":password,"address":host,"port":port,"params":params,"remarks":remarks}
 
-# ==================== ПОСТРОИТЕЛИ OUTBOUND ====================
+# ==================== ПОСТРОЕНИЕ OUTBOUND ====================
 def build_outbound_vless(p: dict) -> dict:
     ob = {"tag":"proxy","protocol":"vless","settings":{"vnext":[{"address":p["address"],"port":p["port"],"users":[{"id":p["id"],"flow":p["params"].get("flow",""),"encryption":"none"}]}]},"streamSettings":{"network":p["params"].get("type","tcp"),"security":p["params"].get("security","none")}}
     sec = ob["streamSettings"]["security"]
@@ -525,6 +434,7 @@ def parse_subscription_content(content: str) -> Dict[str, Dict[str, Any]]:
                 j = json.loads(line)
                 if isinstance(j, dict) and "outbounds" in j:
                     remarks = j.get("remarks", "")
+                    remarks = urllib.parse.unquote(remarks) if remarks else ""
                     if remarks:
                         if remarks not in groups:
                             groups[remarks] = {"remarks":remarks,"dns":j.get("dns"),"routing":j.get("routing"),"inbounds":j.get("inbounds"),"items":[]}
@@ -539,99 +449,27 @@ def parse_subscription_content(content: str) -> Dict[str, Dict[str, Any]]:
             except:
                 pass
             continue
-
-        # Проверка на заголовок группы
-        header = parse_group_header(line)
-        if header is not None:
-            # Если такой группы ещё нет, создаём
-            if header not in groups:
-                groups[header] = {"remarks":header,"dns":None,"routing":None,"inbounds":None,"items":[]}
-            current_group = header
-            # Также проверяем, содержит ли эта строка ссылку (может быть флаг + ссылка)
-            matches = link_pattern.findall(line)
-            if matches:
-                for link in matches:
-                    groups[header]["items"].append(link)
+        # Заголовок
+        if is_header_line(line):
+            h = normalize_header(line)
+            if h not in groups:
+                groups[h] = {"remarks":h,"dns":None,"routing":None,"inbounds":None,"items":[]}
+            current_group = h
             continue
-
-        # Если строка содержит ссылку, но не является заголовком
+        # Ссылки
         matches = link_pattern.findall(line)
         if matches:
             for link in matches:
+                # извлекаем remarks (если есть)
                 if current_group and current_group in groups:
                     groups[current_group]["items"].append(link)
                 else:
-                    # если нет текущей группы, создаём "Unknown"
                     if "Unknown" not in groups:
                         groups["Unknown"] = {"remarks":"Unknown","dns":None,"routing":None,"inbounds":None,"items":[]}
                     groups["Unknown"]["items"].append(link)
-            continue
-
-        # Все остальные строки игнорируем (описания протоколов, пинги и т.п.)
     return groups
 
-# ==================== ОБРАБОТКА ГРУПП ====================
-def process_groups(groups: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
-    # Переименовываем группу "Unknown" в "авто сервер" (без флага)
-    if "Unknown" in groups:
-        groups["авто сервер"] = groups.pop("Unknown")
-        groups["авто сервер"]["remarks"] = "авто сервер"
-
-    final = []
-    for gname, gdata in groups.items():
-        items = gdata["items"]
-        if not items:
-            continue
-        links = []
-        ready = []
-        for item in items:
-            if isinstance(item, str):
-                links.append(item)
-            elif isinstance(item, dict):
-                ready.append(item)
-        good_links = []
-        with ThreadPoolExecutor(max_workers=20) as executor:
-            future_to_link = {executor.submit(check_ping, link): link for link in links}
-            for future in as_completed(future_to_link):
-                link = future_to_link[future]
-                try:
-                    if future.result() is not None:
-                        good_links.append(link)
-                except:
-                    pass
-        all_outbounds = ready.copy()
-        for link in good_links:
-            ob = build_outbound_from_link(link)
-            if ob:
-                all_outbounds.append(ob)
-        if not all_outbounds:
-            continue
-        total = len(all_outbounds)
-        num_sub = (total + MAX_KEYS_PER_GROUP - 1) // MAX_KEYS_PER_GROUP
-        for i in range(num_sub):
-            start = i * MAX_KEYS_PER_GROUP
-            end = min((i+1)*MAX_KEYS_PER_GROUP, total)
-            sub_obs = all_outbounds[start:end]
-            sub_remarks = gname if i == 0 else f"{gname} {i+1}"
-            dns = gdata.get("dns") or {"servers":["1.1.1.1","1.0.0.1"],"queryStrategy":"UseIP"}
-            routing = gdata.get("routing") or {"rules":[{"type":"field","protocol":["bittorrent"],"outboundTag":"direct"}],"domainMatcher":"hybrid","domainStrategy":"IPIfNonMatch"}
-            inbounds = gdata.get("inbounds") or [
-                {"tag":"socks","port":10808,"listen":"127.0.0.1","protocol":"socks","settings":{"udp":True,"auth":"noauth"},"sniffing":{"enabled":True,"routeOnly":False,"destOverride":["http","tls","quic"]}},
-                {"tag":"http","port":10809,"listen":"127.0.0.1","protocol":"http","settings":{"allowTransparent":False},"sniffing":{"enabled":True,"routeOnly":False,"destOverride":["http","tls","quic"]}}
-            ]
-            if not any(ob.get("tag")=="direct" for ob in sub_obs):
-                sub_obs.append({"tag":"direct","protocol":"freedom"})
-            if not any(ob.get("tag")=="block" for ob in sub_obs):
-                sub_obs.append({"tag":"block","protocol":"blackhole"})
-            counter = 1
-            for ob in sub_obs:
-                if ob.get("tag") == "proxy":
-                    ob["tag"] = f"proxy-{counter}"
-                    counter += 1
-            final.append({"remarks":sub_remarks,"dns":dns,"routing":routing,"inbounds":inbounds,"outbounds":sub_obs})
-    return final
-
-# ==================== MAIN ====================
+# ==================== ОСНОВНАЯ ЛОГИКА ====================
 def main():
     print("Загрузка списка подписок...", file=sys.stderr)
     urls = fetch_subscription_list(SOURCE_URL)
@@ -640,6 +478,7 @@ def main():
         with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
             json.dump([], f)
         sys.exit(0)
+
     all_groups = {}
     for url in urls:
         print(f"Обработка: {url}", file=sys.stderr)
@@ -654,12 +493,181 @@ def main():
                     all_groups[gname]["dns"] = gdata["dns"]
             else:
                 all_groups[gname] = gdata
+
     print(f"Собрано групп: {len(all_groups)}", file=sys.stderr)
-    result = process_groups(all_groups)
-    print(f"После фильтрации: {len(result)} групп", file=sys.stderr)
+
+    # Переименовываем "Unknown" в "авто сервер" (если она есть)
+    if "Unknown" in all_groups:
+        all_groups["авто сервер"] = all_groups.pop("Unknown")
+        all_groups["авто сервер"]["remarks"] = "авто сервер"
+
+    # Собираем все ссылки из всех групп для проверки пинга
+    all_links = []
+    link_to_group = {}  # для обратной привязки
+    for gname, gdata in all_groups.items():
+        for item in gdata["items"]:
+            if isinstance(item, str) and item.startswith(("vless://","trojan://","hysteria2://","ss://","naive+")):
+                all_links.append(item)
+                link_to_group[item] = gname
+
+    print(f"Всего ссылок: {len(all_links)}", file=sys.stderr)
+
+    # Проверяем пинг параллельно
+    good_links = []
+    with ThreadPoolExecutor(max_workers=30) as executor:
+        future_to_link = {executor.submit(check_ping, link): link for link in all_links}
+        for future in as_completed(future_to_link):
+            link = future_to_link[future]
+            try:
+                if future.result() is not None:
+                    good_links.append(link)
+            except:
+                pass
+
+    print(f"После пинга осталось: {len(good_links)}", file=sys.stderr)
+
+    if not good_links:
+        print("Нет рабочих ключей", file=sys.stderr)
+        with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+            json.dump([], f)
+        sys.exit(0)
+
+    # Теперь группируем хорошие ссылки по тем же группам (но только те, которые прошли пинг)
+    # Создаём словарь групп с отфильтрованными items
+    filtered_groups = {}
+    for gname, gdata in all_groups.items():
+        filtered_items = [link for link in gdata["items"] if link in good_links]
+        if filtered_items:
+            filtered_groups[gname] = {
+                "remarks": gdata["remarks"],
+                "dns": gdata["dns"],
+                "routing": gdata["routing"],
+                "inbounds": gdata["inbounds"],
+                "items": filtered_items
+            }
+
+    # Теперь обрабатываем группы с учётом ограничения 5 на страну
+    final_groups = []
+    auto_items = []
+    countries = {}
+
+    for gname, gdata in filtered_groups.items():
+        items = gdata["items"]
+        if not items:
+            continue
+        # Определяем авто
+        if re.search(r'(авто|auto)', gname, re.I):
+            auto_items.extend(items)
+            continue
+        # Определяем страну (если есть флаг в названии)
+        has_flag = False
+        for i in range(len(gname)-1):
+            if is_flag_emoji(gname[i:i+2]):
+                has_flag = True
+                break
+        if has_flag:
+            country_name = gname
+            if country_name not in countries:
+                countries[country_name] = []
+            countries[country_name].extend(items)
+        else:
+            # Пытаемся найти ключевое слово страны в названии
+            lower = gname.lower()
+            found = False
+            for key in COUNTRY_KEYS:
+                if key in lower:
+                    flag, name_ru = COUNTRY_MAP[key]
+                    new_name = f"{flag} {name_ru}"
+                    if new_name not in countries:
+                        countries[new_name] = []
+                    countries[new_name].extend(items)
+                    found = True
+                    break
+            if not found:
+                # Неизвестная группа – игнорируем (или можно добавить в авто?)
+                # По условию, если нет страны и не авто, то удаляем
+                pass
+
+    # Обрабатываем авто
+    if auto_items:
+        total_auto = len(auto_items)
+        num_auto_groups = (total_auto + MAX_KEYS_PER_GROUP - 1) // MAX_KEYS_PER_GROUP
+        for i in range(num_auto_groups):
+            start = i * MAX_KEYS_PER_GROUP
+            end = min((i+1)*MAX_KEYS_PER_GROUP, total_auto)
+            group_name = "🇸🇴 Авто выбор локации 🚀" if i == 0 else f"🇸🇴 Авто выбор локации 🚀 {i+1}"
+            final_groups.append({
+                "remarks": group_name,
+                "items": auto_items[start:end]
+            })
+
+    # Обрабатываем страны с ограничением 5 групп
+    country_names = sorted(countries.keys())
+    for country_name in country_names:
+        items = countries[country_name]
+        total = len(items)
+        needed = (total + MAX_KEYS_PER_GROUP - 1) // MAX_KEYS_PER_GROUP
+        max_groups = min(needed, MAX_GROUPS_PER_COUNTRY)
+        for i in range(max_groups):
+            start = i * MAX_KEYS_PER_GROUP
+            end = min((i+1)*MAX_KEYS_PER_GROUP, total)
+            group_name = country_name if i == 0 else f"{country_name} {i+1}"
+            final_groups.append({
+                "remarks": group_name,
+                "items": items[start:end]
+            })
+        if needed > MAX_GROUPS_PER_COUNTRY:
+            print(f"[WARN] Для страны {country_name} есть ещё {total - MAX_GROUPS_PER_COUNTRY*MAX_KEYS_PER_GROUP} ключей, они не будут включены (макс. {MAX_GROUPS_PER_COUNTRY} групп)", file=sys.stderr)
+
+    # Построение outbound и финального JSON
+    output_data = []
+    for group in final_groups:
+        outbounds = []
+        for link in group["items"]:
+            ob = build_outbound_from_link(link)
+            if ob:
+                outbounds.append(ob)
+        if not outbounds:
+            continue
+
+        if not any(ob.get("tag") == "direct" for ob in outbounds):
+            outbounds.append({"tag": "direct", "protocol": "freedom"})
+        if not any(ob.get("tag") == "block" for ob in outbounds):
+            outbounds.append({"tag": "block", "protocol": "blackhole"})
+
+        counter = 1
+        for ob in outbounds:
+            if ob.get("tag") == "proxy":
+                ob["tag"] = f"proxy-{counter}"
+                counter += 1
+
+        dns = {"servers": ["1.1.1.1", "1.0.0.1"], "queryStrategy": "UseIP"}
+        routing = {
+            "rules": [{"type": "field", "protocol": ["bittorrent"], "outboundTag": "direct"}],
+            "domainMatcher": "hybrid",
+            "domainStrategy": "IPIfNonMatch"
+        }
+        inbounds = [
+            {"tag": "socks", "port": 10808, "listen": "127.0.0.1", "protocol": "socks",
+             "settings": {"udp": True, "auth": "noauth"},
+             "sniffing": {"enabled": True, "routeOnly": False, "destOverride": ["http", "tls", "quic"]}},
+            {"tag": "http", "port": 10809, "listen": "127.0.0.1", "protocol": "http",
+             "settings": {"allowTransparent": False},
+             "sniffing": {"enabled": True, "routeOnly": False, "destOverride": ["http", "tls", "quic"]}}
+        ]
+
+        output_data.append({
+            "remarks": group["remarks"],
+            "dns": dns,
+            "routing": routing,
+            "inbounds": inbounds,
+            "outbounds": outbounds
+        })
+
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-        json.dump(result, f, ensure_ascii=False, indent=2)
-    print(f"Сохранено в {OUTPUT_FILE}", file=sys.stderr)
+        json.dump(output_data, f, ensure_ascii=False, indent=2)
+
+    print(f"Сохранено в {OUTPUT_FILE}, групп: {len(output_data)}", file=sys.stderr)
 
 if __name__ == "__main__":
     try:
