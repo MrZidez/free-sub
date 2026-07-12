@@ -20,7 +20,7 @@ except ImportError:
 # ==================== КОНФИГУРАЦИЯ ====================
 SOURCE_URL = "https://raw.githubusercontent.com/MrZidez/free-sub/refs/heads/main/source"
 USER_AGENT = "happ"
-PING_THRESHOLD_MS = 300
+PING_THRESHOLD_MS = 200
 MAX_KEYS_PER_GROUP = 35
 MAX_GROUPS_PER_COUNTRY = 5
 OUTPUT_FILE = "FREE-VPN-FROM-KIRILL.json"
@@ -463,7 +463,6 @@ def parse_subscription_content(content: str) -> Dict[str, Dict[str, Any]]:
                 if current_group and current_group in groups:
                     groups[current_group]["items"].append(link)
                 else:
-                    # Если нет группы, создаём временную "Unknown" (потом удалим)
                     if "Unknown" not in groups:
                         groups["Unknown"] = {"remarks":"Unknown","dns":None,"routing":None,"inbounds":None,"items":[]}
                     groups["Unknown"]["items"].append(link)
@@ -530,16 +529,12 @@ def main():
     # Группируем хорошие ссылки по странам (без авто-группы)
     countries = {}  # key: "🇩🇪 Германия", value: список ссылок
     for link in good_links:
-        # Определяем страну по названию группы, к которой принадлежала ссылка
         group_name = link_to_group.get(link, "")
-        # Если группа "Unknown" или пустая, пытаемся извлечь страну из remarks
         if not group_name or group_name == "Unknown":
-            # извлекаем remarks из ссылки
             remarks = ""
             if '#' in link:
                 _, remarks = link.split('#', 1)
                 remarks = urllib.parse.unquote(remarks)
-            # ищем страну в remarks
             if remarks:
                 lower_rem = remarks.lower()
                 found = False
@@ -553,12 +548,10 @@ def main():
                         found = True
                         break
                 if not found:
-                    # если не нашли, игнорируем
                     continue
             else:
                 continue
         else:
-            # Проверяем, есть ли в названии группы флаг (значит, уже страна)
             has_flag = False
             for i in range(len(group_name)-1):
                 if is_flag_emoji(group_name[i:i+2]):
@@ -567,7 +560,6 @@ def main():
             if has_flag:
                 country_key = group_name
             else:
-                # Пытаемся найти страну в названии группы
                 lower = group_name.lower()
                 found = False
                 for key in COUNTRY_KEYS:
@@ -577,7 +569,6 @@ def main():
                         found = True
                         break
                 if not found:
-                    # Игнорируем
                     continue
             if country_key not in countries:
                 countries[country_key] = []
@@ -589,7 +580,7 @@ def main():
             json.dump([], f)
         sys.exit(0)
 
-    # Формируем финальные группы с ограничением 5 на страну
+    # Формируем финальные группы с ограничением 5 на страну и суффиксом
     final_groups = []
     for country_name, items in sorted(countries.items()):
         total = len(items)
@@ -598,7 +589,8 @@ def main():
         for i in range(max_groups):
             start = i * MAX_KEYS_PER_GROUP
             end = min((i+1)*MAX_KEYS_PER_GROUP, total)
-            group_label = country_name if i == 0 else f"{country_name} {i+1}"
+            base_name = country_name if i == 0 else f"{country_name} {i+1}"
+            group_label = f"{base_name} | @TourFromKirill"
             final_groups.append({
                 "remarks": group_label,
                 "items": items[start:end]
