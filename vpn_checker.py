@@ -955,9 +955,8 @@ def main():
         output.append(test_profile)
         logger.info("✅ Тестовый профиль добавлен")
     
-    # Принудительно добавляем суффикс
     for p in output:
-        if '@TourFromKirill' not in p['remarks']:
+        if 'remarks' in p and '@TourFromKirill' not in p['remarks']:
             p['remarks'] = p['remarks'] + ' | @TourFromKirill'
             logger.info(f"✏️ Добавлен суффикс: {p['remarks']}")
     
