@@ -1,58 +1,42 @@
-name: Update VPN Subscription
+name: VPN Ping Checker
 
 on:
   schedule:
-    - cron: '0 0 * * *'
-  workflow_dispatch:          # для ручного запуска
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
-  build:
+  check-vpn:
     runs-on: ubuntu-latest
     permissions:
-      contents: write          # даём права на запись в репозиторий
-
+      contents: write
+    
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-        with:
-          # Если используете персональный токен, раскомментируйте:
-          # token: ${{ secrets.GH_PAT }}
-          fetch-depth: 0       # нужен полный доступ к истории для pull и push
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.10'
-
-      - name: Install dependencies
-        run: |
-          pip install requests
-          pip install ping3 || true   # опционально
-
-      - name: Run parser
-        run: |
-          python -u vpn_checker.py 2>&1 | tee output.log
-          exit ${PIPESTATUS[0]}
-
-      - name: Upload artifact (for download)
-        uses: actions/upload-artifact@v5
-        with:
-          name: vpn-subscription
-          path: FREE-VPN-FROM-KIRILL.json
-
-      - name: Commit and push if changed
-        env:
-          # GITHUB_TOKEN автоматически доступен, но можно явно передать
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add FREE-VPN-FROM-KIRILL.json
-          if git diff --staged --quiet; then
-            echo "No changes to commit, skipping push."
-          else
-            git commit -m "Auto-update subscription $(date -u '+%Y-%m-%d %H:%M:%S')"
-            # Обновляем локальную ветку перед пушем (избегаем конфликтов)
-            git pull --rebase origin ${{ github.ref_name }} || true
-            git push origin ${{ github.ref_name }}
-          fi
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+    
+    - name: Run VPN checker
+      run: python vpn_checker.py
+      env:
+        TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+        TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+    
+    - name: Commit and push
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add FREE-VPN-FROM-KIRILL.json
+        git diff --staged --quiet || (git commit -m "Update VPN keys $(date -u '+%Y-%m-%d %H:%M:%S')" && git push)
+      continue-on-error: true
