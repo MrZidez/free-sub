@@ -1,5 +1,5 @@
       'profile-title': 'Free Vpn From KIrill',
-      'announce': 'Бесплатная подписка',
+      'announce': 'Бесплатная подписка тест',
       'profile-update-interval': '12',
       'profile-web-page-url': 'https://free.vpn-from-kirill.workers.dev/',
       'support-url': 'https://t.me/TourFromKirill',
