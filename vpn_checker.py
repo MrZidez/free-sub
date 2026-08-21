@@ -788,6 +788,11 @@ def main():
         }
         output.append(metadata)
 
+    # ПРИНУДИТЕЛЬНО добавляем суффикс, если его нет
+    for p in output:
+        if '@TourFromKirill' not in p['remarks']:
+            p['remarks'] = p['remarks'] + ' | @TourFromKirill'
+
     # Сохраняем
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         if COMPRESS_OUTPUT:
