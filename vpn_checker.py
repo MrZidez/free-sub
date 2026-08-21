@@ -2,7 +2,8 @@
 """
 VPN Parser & Country Grouper
 Parses VPN links from sources, filters valid ones, groups by country.
-Supports .env configuration, caching, logging, retry, Telegram notifications.
+Supports: VLESS, TROJAN, VMess, Hysteria2
+Output: Sing-Box JSON format
 """
 
 import json
@@ -11,6 +12,10 @@ import os
 import time
 import logging
 import urllib.parse
+import base64
+import subprocess
+import platform
+import hashlib
 from pathlib import Path
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -23,7 +28,6 @@ try:
     from dotenv import load_dotenv
     load_dotenv()
 except ImportError:
-    print("⚠️ python-dotenv не установлен. Установи: pip install python-dotenv")
     # Пробуем загрузить вручную
     env_file = Path(".env")
     if env_file.exists():
@@ -42,10 +46,8 @@ def get_env(key: str, default: Any = None) -> Any:
     value = os.getenv(key, default)
     if value is None:
         return default
-    # Преобразование булевых значений
     if isinstance(default, bool):
         return value.lower() in ("true", "1", "yes", "on")
-    # Преобразование чисел
     if isinstance(default, int):
         try:
             return int(value)
@@ -77,6 +79,8 @@ ENABLE_RATING = get_env("ENABLE_RATING", False)
 ENABLE_LOGGING = get_env("ENABLE_LOGGING", True)
 LOG_LEVEL = get_env("LOG_LEVEL", "INFO")
 LOG_DIR = get_env("LOG_DIR", "logs")
+COMPRESS_OUTPUT = get_env("COMPRESS_OUTPUT", False)
+ADD_METADATA = get_env("ADD_METADATA", True)
 
 TG_BOT_TOKEN = get_env("TG_BOT_TOKEN", "")
 TG_CHAT_ID = get_env("TG_CHAT_ID", "")
@@ -87,11 +91,9 @@ TG_DISABLED = not TG_BOT_TOKEN or not TG_CHAT_ID
 # ============================================================
 #  ИНИЦИАЛИЗАЦИЯ
 # ============================================================
-# Создаём необходимые папки
 Path(CACHE_DIR).mkdir(exist_ok=True)
 Path(LOG_DIR).mkdir(exist_ok=True)
 
-# Настройка логирования
 if ENABLE_LOGGING:
     logging.basicConfig(
         level=getattr(logging, LOG_LEVEL.upper(), logging.INFO),
@@ -216,7 +218,6 @@ def load_sources(filepath: str) -> List[str]:
 
 def get_cache_path(url: str) -> Path:
     """Возвращает путь к кэш-файлу для URL."""
-    import hashlib
     url_hash = hashlib.md5(url.encode()).hexdigest()
     return Path(CACHE_DIR) / f"{url_hash}.cache"
 
@@ -228,7 +229,6 @@ def load_from_cache(url: str) -> Optional[List[Tuple[str, str]]]:
     cache_path = get_cache_path(url)
     if not cache_path.exists():
         return None
-    # Проверяем TTL
     if time.time() - cache_path.stat().st_mtime > CACHE_TTL:
         logger.debug(f"Кэш истёк для {url[:50]}...")
         return None
@@ -266,7 +266,7 @@ def fetch_with_retry(url: str, max_retries: int = 3, delay: int = 2) -> Optional
             if resp.status_code == 200:
                 return resp
             if attempt < max_retries - 1:
-                wait = delay * (2 ** attempt)  # Экспоненциальная задержка
+                wait = delay * (2 ** attempt)
                 logger.warning(f"Попытка {attempt+1}/{max_retries} для {url[:50]}... статус {resp.status_code}, повтор через {wait}с")
                 time.sleep(wait)
         except Exception as e:
@@ -328,8 +328,6 @@ def detect_country(key: str) -> Optional[Tuple[str, str]]:
 
 def check_ping(hostname: str, threshold: int) -> bool:
     """Проверяет пинг до сервера."""
-    import subprocess
-    import platform
     try:
         param = "-n" if platform.system().lower() == "windows" else "-c"
         cmd = ["ping", param, "1", "-W", str(threshold // 1000 + 1), hostname]
@@ -352,6 +350,9 @@ def get_geo_info(ip: str) -> Optional[Dict]:
     return None
 
 
+# ============================================================
+#  ПАРСИНГ ПРОТОКОЛОВ
+# ============================================================
 def parse_vless_key(key: str) -> Optional[Dict]:
     """Парсит vless:// ключ в Sing-Box outbound"""
     try:
@@ -381,10 +382,7 @@ def parse_vless_key(key: str) -> Optional[Dict]:
         security = query.get("security", ["none"])[0]
         network = query.get("type", ["tcp"])[0]
 
-        stream = {
-            "network": network,
-            "security": security
-        }
+        stream = {"network": network, "security": security}
 
         if network == "ws":
             ws = {"path": query.get("path", ["/"])[0]}
@@ -451,10 +449,7 @@ def parse_trojan_key(key: str) -> Optional[Dict]:
         security = query.get("security", ["tls"])[0]
         network = query.get("type", ["tcp"])[0]
 
-        stream = {
-            "network": network,
-            "security": security
-        }
+        stream = {"network": network, "security": security}
 
         if network == "ws":
             ws = {"path": query.get("path", ["/"])[0]}
@@ -476,12 +471,109 @@ def parse_trojan_key(key: str) -> Optional[Dict]:
         return None
 
 
+def parse_vmess_key(key: str) -> Optional[Dict]:
+    """Парсит vmess:// ключ в Sing-Box outbound"""
+    try:
+        encoded = key.replace("vmess://", "")
+        # Добиваем base64 если нужно
+        missing_padding = len(encoded) % 4
+        if missing_padding:
+            encoded += "=" * (4 - missing_padding)
+        decoded = base64.b64decode(encoded).decode("utf-8")
+        data = json.loads(decoded)
+
+        outbound = {
+            "protocol": "vmess",
+            "settings": {
+                "vnext": [{
+                    "address": data.get("add", ""),
+                    "port": data.get("port", 443),
+                    "users": [{
+                        "id": data.get("id", ""),
+                        "security": data.get("scy", "auto"),
+                        "alterId": data.get("aid", 0)
+                    }]
+                }]
+            },
+            "streamSettings": {}
+        }
+
+        network = data.get("net", "tcp")
+        security = data.get("tls", "none")
+        stream = {"network": network, "security": security if security != "none" else "none"}
+
+        if network == "ws":
+            ws = {"path": data.get("path", "/")}
+            if data.get("host"):
+                ws["headers"] = {"Host": data.get("host")}
+            stream["wsSettings"] = ws
+
+        if network == "grpc":
+            stream["grpcSettings"] = {
+                "serviceName": data.get("serviceName", ""),
+                "multiMode": True
+            }
+
+        if security == "tls":
+            stream["tlsSettings"] = {
+                "serverName": data.get("sni", data.get("add", "")),
+                "fingerprint": data.get("fp", "chrome"),
+                "allowInsecure": False
+            }
+
+        outbound["streamSettings"] = stream
+        return outbound
+    except Exception as e:
+        logger.debug(f"Ошибка парсинга VMess: {e}")
+        return None
+
+
+def parse_hysteria_key(key: str) -> Optional[Dict]:
+    """Парсит hysteria:// ключ в Sing-Box outbound"""
+    try:
+        parsed = urllib.parse.urlparse(key)
+        query = urllib.parse.parse_qs(parsed.query)
+        hostname = parsed.hostname or ""
+        port = parsed.port or 443
+        auth = parsed.username or ""
+
+        outbound = {
+            "protocol": "hysteria",
+            "settings": {
+                "servers": [{
+                    "address": hostname,
+                    "port": port,
+                    "auth": auth,
+                    "sni": query.get("sni", [hostname])[0],
+                    "up_mbps": int(query.get("up_mbps", [10])[0]),
+                    "down_mbps": int(query.get("down_mbps", [50])[0])
+                }]
+            },
+            "streamSettings": {
+                "network": "udp",
+                "security": query.get("security", ["tls"])[0],
+                "tlsSettings": {
+                    "serverName": query.get("sni", [hostname])[0],
+                    "allowInsecure": True
+                }
+            }
+        }
+        return outbound
+    except Exception as e:
+        logger.debug(f"Ошибка парсинга Hysteria: {e}")
+        return None
+
+
 def parse_key_to_outbound(key: str, index: int) -> Optional[Dict]:
     """Конвертирует ключ в Sing-Box outbound"""
     if key.startswith("vless://"):
         outbound = parse_vless_key(key)
     elif key.startswith("trojan://"):
         outbound = parse_trojan_key(key)
+    elif key.startswith("vmess://"):
+        outbound = parse_vmess_key(key)
+    elif key.startswith("hysteria://"):
+        outbound = parse_hysteria_key(key)
     else:
         return None
 
@@ -521,12 +613,10 @@ def deduplicate_keys(keys: List[str]) -> List[str]:
 
 def fetch_url(url: str) -> List[Tuple[str, str]]:
     """Загружает и парсит один источник."""
-    # Пробуем загрузить из кэша
     cached = load_from_cache(url)
     if cached is not None:
         return cached
 
-    # Загружаем с retry
     resp = fetch_with_retry(url, RETRY_COUNT, RETRY_DELAY)
     if not resp:
         return []
@@ -551,13 +641,11 @@ def fetch_url(url: str) -> List[Tuple[str, str]]:
                 if is_bad_domain(hostname):
                     continue
 
-                # Проверка пинга (если включено)
                 if ENABLE_PING_CHECK:
                     if not check_ping(hostname, PING_THRESHOLD_MS):
                         logger.debug(f"Пинг не пройден: {hostname}")
                         continue
 
-                # Проверка геолокации (если включено)
                 if ENABLE_GEO_CHECK:
                     geo = get_geo_info(hostname)
                     if geo:
@@ -572,7 +660,6 @@ def fetch_url(url: str) -> List[Tuple[str, str]]:
 
         valid_keys.append((country, line))
 
-    # Сохраняем в кэш
     save_to_cache(url, valid_keys)
     return valid_keys
 
@@ -591,7 +678,8 @@ def send_telegram_notification(message: str, is_error: bool = False) -> None:
         payload = {
             "chat_id": TG_CHAT_ID,
             "text": message,
-            "parse_mode": "HTML"
+            "parse_mode": "HTML",
+            "disable_web_page_preview": True
         }
         req.post(url, json=payload, timeout=5)
         logger.info("Уведомление отправлено в Telegram")
@@ -599,6 +687,9 @@ def send_telegram_notification(message: str, is_error: bool = False) -> None:
         logger.error(f"Ошибка отправки уведомления в Telegram: {e}")
 
 
+# ============================================================
+#  MAIN
+# ============================================================
 def main():
     start_time = time.time()
     logger.info("🚀 Запуск VPN Parser v2 (Sing-Box)")
@@ -617,7 +708,6 @@ def main():
     if not TG_DISABLED:
         logger.info(f"📤 Telegram уведомления: включены")
 
-    # Загрузка источников
     urls = load_sources(SOURCE_FILE)
     if not urls:
         logger.error("Нет источников для парсинга")
@@ -627,7 +717,6 @@ def main():
 
     logger.info(f"📥 Источников: {len(urls)}")
 
-    # Многопоточная загрузка
     grouped = {}
     total = 0
     errors = 0
@@ -647,7 +736,6 @@ def main():
                 errors += 1
                 logger.error(f"  [{i}/{len(urls)}] ❌ {url[:50]}... ошибка: {e}")
 
-    # Дедупликация
     if ENABLE_DEDUP:
         logger.info("🔄 Дедупликация ключей...")
         for country, keys in grouped.items():
@@ -657,13 +745,11 @@ def main():
             if before != after:
                 logger.info(f"  {country}: удалено {before - after} дублей")
 
-    # Статистика
     logger.info(f"\n📊 Всего ключей: {total}")
     logger.info("📊 По странам:")
     for country, keys in sorted(grouped.items(), key=lambda x: -len(x[1])):
         logger.info(f"  {country}: {len(keys)}")
 
-    # Формируем JSON с группировкой
     output = []
 
     for country, keys in grouped.items():
@@ -697,19 +783,39 @@ def main():
             }
             output.append(profile)
 
+    # Добавляем метаданные
+    if ADD_METADATA:
+        elapsed = time.time() - start_time
+        total_profiles = len(output)
+        total_servers = sum(len(p['outbounds']) - 2 for p in output)
+        metadata = {
+            "_metadata": {
+                "generated": datetime.now().isoformat(),
+                "total_servers": total_servers,
+                "total_profiles": total_profiles,
+                "total_countries": len(grouped),
+                "sources": len(urls),
+                "errors": errors,
+                "elapsed_seconds": round(elapsed, 2)
+            }
+        }
+        output.append(metadata)
+
     # Сохраняем
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-        json.dump(output, f, ensure_ascii=False, indent=2)
+        if COMPRESS_OUTPUT:
+            json.dump(output, f, ensure_ascii=False, separators=(',', ':'))
+        else:
+            json.dump(output, f, ensure_ascii=False, indent=2)
 
     elapsed = time.time() - start_time
-    total_profiles = len(output)
-    total_servers = sum(len(p['outbounds']) - 2 for p in output)
+    total_profiles = len(output) - (1 if ADD_METADATA else 0)
+    total_servers = sum(len(p['outbounds']) - 2 for p in output if 'outbounds' in p)
 
     logger.info(f"\n✅ Сохранено {total_profiles} профилей в {OUTPUT_FILE}")
     logger.info(f"📊 Серверов: {total_servers}")
     logger.info(f"⏱️ Время выполнения: {elapsed:.2f}с")
 
-    # Telegram уведомление
     if not TG_DISABLED:
         status = "✅ УСПЕХ" if errors == 0 else f"⚠️ ЧАСТИЧНЫЙ УСПЕХ ({errors} ошибок)"
         message = f"""<b>VPN Parser</b>
@@ -738,7 +844,6 @@ if __name__ == "__main__":
         import traceback
         logger.error(traceback.format_exc())
 
-        # Telegram уведомление об ошибке
         if not TG_DISABLED:
             message = f"""<b>❌ КРИТИЧЕСКАЯ ОШИБКА</b>
 <code>{str(e)}</code>
