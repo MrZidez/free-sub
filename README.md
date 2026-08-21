@@ -14,7 +14,6 @@
 - [Возможности](#-возможности)
 - [Установка](#-установка)
 - [Запуск](#-запуск)
-- [Формат вывода](#-формат-вывода)
 - [Переменные окружения](#-переменные-окружения)
 - [Telegram уведомления](#-telegram-уведомления)
 - [GitHub Actions](#-github-actions)
@@ -92,117 +91,6 @@ python vpn_checker.py --debug
 
 ```bash
 python vpn_checker.py
-```
-
----
-
-## 📄 Формат вывода
-
-### Пример `FREE-VPN-FROM-KIRILL.json`
-
-```json
-[
-  {
-    "remarks": "🇷🇺 Россия",
-    "dns": {
-      "servers": ["1.1.1.1", "1.0.0.1"],
-      "queryStrategy": "UseIP"
-    },
-    "routing": {
-      "rules": [
-        {
-          "type": "field",
-          "protocol": ["bittorrent"],
-          "outboundTag": "direct"
-        }
-      ],
-      "domainMatcher": "hybrid",
-      "domainStrategy": "IPIfNonMatch"
-    },
-    "inbounds": [
-      {
-        "tag": "socks",
-        "port": 10808,
-        "listen": "127.0.0.1",
-        "protocol": "socks",
-        "settings": {"udp": true, "auth": "noauth"},
-        "sniffing": {
-          "enabled": true,
-          "routeOnly": false,
-          "destOverride": ["http", "tls", "quic"]
-        }
-      },
-      {
-        "tag": "http",
-        "port": 10809,
-        "listen": "127.0.0.1",
-        "protocol": "http",
-        "settings": {"allowTransparent": false},
-        "sniffing": {
-          "enabled": true,
-          "routeOnly": false,
-          "destOverride": ["http", "tls", "quic"]
-        }
-      }
-    ],
-    "outbounds": [
-      {
-        "tag": "proxy-1",
-        "protocol": "vless",
-        "settings": {
-          "vnext": [
-            {
-              "address": "91.185.83.127",
-              "port": 443,
-              "users": [
-                {
-                  "id": "f013e723-e1fb-4cfb-b0e2-044fe058954a",
-                  "encryption": "none",
-                  "flow": "",
-                  "level": 0
-                }
-              ]
-            }
-          ]
-        },
-        "streamSettings": {
-          "network": "grpc",
-          "security": "reality",
-          "realitySettings": {
-            "serverName": "max.ru",
-            "fingerprint": "qq",
-            "publicKey": "t192lvTN6ZtCch9LSAkLOKnKuyYdLLaTJx8tn3VRHz0",
-            "shortId": "dfdee30a27b11f0f"
-          },
-          "grpcSettings": {
-            "serviceName": "grpc",
-            "multiMode": true
-          }
-        }
-      },
-      {"tag": "direct", "protocol": "freedom"},
-      {"tag": "block", "protocol": "blackhole"}
-    ]
-  }
-]
-```
-
-### Метаданные (если включены)
-
-В конце файла добавляется объект `_metadata`:
-
-```json
-{
-  "_metadata": {
-    "generated": "2026-08-21T15:30:00.123456",
-    "total_servers": 42,
-    "total_profiles": 5,
-    "total_countries": 5,
-    "sources": 10,
-    "errors": 0,
-    "elapsed_seconds": 12.34
-  }
-}
 ```
 
 ---
@@ -300,24 +188,6 @@ echo "https://example.com/source.txt" > source
 python vpn_checker.py
 ```
 
-### Структура проекта
-
-```
-free-sub/
-├── .env                    # Конфигурация
-├── source                  # Список источников
-├── vpn_checker.py         # Основной скрипт
-├── requirements.txt       # Зависимости
-├── README.md              # Документация
-├── cache/                 # Кэш загрузок
-│   └── *.cache
-├── logs/                  # Логи
-│   └── vpn-parser.log
-└── FREE-VPN-FROM-KIRILL.json  # Выходной файл
-```
-
----
-
 ## ❓ FAQ
 
 ### Q: Почему ключи не добавляются в JSON?
@@ -361,59 +231,9 @@ MIT License © 2026 [VPN From Kirill](https://t.me/TourFromKirill)
 
 ---
 
-## 📞 Контакты
-
-- **Telegram канал:** [@TourFromKirill](https://t.me/TourFromKirill)
-- **GitHub:** [MrZidez/free-sub](https://github.com/MrZidez/free-sub)
-
 ---
 
 > 🚀 **Сделано с ❤️ для бесплатного интернета!**
-```
-
-## 📦 Файл `.env.example`
-
-```env
-# ============================================================
-#  VPN PARSER CONFIGURATION
-# ============================================================
-
-# --- Основные настройки ---
-USER_AGENT="happ"
-PING_THRESHOLD_MS=250
-MAX_KEYS_PER_GROUP=8
-MAX_GROUPS_PER_COUNTRY=5
-SOURCE_FILE="source"
-OUTPUT_FILE="FREE-VPN-FROM-KIRILL.json"
-TIMEOUT=15
-MAX_WORKERS=10
-
-# --- Кэширование ---
-CACHE_ENABLED=true
-CACHE_TTL=3600
-CACHE_DIR="cache"
-
-# --- Retry-механизм ---
-RETRY_ENABLED=true
-RETRY_COUNT=3
-RETRY_DELAY=2
-
-# --- Фичи ---
-ENABLE_PING_CHECK=false
-ENABLE_GEO_CHECK=false
-ENABLE_DEDUP=true
-ENABLE_RATING=false
-ENABLE_LOGGING=true
-LOG_LEVEL="INFO"
-LOG_DIR="logs"
-COMPRESS_OUTPUT=false
-ADD_METADATA=true
-
-# --- Telegram уведомления ---
-TG_BOT_TOKEN=""
-TG_CHAT_ID=""
-TG_NOTIFY_ON_SUCCESS=true
-TG_NOTIFY_ON_ERROR=true
 ```
 
 ps
