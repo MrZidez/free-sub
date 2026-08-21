@@ -220,7 +220,7 @@ ENABLE_LOGGING = get_env("ENABLE_LOGGING", True)
 LOG_LEVEL = get_env("LOG_LEVEL", "INFO")
 LOG_DIR = get_env("LOG_DIR", "logs")
 COMPRESS_OUTPUT = get_env("COMPRESS_OUTPUT", False)
-ADD_METADATA = get_env("ADD_METADATA", True)
+ADD_METADATA = get_env("ADD_METADATA", False)
 
 TG_BOT_TOKEN = get_env("TG_BOT_TOKEN", "")
 TG_CHAT_ID = get_env("TG_CHAT_ID", "")
