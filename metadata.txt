@@ -1,7 +1,7 @@
-'profile-title': 'Free Vpn From KIrill',
-'announce': 'Бесплатная подписка1',
-'profile-update-interval': '12',
-'profile-web-page-url': 'https://free.vpn-from-kirill.workers.dev/',
-'support-url': 'https://t.me/TourFromKirill',
-'subscription-userinfo': 'upload=0; download=0; total=0; expire=1893456000',
-'hide-settings': '1'
+            "profile-title": metadata['profile-title'] || 'Free Vpn From KIrill',
+            "announce": metadata['announce'] || 'Бесплатная подписка',
+            "profile-update-interval": parseInt(metadata['profile-update-interval']) || 12,
+            "profile-web-page-url": metadata['profile-web-page-url'] || 'https://free.vpn-from-kirill.workers.dev/',
+            "support-url": metadata['support-url'] || 'https://t.me/TourFromKirill',
+            "subscription-userinfo": metadata['subscription-userinfo'] || 'upload=0; download=0; total=0; expire=0',
+            "hide-settings": metadata['hide-settings'] || '1'
