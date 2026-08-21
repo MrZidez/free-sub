@@ -6,9 +6,42 @@ Supports: VLESS, TROJAN, VMess, Hysteria2
 Output: Sing-Box JSON format
 """
 
-import json
 import sys
 import os
+
+# ============================================================
+#  МАКСИМАЛЬНАЯ ОТЛАДКА В САМОМ НАЧАЛЕ
+# ============================================================
+print("=" * 50)
+print("🚀 СТАРТ СКРИПТА")
+print(f"🐍 Python: {sys.version}")
+print(f"📁 Текущая директория: {os.getcwd()}")
+print("=" * 50)
+
+# Пытаемся импортировать requests
+try:
+    import requests
+    print("✅ requests импортирован успешно")
+except ImportError as e:
+    print(f"❌ ОШИБКА импорта requests: {e}")
+    print("💡 Попробуйте установить: pip install requests")
+    sys.exit(1)
+
+# Пытаемся импортировать dotenv
+try:
+    from dotenv import load_dotenv
+    print("✅ python-dotenv импортирован успешно")
+except ImportError as e:
+    print(f"❌ ОШИБКА импорта python-dotenv: {e}")
+    print("💡 Попробуйте установить: pip install python-dotenv")
+    sys.exit(1)
+
+print("=" * 50)
+
+# ============================================================
+#  ОСТАЛЬНЫЕ ИМПОРТЫ
+# ============================================================
+import json
 import time
 import logging
 import urllib.parse
@@ -22,22 +55,32 @@ from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Tuple, Optional, Dict, Any
 
+print("✅ Все импорты выполнены")
+
 # ============================================================
 #  ЗАГРУЗКА .ENV
 # ============================================================
+print("📂 Загрузка .env...")
 try:
-    from dotenv import load_dotenv
     load_dotenv()
-except ImportError:
+    print("✅ .env загружен через load_dotenv()")
+except Exception as e:
+    print(f"⚠️ Ошибка load_dotenv(): {e}")
     # Пробуем загрузить вручную
     env_file = Path(".env")
     if env_file.exists():
+        print(f"📂 Найден файл .env, загружаю вручную...")
         with open(env_file, "r") as f:
             for line in f:
                 line = line.strip()
                 if line and not line.startswith("#") and "=" in line:
                     key, value = line.split("=", 1)
                     os.environ[key.strip()] = value.strip().strip('"')
+        print("✅ .env загружен вручную")
+    else:
+        print("⚠️ Файл .env не найден")
+
+print("=" * 50)
 
 # ============================================================
 #  КОНФИГУРАЦИЯ ИЗ .ENV
@@ -56,6 +99,7 @@ def get_env(key: str, default: Any = None) -> Any:
             return default
     return value
 
+print("📋 Чтение конфигурации из .env...")
 USER_AGENT = get_env("USER_AGENT", "happ")
 PING_THRESHOLD_MS = get_env("PING_THRESHOLD_MS", 250)
 MAX_KEYS_PER_GROUP = get_env("MAX_KEYS_PER_GROUP", 8)
@@ -73,10 +117,10 @@ RETRY_ENABLED = get_env("RETRY_ENABLED", True)
 RETRY_COUNT = get_env("RETRY_COUNT", 3)
 RETRY_DELAY = get_env("RETRY_DELAY", 2)
 
-ENABLE_PING_CHECK = get_env("ENABLE_PING_CHECK", True)
-ENABLE_GEO_CHECK = get_env("ENABLE_GEO_CHECK", True)
+ENABLE_PING_CHECK = get_env("ENABLE_PING_CHECK", False)
+ENABLE_GEO_CHECK = get_env("ENABLE_GEO_CHECK", False)
 ENABLE_DEDUP = get_env("ENABLE_DEDUP", True)
-ENABLE_RATING = get_env("ENABLE_RATING", True)
+ENABLE_RATING = get_env("ENABLE_RATING", False)
 ENABLE_LOGGING = get_env("ENABLE_LOGGING", True)
 LOG_LEVEL = get_env("LOG_LEVEL", "INFO")
 LOG_DIR = get_env("LOG_DIR", "logs")
@@ -89,14 +133,19 @@ TG_NOTIFY_ON_SUCCESS = get_env("TG_NOTIFY_ON_SUCCESS", True)
 TG_NOTIFY_ON_ERROR = get_env("TG_NOTIFY_ON_ERROR", True)
 TG_DISABLED = not TG_BOT_TOKEN or not TG_CHAT_ID
 
+print(f"📋 SOURCE_FILE: {SOURCE_FILE}")
+print(f"📋 OUTPUT_FILE: {OUTPUT_FILE}")
+print("=" * 50)
+
 # ============================================================
 #  ИНИЦИАЛИЗАЦИЯ
 # ============================================================
 try:
     Path(CACHE_DIR).mkdir(exist_ok=True)
     Path(LOG_DIR).mkdir(exist_ok=True)
-except Exception:
-    pass
+    print(f"✅ Папки созданы: {CACHE_DIR}, {LOG_DIR}")
+except Exception as e:
+    print(f"⚠️ Ошибка создания папок: {e}")
 
 if ENABLE_LOGGING:
     logging.basicConfig(
@@ -111,6 +160,7 @@ else:
     logging.basicConfig(handlers=[logging.NullHandler()])
 
 logger = logging.getLogger(__name__)
+logger.info("🚀 VPN Parser v2 (Sing-Box) с отладкой")
 
 # ============================================================
 #  ПРОТОКОЛЫ И СТРАНЫ
@@ -155,9 +205,6 @@ COUNTRY_CODES = {
     "TR": "🇹🇷", "AE": "🇦🇪", "IL": "🇮🇱", "ZA": "🇿🇦",
     "AR": "🇦🇷", "MX": "🇲🇽"
 }
-
-# Суффикс для названий групп
-GROUP_SUFFIX = "| @TourFromKirill"
 
 # ============================================================
 #  БАЗОВАЯ СТРУКТУРА SING-BOX
@@ -678,7 +725,6 @@ def send_telegram_notification(message: str, is_error: bool = False) -> None:
 #  MAIN
 # ============================================================
 def main():
-    start_time = time.time()
     logger.info("🚀 Запуск VPN Parser v2 (Sing-Box)")
     logger.info(f"⏰ {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     logger.info(f"📋 User-Agent: {USER_AGENT or 'не задан'}")
@@ -695,6 +741,7 @@ def main():
     if not TG_DISABLED:
         logger.info(f"📤 Telegram уведомления: включены")
 
+    logger.info("📂 Проверяю файл source...")
     urls = load_sources(SOURCE_FILE)
     if not urls:
         logger.error("Нет источников для парсинга")
@@ -789,7 +836,7 @@ def main():
         output.append(metadata)
 
     # ============================================================
-    #  ОТЛАДКА: ПРИНУДИТЕЛЬНАЯ ЗАПИСЬ
+    #  ПРИНУДИТЕЛЬНАЯ ЗАПИСЬ
     # ============================================================
     logger.info("🔍 ПРИНУДИТЕЛЬНАЯ ЗАПИСЬ ФАЙЛА")
     logger.info(f"📊 output содержит {len(output)} профилей")
