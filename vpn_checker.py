@@ -16,6 +16,7 @@ import base64
 import subprocess
 import platform
 import hashlib
+import traceback
 from pathlib import Path
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -72,10 +73,10 @@ RETRY_ENABLED = get_env("RETRY_ENABLED", True)
 RETRY_COUNT = get_env("RETRY_COUNT", 3)
 RETRY_DELAY = get_env("RETRY_DELAY", 2)
 
-ENABLE_PING_CHECK = get_env("ENABLE_PING_CHECK", False)
-ENABLE_GEO_CHECK = get_env("ENABLE_GEO_CHECK", False)
+ENABLE_PING_CHECK = get_env("ENABLE_PING_CHECK", True)
+ENABLE_GEO_CHECK = get_env("ENABLE_GEO_CHECK", True)
 ENABLE_DEDUP = get_env("ENABLE_DEDUP", True)
-ENABLE_RATING = get_env("ENABLE_RATING", False)
+ENABLE_RATING = get_env("ENABLE_RATING", True)
 ENABLE_LOGGING = get_env("ENABLE_LOGGING", True)
 LOG_LEVEL = get_env("LOG_LEVEL", "INFO")
 LOG_DIR = get_env("LOG_DIR", "logs")
@@ -91,8 +92,11 @@ TG_DISABLED = not TG_BOT_TOKEN or not TG_CHAT_ID
 # ============================================================
 #  ИНИЦИАЛИЗАЦИЯ
 # ============================================================
-Path(CACHE_DIR).mkdir(exist_ok=True)
-Path(LOG_DIR).mkdir(exist_ok=True)
+try:
+    Path(CACHE_DIR).mkdir(exist_ok=True)
+    Path(LOG_DIR).mkdir(exist_ok=True)
+except Exception:
+    pass
 
 if ENABLE_LOGGING:
     logging.basicConfig(
@@ -151,6 +155,9 @@ COUNTRY_CODES = {
     "TR": "🇹🇷", "AE": "🇦🇪", "IL": "🇮🇱", "ZA": "🇿🇦",
     "AR": "🇦🇷", "MX": "🇲🇽"
 }
+
+# Суффикс для названий групп
+GROUP_SUFFIX = "| @TourFromKirill"
 
 # ============================================================
 #  БАЗОВАЯ СТРУКТУРА SING-BOX
@@ -215,12 +222,10 @@ def load_sources(filepath: str) -> List[str]:
     with open(filepath, "r", encoding="utf-8") as f:
         return [line.strip() for line in f if line.strip() and not line.startswith("#")]
 
-
 def get_cache_path(url: str) -> Path:
     """Возвращает путь к кэш-файлу для URL."""
     url_hash = hashlib.md5(url.encode()).hexdigest()
     return Path(CACHE_DIR) / f"{url_hash}.cache"
-
 
 def load_from_cache(url: str) -> Optional[List[Tuple[str, str]]]:
     """Загружает данные из кэша."""
@@ -241,7 +246,6 @@ def load_from_cache(url: str) -> Optional[List[Tuple[str, str]]]:
         logger.warning(f"Ошибка чтения кэша для {url[:50]}...: {e}")
         return None
 
-
 def save_to_cache(url: str, data: List[Tuple[str, str]]) -> None:
     """Сохраняет данные в кэш."""
     if not CACHE_ENABLED:
@@ -253,7 +257,6 @@ def save_to_cache(url: str, data: List[Tuple[str, str]]) -> None:
         logger.debug(f"Сохранено в кэш: {url[:50]}... ({len(data)} ключей)")
     except Exception as e:
         logger.warning(f"Ошибка сохранения кэша для {url[:50]}...: {e}")
-
 
 def fetch_with_retry(url: str, max_retries: int = 3, delay: int = 2) -> Optional[requests.Response]:
     """Загружает URL с повторными попытками."""
@@ -278,7 +281,6 @@ def fetch_with_retry(url: str, max_retries: int = 3, delay: int = 2) -> Optional
                 logger.error(f"Ошибка загрузки {url[:50]}...: {e}")
     return None
 
-
 def is_valid_key(key: str) -> bool:
     """Проверяет валидность ключа."""
     key = key.strip()
@@ -299,13 +301,11 @@ def is_valid_key(key: str) -> bool:
         return False
     return True
 
-
 def is_bad_domain(hostname: str) -> bool:
     if not hostname:
         return True
     hostname = hostname.lower()
     return any(bad in hostname for bad in BAD_DOMAINS)
-
 
 def detect_country(key: str) -> Optional[Tuple[str, str]]:
     try:
@@ -325,7 +325,6 @@ def detect_country(key: str) -> Optional[Tuple[str, str]]:
         pass
     return None, None
 
-
 def check_ping(hostname: str, threshold: int) -> bool:
     """Проверяет пинг до сервера."""
     try:
@@ -335,7 +334,6 @@ def check_ping(hostname: str, threshold: int) -> bool:
         return result.returncode == 0
     except Exception:
         return False
-
 
 def get_geo_info(ip: str) -> Optional[Dict]:
     """Получает геолокацию по IP."""
@@ -348,7 +346,6 @@ def get_geo_info(ip: str) -> Optional[Dict]:
     except Exception:
         pass
     return None
-
 
 # ============================================================
 #  ПАРСИНГ ПРОТОКОЛОВ
@@ -422,7 +419,6 @@ def parse_vless_key(key: str) -> Optional[Dict]:
         logger.debug(f"Ошибка парсинга VLESS: {e}")
         return None
 
-
 def parse_trojan_key(key: str) -> Optional[Dict]:
     """Парсит trojan:// ключ в Sing-Box outbound"""
     try:
@@ -470,12 +466,10 @@ def parse_trojan_key(key: str) -> Optional[Dict]:
         logger.debug(f"Ошибка парсинга TROJAN: {e}")
         return None
 
-
 def parse_vmess_key(key: str) -> Optional[Dict]:
     """Парсит vmess:// ключ в Sing-Box outbound"""
     try:
         encoded = key.replace("vmess://", "")
-        # Добиваем base64 если нужно
         missing_padding = len(encoded) % 4
         if missing_padding:
             encoded += "=" * (4 - missing_padding)
@@ -527,7 +521,6 @@ def parse_vmess_key(key: str) -> Optional[Dict]:
         logger.debug(f"Ошибка парсинга VMess: {e}")
         return None
 
-
 def parse_hysteria_key(key: str) -> Optional[Dict]:
     """Парсит hysteria:// ключ в Sing-Box outbound"""
     try:
@@ -563,7 +556,6 @@ def parse_hysteria_key(key: str) -> Optional[Dict]:
         logger.debug(f"Ошибка парсинга Hysteria: {e}")
         return None
 
-
 def parse_key_to_outbound(key: str, index: int) -> Optional[Dict]:
     """Конвертирует ключ в Sing-Box outbound"""
     if key.startswith("vless://"):
@@ -581,7 +573,6 @@ def parse_key_to_outbound(key: str, index: int) -> Optional[Dict]:
         outbound["tag"] = f"proxy-{index}"
     return outbound
 
-
 def split_into_groups(keys: List[str], max_per_group: int, max_groups: int) -> List[List[str]]:
     if not keys:
         return []
@@ -591,7 +582,6 @@ def split_into_groups(keys: List[str], max_per_group: int, max_groups: int) -> L
         if len(groups) >= max_groups:
             break
     return groups
-
 
 def deduplicate_keys(keys: List[str]) -> List[str]:
     """Удаляет дубликаты ключей по IP/домену."""
@@ -609,7 +599,6 @@ def deduplicate_keys(keys: List[str]) -> List[str]:
         except Exception:
             result.append(key)
     return result
-
 
 def fetch_url(url: str) -> List[Tuple[str, str]]:
     """Загружает и парсит один источник."""
@@ -663,7 +652,6 @@ def fetch_url(url: str) -> List[Tuple[str, str]]:
     save_to_cache(url, valid_keys)
     return valid_keys
 
-
 def send_telegram_notification(message: str, is_error: bool = False) -> None:
     """Отправляет уведомление в Telegram."""
     if TG_DISABLED:
@@ -685,7 +673,6 @@ def send_telegram_notification(message: str, is_error: bool = False) -> None:
         logger.info("Уведомление отправлено в Telegram")
     except Exception as e:
         logger.error(f"Ошибка отправки уведомления в Telegram: {e}")
-
 
 # ============================================================
 #  MAIN
@@ -775,7 +762,7 @@ def main():
             suffix = f" #{gi}" if len(groups) > 1 else ""
 
             profile = {
-                "remarks": f"{flag} {country}{suffix}  | @TourFromKirill",
+                "remarks": f"{flag} {country}{suffix} | @TourFromKirill",
                 "dns": BASE_DNS,
                 "routing": BASE_ROUTING,
                 "inbounds": BASE_INBOUNDS,
@@ -835,13 +822,11 @@ def main():
 
     sys.exit(0)
 
-
 if __name__ == "__main__":
     try:
         main()
     except Exception as e:
         logger.error(f"❌ Критическая ошибка: {e}")
-        import traceback
         logger.error(traceback.format_exc())
 
         if not TG_DISABLED:
