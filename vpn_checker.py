@@ -775,7 +775,7 @@ def main():
             suffix = f" #{gi}" if len(groups) > 1 else ""
 
             profile = {
-                "remarks": f"{flag} {country}{suffix}",
+                "remarks": f"{flag} {country}{suffix}  | @TourFromKirill",
                 "dns": BASE_DNS,
                 "routing": BASE_ROUTING,
                 "inbounds": BASE_INBOUNDS,
