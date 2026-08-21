@@ -49,7 +49,7 @@
 ```bash
 git clone https://github.com/MrZidez/free-sub.git
 cd free-sub
-
+```
 
 
 ps
