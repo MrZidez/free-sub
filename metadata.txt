@@ -3,5 +3,5 @@
       'profile-update-interval': '12',
       'profile-web-page-url': 'https://free.vpn-from-kirill.workers.dev/',
       'support-url': 'https://t.me/TourFromKirill',
-      'subscription-userinfo': 'upload=0; download=0; total=0; expire=0',
+      'subscription-userinfo': 'upload=0; download=0; total=0; expire=2030-01-01',
       'hide-settings': '1',
