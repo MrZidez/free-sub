@@ -6,42 +6,9 @@ Supports: VLESS, TROJAN, VMess, Hysteria2
 Output: Sing-Box JSON format
 """
 
+import json
 import sys
 import os
-
-# ============================================================
-#  МАКСИМАЛЬНАЯ ОТЛАДКА В САМОМ НАЧАЛЕ
-# ============================================================
-print("=" * 50)
-print("🚀 СТАРТ СКРИПТА")
-print(f"🐍 Python: {sys.version}")
-print(f"📁 Текущая директория: {os.getcwd()}")
-print("=" * 50)
-
-# Пытаемся импортировать requests
-try:
-    import requests
-    print("✅ requests импортирован успешно")
-except ImportError as e:
-    print(f"❌ ОШИБКА импорта requests: {e}")
-    print("💡 Попробуйте установить: pip install requests")
-    sys.exit(1)
-
-# Пытаемся импортировать dotenv
-try:
-    from dotenv import load_dotenv
-    print("✅ python-dotenv импортирован успешно")
-except ImportError as e:
-    print(f"❌ ОШИБКА импорта python-dotenv: {e}")
-    print("💡 Попробуйте установить: pip install python-dotenv")
-    sys.exit(1)
-
-print("=" * 50)
-
-# ============================================================
-#  ОСТАЛЬНЫЕ ИМПОРТЫ
-# ============================================================
-import json
 import time
 import logging
 import urllib.parse
@@ -55,38 +22,26 @@ from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Tuple, Optional, Dict, Any
 
-print("✅ Все импорты выполнены")
-
 # ============================================================
 #  ЗАГРУЗКА .ENV
 # ============================================================
-print("📂 Загрузка .env...")
 try:
+    from dotenv import load_dotenv
     load_dotenv()
-    print("✅ .env загружен через load_dotenv()")
-except Exception as e:
-    print(f"⚠️ Ошибка load_dotenv(): {e}")
-    # Пробуем загрузить вручную
+except ImportError:
     env_file = Path(".env")
     if env_file.exists():
-        print(f"📂 Найден файл .env, загружаю вручную...")
         with open(env_file, "r") as f:
             for line in f:
                 line = line.strip()
                 if line and not line.startswith("#") and "=" in line:
                     key, value = line.split("=", 1)
                     os.environ[key.strip()] = value.strip().strip('"')
-        print("✅ .env загружен вручную")
-    else:
-        print("⚠️ Файл .env не найден")
-
-print("=" * 50)
 
 # ============================================================
 #  КОНФИГУРАЦИЯ ИЗ .ENV
 # ============================================================
 def get_env(key: str, default: Any = None) -> Any:
-    """Получает значение из .env с преобразованием типов"""
     value = os.getenv(key, default)
     if value is None:
         return default
@@ -99,7 +54,6 @@ def get_env(key: str, default: Any = None) -> Any:
             return default
     return value
 
-print("📋 Чтение конфигурации из .env...")
 USER_AGENT = get_env("USER_AGENT", "happ")
 PING_THRESHOLD_MS = get_env("PING_THRESHOLD_MS", 250)
 MAX_KEYS_PER_GROUP = get_env("MAX_KEYS_PER_GROUP", 8)
@@ -117,6 +71,9 @@ RETRY_ENABLED = get_env("RETRY_ENABLED", True)
 RETRY_COUNT = get_env("RETRY_COUNT", 3)
 RETRY_DELAY = get_env("RETRY_DELAY", 2)
 
+# ============================================================
+#  ВАЖНО: ОТКЛЮЧАЕМ ПРОВЕРКИ, ЧТОБЫ НЕ ВИСЛО
+# ============================================================
 ENABLE_PING_CHECK = get_env("ENABLE_PING_CHECK", False)
 ENABLE_GEO_CHECK = get_env("ENABLE_GEO_CHECK", False)
 ENABLE_DEDUP = get_env("ENABLE_DEDUP", True)
@@ -133,19 +90,14 @@ TG_NOTIFY_ON_SUCCESS = get_env("TG_NOTIFY_ON_SUCCESS", True)
 TG_NOTIFY_ON_ERROR = get_env("TG_NOTIFY_ON_ERROR", True)
 TG_DISABLED = not TG_BOT_TOKEN or not TG_CHAT_ID
 
-print(f"📋 SOURCE_FILE: {SOURCE_FILE}")
-print(f"📋 OUTPUT_FILE: {OUTPUT_FILE}")
-print("=" * 50)
-
 # ============================================================
 #  ИНИЦИАЛИЗАЦИЯ
 # ============================================================
 try:
     Path(CACHE_DIR).mkdir(exist_ok=True)
     Path(LOG_DIR).mkdir(exist_ok=True)
-    print(f"✅ Папки созданы: {CACHE_DIR}, {LOG_DIR}")
-except Exception as e:
-    print(f"⚠️ Ошибка создания папок: {e}")
+except Exception:
+    pass
 
 if ENABLE_LOGGING:
     logging.basicConfig(
@@ -160,7 +112,6 @@ else:
     logging.basicConfig(handlers=[logging.NullHandler()])
 
 logger = logging.getLogger(__name__)
-logger.info("🚀 VPN Parser v2 (Sing-Box) с отладкой")
 
 # ============================================================
 #  ПРОТОКОЛЫ И СТРАНЫ
@@ -262,7 +213,6 @@ BASE_OUTBOUNDS_EXTRA = [
 #  ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 # ============================================================
 def load_sources(filepath: str) -> List[str]:
-    """Загружает список URL из файла."""
     if not Path(filepath).exists():
         logger.error(f"Файл {filepath} не найден!")
         return []
@@ -270,43 +220,34 @@ def load_sources(filepath: str) -> List[str]:
         return [line.strip() for line in f if line.strip() and not line.startswith("#")]
 
 def get_cache_path(url: str) -> Path:
-    """Возвращает путь к кэш-файлу для URL."""
     url_hash = hashlib.md5(url.encode()).hexdigest()
     return Path(CACHE_DIR) / f"{url_hash}.cache"
 
 def load_from_cache(url: str) -> Optional[List[Tuple[str, str]]]:
-    """Загружает данные из кэша."""
     if not CACHE_ENABLED:
         return None
     cache_path = get_cache_path(url)
     if not cache_path.exists():
         return None
     if time.time() - cache_path.stat().st_mtime > CACHE_TTL:
-        logger.debug(f"Кэш истёк для {url[:50]}...")
         return None
     try:
         with open(cache_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        logger.debug(f"Загружено из кэша: {url[:50]}... ({len(data)} ключей)")
-        return data
-    except Exception as e:
-        logger.warning(f"Ошибка чтения кэша для {url[:50]}...: {e}")
+            return json.load(f)
+    except Exception:
         return None
 
 def save_to_cache(url: str, data: List[Tuple[str, str]]) -> None:
-    """Сохраняет данные в кэш."""
     if not CACHE_ENABLED:
         return
     try:
         cache_path = get_cache_path(url)
         with open(cache_path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False)
-        logger.debug(f"Сохранено в кэш: {url[:50]}... ({len(data)} ключей)")
-    except Exception as e:
-        logger.warning(f"Ошибка сохранения кэша для {url[:50]}...: {e}")
+    except Exception:
+        pass
 
 def fetch_with_retry(url: str, max_retries: int = 3, delay: int = 2) -> Optional[requests.Response]:
-    """Загружает URL с повторными попытками."""
     if not RETRY_ENABLED:
         max_retries = 1
     headers = {"User-Agent": USER_AGENT} if USER_AGENT else {}
@@ -329,7 +270,6 @@ def fetch_with_retry(url: str, max_retries: int = 3, delay: int = 2) -> Optional
     return None
 
 def is_valid_key(key: str) -> bool:
-    """Проверяет валидность ключа."""
     key = key.strip()
     if len(key) < 20:
         return False
@@ -373,7 +313,6 @@ def detect_country(key: str) -> Optional[Tuple[str, str]]:
     return None, None
 
 def check_ping(hostname: str, threshold: int) -> bool:
-    """Проверяет пинг до сервера."""
     try:
         param = "-n" if platform.system().lower() == "windows" else "-c"
         cmd = ["ping", param, "1", "-W", str(threshold // 1000 + 1), hostname]
@@ -383,7 +322,6 @@ def check_ping(hostname: str, threshold: int) -> bool:
         return False
 
 def get_geo_info(ip: str) -> Optional[Dict]:
-    """Получает геолокацию по IP."""
     try:
         resp = requests.get(f"http://ip-api.com/json/{ip}?fields=status,countryCode,country", timeout=5)
         if resp.status_code == 200:
@@ -398,7 +336,6 @@ def get_geo_info(ip: str) -> Optional[Dict]:
 #  ПАРСИНГ ПРОТОКОЛОВ
 # ============================================================
 def parse_vless_key(key: str) -> Optional[Dict]:
-    """Парсит vless:// ключ в Sing-Box outbound"""
     try:
         parsed = urllib.parse.urlparse(key)
         query = urllib.parse.parse_qs(parsed.query)
@@ -425,7 +362,6 @@ def parse_vless_key(key: str) -> Optional[Dict]:
 
         security = query.get("security", ["none"])[0]
         network = query.get("type", ["tcp"])[0]
-
         stream = {"network": network, "security": security}
 
         if network == "ws":
@@ -462,12 +398,10 @@ def parse_vless_key(key: str) -> Optional[Dict]:
 
         outbound["streamSettings"] = stream
         return outbound
-    except Exception as e:
-        logger.debug(f"Ошибка парсинга VLESS: {e}")
+    except Exception:
         return None
 
 def parse_trojan_key(key: str) -> Optional[Dict]:
-    """Парсит trojan:// ключ в Sing-Box outbound"""
     try:
         parsed = urllib.parse.urlparse(key)
         query = urllib.parse.parse_qs(parsed.query)
@@ -491,7 +425,6 @@ def parse_trojan_key(key: str) -> Optional[Dict]:
 
         security = query.get("security", ["tls"])[0]
         network = query.get("type", ["tcp"])[0]
-
         stream = {"network": network, "security": security}
 
         if network == "ws":
@@ -509,12 +442,10 @@ def parse_trojan_key(key: str) -> Optional[Dict]:
 
         outbound["streamSettings"] = stream
         return outbound
-    except Exception as e:
-        logger.debug(f"Ошибка парсинга TROJAN: {e}")
+    except Exception:
         return None
 
 def parse_vmess_key(key: str) -> Optional[Dict]:
-    """Парсит vmess:// ключ в Sing-Box outbound"""
     try:
         encoded = key.replace("vmess://", "")
         missing_padding = len(encoded) % 4
@@ -564,12 +495,10 @@ def parse_vmess_key(key: str) -> Optional[Dict]:
 
         outbound["streamSettings"] = stream
         return outbound
-    except Exception as e:
-        logger.debug(f"Ошибка парсинга VMess: {e}")
+    except Exception:
         return None
 
 def parse_hysteria_key(key: str) -> Optional[Dict]:
-    """Парсит hysteria:// ключ в Sing-Box outbound"""
     try:
         parsed = urllib.parse.urlparse(key)
         query = urllib.parse.parse_qs(parsed.query)
@@ -599,12 +528,10 @@ def parse_hysteria_key(key: str) -> Optional[Dict]:
             }
         }
         return outbound
-    except Exception as e:
-        logger.debug(f"Ошибка парсинга Hysteria: {e}")
+    except Exception:
         return None
 
 def parse_key_to_outbound(key: str, index: int) -> Optional[Dict]:
-    """Конвертирует ключ в Sing-Box outbound"""
     if key.startswith("vless://"):
         outbound = parse_vless_key(key)
     elif key.startswith("trojan://"):
@@ -631,7 +558,6 @@ def split_into_groups(keys: List[str], max_per_group: int, max_groups: int) -> L
     return groups
 
 def deduplicate_keys(keys: List[str]) -> List[str]:
-    """Удаляет дубликаты ключей по IP/домену."""
     if not ENABLE_DEDUP:
         return keys
     seen = set()
@@ -648,7 +574,6 @@ def deduplicate_keys(keys: List[str]) -> List[str]:
     return result
 
 def fetch_url(url: str) -> List[Tuple[str, str]]:
-    """Загружает и парсит один источник."""
     cached = load_from_cache(url)
     if cached is not None:
         return cached
@@ -690,8 +615,7 @@ def fetch_url(url: str) -> List[Tuple[str, str]]:
                             logger.debug(f"Гео не совпадает: {hostname} ({country} vs {geo_country})")
                             continue
 
-        except Exception as e:
-            logger.debug(f"Ошибка проверки ключа: {e}")
+        except Exception:
             continue
 
         valid_keys.append((country, line))
@@ -700,7 +624,6 @@ def fetch_url(url: str) -> List[Tuple[str, str]]:
     return valid_keys
 
 def send_telegram_notification(message: str, is_error: bool = False) -> None:
-    """Отправляет уведомление в Telegram."""
     if TG_DISABLED:
         return
     if is_error and not TG_NOTIFY_ON_ERROR:
@@ -725,23 +648,15 @@ def send_telegram_notification(message: str, is_error: bool = False) -> None:
 #  MAIN
 # ============================================================
 def main():
+    start_time = time.time()
     logger.info("🚀 Запуск VPN Parser v2 (Sing-Box)")
     logger.info(f"⏰ {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     logger.info(f"📋 User-Agent: {USER_AGENT or 'не задан'}")
-    logger.info(f"🎯 Порог пинга: {PING_THRESHOLD_MS} мс")
-    logger.info(f"📦 Ключей в группе: {MAX_KEYS_PER_GROUP}")
-    logger.info(f"🌍 Групп на страну: {MAX_GROUPS_PER_COUNTRY}")
     logger.info(f"📦 Кэширование: {'включено' if CACHE_ENABLED else 'выключено'}")
     logger.info(f"🔄 Retry: {'включен' if RETRY_ENABLED else 'выключен'}")
-    logger.info(f"📊 Дедупликация: {'включена' if ENABLE_DEDUP else 'выключена'}")
-    if ENABLE_PING_CHECK:
-        logger.info(f"🏓 Проверка пинга: включена (порог {PING_THRESHOLD_MS} мс)")
-    if ENABLE_GEO_CHECK:
-        logger.info(f"🌍 Проверка геолокации: включена")
     if not TG_DISABLED:
         logger.info(f"📤 Telegram уведомления: включены")
 
-    logger.info("📂 Проверяю файл source...")
     urls = load_sources(SOURCE_FILE)
     if not urls:
         logger.error("Нет источников для парсинга")
@@ -817,7 +732,6 @@ def main():
             }
             output.append(profile)
 
-    # Добавляем метаданные
     if ADD_METADATA:
         elapsed = time.time() - start_time
         total_profiles = len(output)
@@ -835,13 +749,10 @@ def main():
         }
         output.append(metadata)
 
-    # ============================================================
-    #  ПРИНУДИТЕЛЬНАЯ ЗАПИСЬ
-    # ============================================================
+    # Принудительная запись
     logger.info("🔍 ПРИНУДИТЕЛЬНАЯ ЗАПИСЬ ФАЙЛА")
     logger.info(f"📊 output содержит {len(output)} профилей")
     
-    # Если output пустой — создаём тестовые данные
     if not output:
         logger.warning("⚠️ output ПУСТ! Создаю тестовые данные...")
         test_profile = {
@@ -858,15 +769,11 @@ def main():
         output.append(test_profile)
         logger.info("✅ Тестовый профиль добавлен")
     
-    # Принудительно добавляем суффикс
     for p in output:
         if '@TourFromKirill' not in p['remarks']:
             p['remarks'] = p['remarks'] + ' | @TourFromKirill'
             logger.info(f"✏️ Добавлен суффикс: {p['remarks']}")
-    
-    # ============================================================
-    #  СОХРАНЕНИЕ
-    # ============================================================
+
     logger.info(f"💾 Сохраняю файл: {OUTPUT_FILE}")
     try:
         with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
@@ -876,7 +783,6 @@ def main():
                 json.dump(output, f, ensure_ascii=False, indent=2)
         logger.info(f"✅ Файл {OUTPUT_FILE} успешно сохранён")
         
-        # Проверяем, что файл создался
         if Path(OUTPUT_FILE).exists():
             file_size = Path(OUTPUT_FILE).stat().st_size
             logger.info(f"📄 Размер файла: {file_size} байт")
