@@ -65,7 +65,7 @@ OUTPUT_FILE = get_env("OUTPUT_FILE", "FREE-VPN-FROM-KIRILL.json")
 TIMEOUT = get_env("TIMEOUT", 15)
 MAX_WORKERS = get_env("MAX_WORKERS", 10)
 
-CACHE_ENABLED = get_env("CACHE_ENABLED", True)
+CACHE_ENABLED = get_env("CACHE_ENABLED", False)
 CACHE_TTL = get_env("CACHE_TTL", 3600)
 CACHE_DIR = get_env("CACHE_DIR", "cache")
 
@@ -73,10 +73,10 @@ RETRY_ENABLED = get_env("RETRY_ENABLED", True)
 RETRY_COUNT = get_env("RETRY_COUNT", 3)
 RETRY_DELAY = get_env("RETRY_DELAY", 2)
 
-ENABLE_PING_CHECK = get_env("ENABLE_PING_CHECK", False)
-ENABLE_GEO_CHECK = get_env("ENABLE_GEO_CHECK", False)
+ENABLE_PING_CHECK = get_env("ENABLE_PING_CHECK", True)
+ENABLE_GEO_CHECK = get_env("ENABLE_GEO_CHECK", True)
 ENABLE_DEDUP = get_env("ENABLE_DEDUP", True)
-ENABLE_RATING = get_env("ENABLE_RATING", False)
+ENABLE_RATING = get_env("ENABLE_RATING", True)
 ENABLE_LOGGING = get_env("ENABLE_LOGGING", True)
 LOG_LEVEL = get_env("LOG_LEVEL", "INFO")
 LOG_DIR = get_env("LOG_DIR", "logs")
@@ -788,17 +788,55 @@ def main():
         }
         output.append(metadata)
 
-    # ПРИНУДИТЕЛЬНО добавляем суффикс, если его нет
+    # ============================================================
+    #  ОТЛАДКА: ПРИНУДИТЕЛЬНАЯ ЗАПИСЬ
+    # ============================================================
+    logger.info("🔍 ПРИНУДИТЕЛЬНАЯ ЗАПИСЬ ФАЙЛА")
+    logger.info(f"📊 output содержит {len(output)} профилей")
+    
+    # Если output пустой — создаём тестовые данные
+    if not output:
+        logger.warning("⚠️ output ПУСТ! Создаю тестовые данные...")
+        test_profile = {
+            "remarks": "🇷🇺 Тест | @TourFromKirill",
+            "dns": BASE_DNS,
+            "routing": BASE_ROUTING,
+            "inbounds": BASE_INBOUNDS,
+            "outbounds": [
+                {"protocol": "vless", "tag": "proxy-1", "settings": {}},
+                {"tag": "direct", "protocol": "freedom"},
+                {"tag": "block", "protocol": "blackhole"}
+            ]
+        }
+        output.append(test_profile)
+        logger.info("✅ Тестовый профиль добавлен")
+    
+    # Принудительно добавляем суффикс
     for p in output:
         if '@TourFromKirill' not in p['remarks']:
             p['remarks'] = p['remarks'] + ' | @TourFromKirill'
-
-    # Сохраняем
-    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-        if COMPRESS_OUTPUT:
-            json.dump(output, f, ensure_ascii=False, separators=(',', ':'))
+            logger.info(f"✏️ Добавлен суффикс: {p['remarks']}")
+    
+    # ============================================================
+    #  СОХРАНЕНИЕ
+    # ============================================================
+    logger.info(f"💾 Сохраняю файл: {OUTPUT_FILE}")
+    try:
+        with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+            if COMPRESS_OUTPUT:
+                json.dump(output, f, ensure_ascii=False, separators=(',', ':'))
+            else:
+                json.dump(output, f, ensure_ascii=False, indent=2)
+        logger.info(f"✅ Файл {OUTPUT_FILE} успешно сохранён")
+        
+        # Проверяем, что файл создался
+        if Path(OUTPUT_FILE).exists():
+            file_size = Path(OUTPUT_FILE).stat().st_size
+            logger.info(f"📄 Размер файла: {file_size} байт")
         else:
-            json.dump(output, f, ensure_ascii=False, indent=2)
+            logger.error("❌ Файл НЕ создан!")
+    except Exception as e:
+        logger.error(f"❌ Ошибка сохранения: {e}")
 
     elapsed = time.time() - start_time
     total_profiles = len(output) - (1 if ADD_METADATA else 0)
