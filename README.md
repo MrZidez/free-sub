@@ -13,7 +13,6 @@
 
 - [Возможности](#-возможности)
 - [Установка](#-установка)
-- [Настройка](#-настройка)
 - [Запуск](#-запуск)
 - [Формат вывода](#-формат-вывода)
 - [Переменные окружения](#-переменные-окружения)
@@ -72,57 +71,6 @@ https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main
 
 ---
 
-## ⚙️ Настройка
-
-### Файл `.env`
-
-Скопируйте пример конфигурации:
-
-```bash
-cp .env.example .env
-```
-
-Отредактируйте `.env` под свои нужды:
-
-```env
-# Основные настройки
-USER_AGENT="happ"
-PING_THRESHOLD_MS=250
-MAX_KEYS_PER_GROUP=8
-MAX_GROUPS_PER_COUNTRY=5
-SOURCE_FILE="source"
-OUTPUT_FILE="FREE-VPN-FROM-KIRILL.json"
-TIMEOUT=15
-MAX_WORKERS=10
-
-# Кэширование
-CACHE_ENABLED=true
-CACHE_TTL=3600
-CACHE_DIR="cache"
-
-# Retry
-RETRY_ENABLED=true
-RETRY_COUNT=3
-RETRY_DELAY=2
-
-# Фичи
-ENABLE_PING_CHECK=false      # Проверка пинга (медленно)
-ENABLE_GEO_CHECK=false       # Проверка геолокации (медленно)
-ENABLE_DEDUP=true             # Удаление дубликатов
-ENABLE_LOGGING=true
-LOG_LEVEL="INFO"
-LOG_DIR="logs"
-COMPRESS_OUTPUT=false         # Сжатый JSON
-ADD_METADATA=true             # Добавить метаданные в JSON
-
-# Telegram (опционально)
-TG_BOT_TOKEN=""
-TG_CHAT_ID=""
-TG_NOTIFY_ON_SUCCESS=true
-TG_NOTIFY_ON_ERROR=true
-```
-
----
 
 ## 🚀 Запуск
 
