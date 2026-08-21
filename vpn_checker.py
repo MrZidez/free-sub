@@ -820,6 +820,7 @@ def send_telegram_notification(message: str, is_error: bool = False) -> None:
 #  MAIN
 # ============================================================
 def main():
+    start_time = time.time()
     logger.info("🚀 Запуск VPN Parser v2 (Sing-Box)")
     logger.info(f"⏰ {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     logger.info(f"📋 User-Agent: {USER_AGENT or 'не задан'}")
