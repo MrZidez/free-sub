@@ -1,6 +1,3 @@
-## 📄 README.md
-
-```markdown
 # 🚀 VPN Parser & Country Grouper
 
 [![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-Auto%20Update-blue)](https://github.com/MrZidez/free-sub/actions)
