@@ -4,4 +4,5 @@
             "profile-web-page-url": metadata['profile-web-page-url'] || 'https://free.vpn-from-kirill.workers.dev/',
             "support-url": metadata['support-url'] || 'https://t.me/TourFromKirill',
             "subscription-userinfo": metadata['subscription-userinfo'] || 'upload=0; download=0; total=0; expire=0',
-            "hide-settings": metadata['hide-settings'] || '1'
+            "hide-settings": metadata['hide-settings'] || '1',
+            "servers": []
