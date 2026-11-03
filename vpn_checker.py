@@ -720,6 +720,34 @@ def main():
                 "outbounds": outbounds
             })
 
+    # ============================================================
+    #  FORCED TELEGRAM PROFILE (always first, no flag)
+    # ============================================================
+    TELEGRAM_KEYS = [
+        "vless://4054fdc2-ee80-4419-8a8e-d937df4719e2@qq.utiltools.site:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=qq.utiltools.site&fp=qq&security=reality&pbk=drY21DHNOr6ezJLA2B10mzTExeJ9-gVBfTBNLwVBtWI&sid=#proxy-edmikmdkmkm",
+        "vless://4054fdc2-ee80-4419-8a8e-d937df4719e2@78.159.250.214:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=qq.utiltools.site&fp=firefox&security=reality&pbk=drY21DHNOr6ezJLA2B10mzTExeJ9-gVBfTBNLwVBtWI&sid=00000000#proxy-edfuhfe",
+    ]
+
+    telegram_outbounds = []
+    for idx, key in enumerate(TELEGRAM_KEYS, 1):
+        ob = parse_key_to_outbound(key, idx)
+        if ob:
+            telegram_outbounds.append(ob)
+
+    if telegram_outbounds:
+        telegram_outbounds.extend(BASE_OUTBOUNDS_EXTRA)
+        telegram_profile = {
+            "remarks": "Telegram | @TourFromKirill",
+            "dns": BASE_DNS,
+            "routing": BASE_ROUTING,
+            "inbounds": BASE_INBOUNDS,
+            "outbounds": telegram_outbounds
+        }
+        output.insert(0, telegram_profile)
+        logger.info(f"✅ Telegram profile added at position 0 ({len(telegram_outbounds) - 2} servers)")
+    else:
+        logger.warning("⚠️ Telegram profile NOT added — no valid keys parsed")
+
     # FORCE-STRIP 🌍 from all remarks (belt and suspenders)
     for p in output:
         if isinstance(p.get("remarks"), str):
