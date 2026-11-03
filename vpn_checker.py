@@ -121,8 +121,8 @@ logger = logging.getLogger(__name__)
 # ============================================================
 #  PROTOCOLS & COUNTRIES
 # ============================================================
-VALID_PROTOCOLS = ("vless://", "vmess://", "trojan://", "hysteria2://", "hy2://")
-EXCLUDED_PROTOCOLS = ("hysteria://", "ss://", "tuic://")
+VALID_PROTOCOLS = ("vless://", "vmess://", "hysteria://", "trojan://", "hysteria2://", "hy2://")
+EXCLUDED_PROTOCOLS = ("ss://", "tuic://")
 
 BAD_DOMAINS = {
     "mirror", "github", "gist", "raw.githubusercontent", "yandexcloud",
@@ -724,7 +724,6 @@ def main():
     #  FORCED TELEGRAM PROFILE (always first, no flag)
     # ============================================================
     TELEGRAM_KEYS = [
-        "vless://4054fdc2-ee80-4419-8a8e-d937df4719e2@qq.utiltools.site:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=qq.utiltools.site&fp=qq&security=reality&pbk=drY21DHNOr6ezJLA2B10mzTExeJ9-gVBfTBNLwVBtWI&sid=#proxy-edmikmdkmkm",
         "vless://4054fdc2-ee80-4419-8a8e-d937df4719e2@78.159.250.214:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=qq.utiltools.site&fp=firefox&security=reality&pbk=drY21DHNOr6ezJLA2B10mzTExeJ9-gVBfTBNLwVBtWI&sid=00000000#proxy-edfuhfe",
     ]
 
