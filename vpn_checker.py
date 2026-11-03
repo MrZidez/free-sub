@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-VPN Parser & Country Grouper for Happ (Xray-core)
-Parses VPN links, filters, groups by country, outputs Xray JSON.
+VPN Parser & Country Grouper for Happ / INCY (Xray-core)
 Supports: VLESS, VMess, Trojan, Hysteria2 (hy2://)
+Output: Xray JSON (compatible with Happ / INCY)
 """
 
 import sys
@@ -31,7 +31,7 @@ except ImportError as e:
 #  SAFE STARTUP (no .env leakage)
 # ============================================================
 print("=" * 60)
-print("🚀 VPN Parser v4 (Happ / Xray-core)")
+print("🚀 VPN Parser v5 (Happ / INCY / Xray-core)")
 print(f"🐍 Python: {sys.version}")
 print(f"📁 CWD: {os.getcwd()}")
 print("=" * 60)
@@ -160,11 +160,10 @@ COUNTRY_CODES = {
     "AR": "🇦🇷", "MX": "🇲🇽"
 }
 
-# O(1) reverse lookup
 COUNTRY_TO_FLAG = {v: k for k, v in COUNTRIES.items()}
 
 # ============================================================
-#  XRAY BASE STRUCTURE (for Happ)
+#  XRAY BASE STRUCTURE (for Happ / INCY)
 # ============================================================
 BASE_DNS = {"servers": ["1.1.1.1", "1.0.0.1"], "queryStrategy": "UseIP"}
 
@@ -260,7 +259,6 @@ def is_valid_key(key: str) -> bool:
         hostname = parsed.hostname or ""
         if len(hostname) < 3:
             return False
-        # Hysteria2 may omit port in multi-port format
         if not parsed.port and not parsed.path and not key.startswith(("hysteria2://", "hy2://")):
             return False
         if key.startswith("vmess://"):
@@ -280,13 +278,11 @@ def is_bad_domain(hostname: str) -> bool:
     return any(bad in h for bad in BAD_DOMAINS)
 
 def detect_country(key: str) -> Tuple[Optional[str], Optional[str]]:
-    """Returns (flag, country_name). O(1) for emoji lookup."""
-    # 1) Emoji in key
+    """Returns (flag, country_name). O(1) for emoji lookup. No 🌍 fallback."""
     for flag in COUNTRY_TO_FLAG:
         if flag in key:
             return flag, COUNTRY_TO_FLAG[flag]
 
-    # 2) Country code in tag (#RU, #RU-Server, #RU_Server, #RU Server)
     for code, flag in COUNTRY_CODES.items():
         for sep in ("#", "_", "-"):
             marker = f"{sep}{code}"
@@ -296,7 +292,6 @@ def detect_country(key: str) -> Tuple[Optional[str], Optional[str]]:
                 if not after or not after.isalnum():
                     return flag, COUNTRIES.get(flag, code)
 
-    # 3) Country code in hostname
     try:
         hostname = (urllib.parse.urlparse(key).hostname or "").lower()
         for code, flag in COUNTRY_CODES.items():
@@ -308,7 +303,6 @@ def detect_country(key: str) -> Tuple[Optional[str], Optional[str]]:
     return None, None
 
 def tcp_check(hostname: str, port: int, timeout: float = 3.0) -> bool:
-    """TCP-connect check (works on GitHub Actions without ICMP)."""
     try:
         with socket.create_connection((hostname, port), timeout=timeout):
             return True
@@ -316,11 +310,6 @@ def tcp_check(hostname: str, port: int, timeout: float = 3.0) -> bool:
         return False
 
 def parse_hysteria2_host_port(parsed) -> Tuple[Optional[str], Optional[int], Optional[str]]:
-    """
-    Hysteria2 multi-port: host:1234,5000-6000
-    urllib cannot parse this correctly.
-    Returns (host, first_port_or_443, port_range_or_None)
-    """
     netloc = parsed.netloc or ""
     if "@" in netloc:
         netloc = netloc.split("@", 1)[1]
@@ -339,7 +328,7 @@ def parse_hysteria2_host_port(parsed) -> Tuple[Optional[str], Optional[int], Opt
         return host, 443, None
 
 # ============================================================
-#  PARSERS (Xray format for Happ)
+#  PARSERS
 # ============================================================
 def parse_vless_key(key: str) -> Optional[Dict]:
     try:
@@ -497,11 +486,6 @@ def parse_vmess_key(key: str) -> Optional[Dict]:
         return None
 
 def parse_hysteria2_key(key: str) -> Optional[Dict]:
-    """
-    Hysteria2 URI: hysteria2://auth@host:port/?sni=...&obfs=salamander&obfs-password=...&insecure=1
-    Also supports hy2:// and multi-port (host:1234,5000-6000)
-    Happ supports hy2:// explicitly [citation:6][citation:12].
-    """
     try:
         parsed = urllib.parse.urlparse(key)
         q = urllib.parse.parse_qs(parsed.query)
@@ -535,17 +519,14 @@ def parse_hysteria2_key(key: str) -> Optional[Dict]:
 
         server = outbound["settings"]["servers"][0]
 
-        # obfs (salamander)
         if "obfs" in q:
             server["obfs"] = q["obfs"][0]
             if "obfs-password" in q:
                 server["obfsPassword"] = q["obfs-password"][0]
 
-        # multi-port
         if port_range:
             server["ports"] = port_range
 
-        # bandwidth (optional)
         if "upmbps" in q:
             server["up"] = q["upmbps"][0]
         if "downmbps" in q:
@@ -581,7 +562,6 @@ def split_into_groups(keys: List[str], max_per_group: int, max_groups: int) -> L
     return groups
 
 def deduplicate_keys(keys: List[str]) -> List[str]:
-    """Deduplicate by (hostname, port, protocol)."""
     if not ENABLE_DEDUP:
         return keys
     seen = set()
@@ -670,7 +650,7 @@ def send_telegram(message: str, is_error: bool = False) -> None:
 # ============================================================
 def main():
     start = time.time()
-    logger.info("🚀 VPN Parser v4 started")
+    logger.info("🚀 VPN Parser v5 started")
     logger.info(f"📦 Keys/group: {MAX_KEYS_PER_GROUP}, Groups/country: {MAX_GROUPS_PER_COUNTRY}")
     logger.info(f"📦 Dedup: {'ON' if ENABLE_DEDUP else 'OFF'}")
 
@@ -716,7 +696,7 @@ def main():
 
     output = []
     for country, keys in grouped.items():
-        flag = COUNTRY_TO_FLAG.get(country, "🌍")
+        flag = COUNTRY_TO_FLAG.get(country, "")  # NO 🌍 fallback
         groups = split_into_groups(keys, MAX_KEYS_PER_GROUP, MAX_GROUPS_PER_COUNTRY)
 
         for gi, group in enumerate(groups, 1):
@@ -730,14 +710,21 @@ def main():
 
             outbounds.extend(BASE_OUTBOUNDS_EXTRA)
             suffix = f" #{gi}" if len(groups) > 1 else ""
+            prefix = f"{flag} " if flag else ""
 
             output.append({
-                "remarks": f"{flag} {country}{suffix} | @TourFromKirill",
+                "remarks": f"{prefix}{country}{suffix} | @TourFromKirill",
                 "dns": BASE_DNS,
                 "routing": BASE_ROUTING,
                 "inbounds": BASE_INBOUNDS,
                 "outbounds": outbounds
             })
+
+    # FORCE-STRIP 🌍 from all remarks (belt and suspenders)
+    for p in output:
+        if isinstance(p.get("remarks"), str):
+            p["remarks"] = p["remarks"].replace("🌍", "").strip()
+            p["remarks"] = " ".join(p["remarks"].split())
 
     total_servers = sum(len(p['outbounds']) - 2 for p in output)
     elapsed = time.time() - start
