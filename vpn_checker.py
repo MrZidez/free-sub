@@ -1,925 +1,787 @@
 #!/usr/bin/env python3
-from __future__ import annotations
+"""
+VPN Parser & Country Grouper for Happ (Xray-core)
+Parses VPN links, filters, groups by country, outputs Xray JSON.
+Supports: VLESS, VMess, Trojan, Hysteria2 (hy2://)
+"""
 
-import argparse
-import base64
-import copy
-import functools
-import hashlib
-import html
-import ipaddress
-import json
-import logging
-import os
-import re
-import socket
 import sys
-import tempfile
+import os
+import json
 import time
+import logging
+import urllib.parse
+import base64
+import socket
+import hashlib
 import traceback
-from collections import Counter
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import dataclass, field, replace
-from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
-from urllib.parse import parse_qs, unquote, urlsplit
+from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import List, Tuple, Optional, Dict, Any
 
-import requests
-from requests.adapters import HTTPAdapter
-
-try:  # python-dotenv необязателен: в GitHub Actions переменные приходят из env
+try:
+    import requests
     from dotenv import load_dotenv
-except ImportError:  # pragma: no cover
-    load_dotenv = None
-
-log = logging.getLogger("vpn_checker")
-
+except ImportError as e:
+    print(f"❌ Missing dependency: {e}. Install: pip install requests python-dotenv")
+    sys.exit(1)
 
 # ============================================================
-#  КОНФИГУРАЦИЯ
+#  SAFE STARTUP (no .env leakage)
 # ============================================================
-_TRUE = {"1", "true", "yes", "on"}
+print("=" * 60)
+print("🚀 VPN Parser v4 (Happ / Xray-core)")
+print(f"🐍 Python: {sys.version}")
+print(f"📁 CWD: {os.getcwd()}")
+print("=" * 60)
 
+if os.path.exists('.env'):
+    print("✅ .env found (contents NOT printed)")
+else:
+    print("⚠️ .env not found")
 
-def _env(key: str, default: Any) -> Any:
-    """Читает переменную окружения и приводит её к типу значения по умолчанию."""
-    raw = os.getenv(key)
-    if raw is None or not raw.strip():
+# ============================================================
+#  ENV LOAD
+# ============================================================
+load_dotenv()
+
+def get_env(key: str, default: Any = None) -> Any:
+    value = os.getenv(key, default)
+    if value is None:
         return default
-    raw = raw.strip()
-    try:
-        if isinstance(default, bool):  # bool раньше int: bool — подкласс int
-            return raw.lower() in _TRUE
-        if isinstance(default, int):
-            return int(raw)
-        if isinstance(default, float):
-            return float(raw)
-    except ValueError:
-        log.warning("Некорректное значение %s=%r, использую %r", key, raw, default)
-        return default
-    return raw
-
-
-@dataclass(frozen=True)
-class Config:
-    # источники и вывод
-    source_file: str = "source"
-    output_file: str = "FREE-VPN-FROM-KIRILL.json"
-    brand: str = "@TourFromKirill"
-    min_profiles: int = 1  # меньше — файл НЕ перезаписывается
-    # сеть
-    user_agent: str = "happ"
-    timeout: float = 15.0
-    max_workers: int = 10
-    max_response_mb: int = 20
-    retry_enabled: bool = True
-    retry_count: int = 3
-    retry_delay: float = 2.0
-    # кэш
-    cache_enabled: bool = False
-    cache_ttl: int = 3600
-    cache_dir: str = "cache"
-    # проверки
-    enable_dedup: bool = True
-    enable_ping_check: bool = True  # TCP-проверка доступности
-    ping_threshold_ms: int = 250
-    connect_timeout: float = 3.0
-    check_workers: int = 50
-    enable_geo_check: bool = False  # сверка страны по IP через ip-api.com
-    geo_drop_mismatch: bool = False  # False — исправлять страну, True — выкидывать ключ
-    keep_unknown_country: bool = False
-    # группировка
-    max_keys_per_group: int = 8
-    max_groups_per_country: int = 5
-    # вывод
-    compress_output: bool = False
-    add_metadata: bool = False
-    # логи
-    enable_logging: bool = True  # запись в файл (консоль работает всегда)
-    log_level: str = "INFO"
-    log_dir: str = "logs"
-    # telegram
-    tg_bot_token: str = ""
-    tg_chat_id: str = ""
-    tg_notify_on_success: bool = True
-    tg_notify_on_error: bool = True
-
-    @classmethod
-    def from_env(cls) -> "Config":
-        d = cls()
-        kw = {}
-        for f in cls.__dataclass_fields__.values():
-            kw[f.name] = _env(f.name.upper(), getattr(d, f.name))
-        return cls(**kw)
-
-
-# ============================================================
-#  ЛОГИРОВАНИЕ (секреты маскируются)
-# ============================================================
-class _MaskingFormatter(logging.Formatter):
-    def __init__(self, fmt: str, secrets: list[str]):
-        super().__init__(fmt)
-        self._secrets = [s for s in secrets if s]
-
-    def format(self, record: logging.LogRecord) -> str:
-        text = super().format(record)
-        for s in self._secrets:
-            text = text.replace(s, "***")
-        return text
-
-
-def setup_logging(cfg: Config, verbose: bool = False) -> None:
-    level = logging.DEBUG if verbose else getattr(logging, cfg.log_level.upper(), logging.INFO)
-    fmt = _MaskingFormatter("%(asctime)s %(levelname)-7s %(message)s",
-                            [cfg.tg_bot_token, cfg.tg_chat_id])
-    handlers: list[logging.Handler] = [logging.StreamHandler(sys.stdout)]
-    if cfg.enable_logging:
+    if isinstance(default, bool):
+        return str(value).lower() in ("true", "1", "yes", "on")
+    if isinstance(default, int):
         try:
-            Path(cfg.log_dir).mkdir(parents=True, exist_ok=True)
-            handlers.append(logging.FileHandler(Path(cfg.log_dir) / "vpn-checker.log",
-                                                encoding="utf-8"))
-        except OSError as e:
-            print(f"Не удалось открыть файл лога: {e}", file=sys.stderr)
-    log.handlers.clear()
-    for h in handlers:
-        h.setFormatter(fmt)
-        log.addHandler(h)
-    log.setLevel(level)
-    log.propagate = False
-
+            return int(value)
+        except ValueError:
+            return default
+    return value
 
 # ============================================================
-#  СТРАНЫ
+#  CONFIG
 # ============================================================
-COUNTRY_NAMES = {
-    "RU": "Россия", "US": "США", "GB": "Великобритания", "DE": "Германия",
-    "FR": "Франция", "NL": "Нидерланды", "CA": "Канада", "AU": "Австралия",
-    "JP": "Япония", "CN": "Китай", "SG": "Сингапур", "KR": "Южная Корея",
-    "BR": "Бразилия", "IN": "Индия", "IT": "Италия", "ES": "Испания",
-    "CH": "Швейцария", "SE": "Швеция", "NO": "Норвегия", "FI": "Финляндия",
-    "DK": "Дания", "PL": "Польша", "UA": "Украина", "KZ": "Казахстан",
-    "LV": "Латвия", "EE": "Эстония", "LT": "Литва", "BY": "Беларусь",
-    "TR": "Турция", "AE": "ОАЭ", "IL": "Израиль", "ZA": "ЮАР",
-    "AR": "Аргентина", "MX": "Мексика",
-    # добавлено
-    "HK": "Гонконг", "TW": "Тайвань", "CZ": "Чехия", "AT": "Австрия",
-    "BE": "Бельгия", "IE": "Ирландия", "PT": "Португалия", "GR": "Греция",
-    "RO": "Румыния", "BG": "Болгария", "HU": "Венгрия", "MD": "Молдова",
-    "GE": "Грузия", "AM": "Армения", "AZ": "Азербайджан", "UZ": "Узбекистан",
-    "RS": "Сербия", "SK": "Словакия", "SI": "Словения", "HR": "Хорватия",
-    "IS": "Исландия", "LU": "Люксембург", "CY": "Кипр", "TH": "Таиланд",
-    "VN": "Вьетнам", "ID": "Индонезия", "MY": "Малайзия", "PH": "Филиппины",
-    "CL": "Чили", "CO": "Колумбия", "EG": "Египет", "SA": "Саудовская Аравия",
+USER_AGENT = get_env("USER_AGENT", "happ")
+MAX_KEYS_PER_GROUP = get_env("MAX_KEYS_PER_GROUP", 8)
+MAX_GROUPS_PER_COUNTRY = get_env("MAX_GROUPS_PER_COUNTRY", 5)
+SOURCE_FILE = get_env("SOURCE_FILE", "source")
+OUTPUT_FILE = get_env("OUTPUT_FILE", "FREE-VPN-FROM-KIRILL.json")
+TIMEOUT = get_env("TIMEOUT", 15)
+MAX_WORKERS = get_env("MAX_WORKERS", 10)
+
+CACHE_ENABLED = get_env("CACHE_ENABLED", False)
+CACHE_TTL = get_env("CACHE_TTL", 3600)
+CACHE_DIR = get_env("CACHE_DIR", "cache")
+
+RETRY_ENABLED = get_env("RETRY_ENABLED", True)
+RETRY_COUNT = get_env("RETRY_COUNT", 3)
+RETRY_DELAY = get_env("RETRY_DELAY", 2)
+
+ENABLE_TCP_CHECK = get_env("ENABLE_TCP_CHECK", False)
+TCP_CHECK_TIMEOUT = get_env("TCP_CHECK_TIMEOUT", 3)
+
+ENABLE_DEDUP = get_env("ENABLE_DEDUP", True)
+ENABLE_LOGGING = get_env("ENABLE_LOGGING", True)
+LOG_LEVEL = get_env("LOG_LEVEL", "INFO")
+LOG_DIR = get_env("LOG_DIR", "logs")
+COMPRESS_OUTPUT = get_env("COMPRESS_OUTPUT", False)
+
+TG_BOT_TOKEN = get_env("TG_BOT_TOKEN", "")
+TG_CHAT_ID = get_env("TG_CHAT_ID", "")
+TG_NOTIFY_ON_SUCCESS = get_env("TG_NOTIFY_ON_SUCCESS", True)
+TG_NOTIFY_ON_ERROR = get_env("TG_NOTIFY_ON_ERROR", True)
+TG_DISABLED = not TG_BOT_TOKEN or not TG_CHAT_ID
+
+print(f"📋 OUTPUT: {OUTPUT_FILE}")
+print(f"📋 TCP-check: {'ON' if ENABLE_TCP_CHECK else 'OFF'}")
+print("=" * 60)
+
+# ============================================================
+#  LOGGING
+# ============================================================
+Path(LOG_DIR).mkdir(exist_ok=True)
+if CACHE_ENABLED:
+    Path(CACHE_DIR).mkdir(exist_ok=True)
+
+if ENABLE_LOGGING:
+    logging.basicConfig(
+        level=getattr(logging, LOG_LEVEL.upper(), logging.INFO),
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        handlers=[
+            logging.FileHandler(Path(LOG_DIR) / "vpn-parser.log", encoding="utf-8"),
+            logging.StreamHandler()
+        ]
+    )
+else:
+    logging.basicConfig(handlers=[logging.NullHandler()])
+
+logger = logging.getLogger(__name__)
+
+# ============================================================
+#  PROTOCOLS & COUNTRIES
+# ============================================================
+VALID_PROTOCOLS = ("vless://", "vmess://", "trojan://", "hysteria2://", "hy2://")
+EXCLUDED_PROTOCOLS = ("hysteria://", "ss://", "tuic://")
+
+BAD_DOMAINS = {
+    "mirror", "github", "gist", "raw.githubusercontent", "yandexcloud",
+    "storage", "gist.githubusercontent", "githubusercontent", "cloudflare",
+    "amazon", "aws", "azure", "google", "googleapis", "cloudfront",
+    "heroku", "netlify", "vercel", "example", "test", "localhost",
+    "127.0.0.1", "0.0.0.0", "duckdns", "no-ip", "dyndns", "ddns",
+    "serveo", "ngrok", ".tk", ".ml", ".ga", ".cf", ".gq", ".top", ".xyz", ".club"
 }
-_ISO_ALIASES = {"UK": "GB"}
-UNKNOWN_COUNTRY = "??"
 
-_FLAG_RE = re.compile("[\U0001F1E6-\U0001F1FF]{2}")
-_CODE_RE = re.compile(r"(?<![A-Za-z0-9])([A-Z]{2})(?![A-Za-z0-9])")
+COUNTRIES = {
+    "🇷🇺": "Россия", "🇺🇸": "США", "🇬🇧": "Великобритания",
+    "🇩🇪": "Германия", "🇫🇷": "Франция", "🇳🇱": "Нидерланды",
+    "🇨🇦": "Канада", "🇦🇺": "Австралия", "🇯🇵": "Япония",
+    "🇨🇳": "Китай", "🇸🇬": "Сингапур", "🇰🇷": "Южная Корея",
+    "🇧🇷": "Бразилия", "🇮🇳": "Индия", "🇮🇹": "Италия",
+    "🇪🇸": "Испания", "🇨🇭": "Швейцария", "🇸🇪": "Швеция",
+    "🇳🇴": "Норвегия", "🇫🇮": "Финляндия", "🇩🇰": "Дания",
+    "🇵🇱": "Польша", "🇺🇦": "Украина", "🇰🇿": "Казахстан",
+    "🇱🇻": "Латвия", "🇪🇪": "Эстония", "🇱🇹": "Литва",
+    "🇧🇾": "Беларусь", "🇹🇷": "Турция", "🇦🇪": "ОАЭ",
+    "🇮🇱": "Израиль", "🇿🇦": "ЮАР", "🇦🇷": "Аргентина",
+    "🇲🇽": "Мексика"
+}
 
+COUNTRY_CODES = {
+    "RU": "🇷🇺", "US": "🇺🇸", "GB": "🇬🇧", "DE": "🇩🇪",
+    "FR": "🇫🇷", "NL": "🇳🇱", "CA": "🇨🇦", "AU": "🇦🇺",
+    "JP": "🇯🇵", "CN": "🇨🇳", "SG": "🇸🇬", "KR": "🇰🇷",
+    "BR": "🇧🇷", "IN": "🇮🇳", "IT": "🇮🇹", "ES": "🇪🇸",
+    "CH": "🇨🇭", "SE": "🇸🇪", "NO": "🇳🇴", "FI": "🇫🇮",
+    "DK": "🇩🇰", "PL": "🇵🇱", "UA": "🇺🇦", "KZ": "🇰🇿",
+    "LV": "🇱🇻", "EE": "🇪🇪", "LT": "🇱🇹", "BY": "🇧🇾",
+    "TR": "🇹🇷", "AE": "🇦🇪", "IL": "🇮🇱", "ZA": "🇿🇦",
+    "AR": "🇦🇷", "MX": "🇲🇽"
+}
 
-def iso_to_flag(code: str) -> str:
-    return "".join(chr(0x1F1E6 + ord(c) - 65) for c in code.upper())
-
-
-def flag_to_iso(flag: str) -> str:
-    return "".join(chr(ord(c) - 0x1F1E6 + 65) for c in flag)
-
-
-def country_label(iso: str) -> tuple[str, str]:
-    if iso == UNKNOWN_COUNTRY:
-        return "🌍", "Прочие"
-    return iso_to_flag(iso), COUNTRY_NAMES.get(iso, iso)
-
-
-def detect_country(remark: str, host: str) -> Optional[str]:
-    """ISO-код страны по флагу/коду в названии ключа или по ccTLD хоста."""
-    m = _FLAG_RE.search(remark)
-    if m:
-        return flag_to_iso(m.group())
-    for m in _CODE_RE.finditer(remark):
-        code = _ISO_ALIASES.get(m.group(1), m.group(1))
-        if code in COUNTRY_NAMES:
-            return code
-    tld = host.rsplit(".", 1)[-1].upper()
-    if len(tld) == 2 and tld.isalpha():
-        tld = _ISO_ALIASES.get(tld, tld)
-        if tld in COUNTRY_NAMES:
-            return tld
-    return None
-
+# O(1) reverse lookup
+COUNTRY_TO_FLAG = {v: k for k, v in COUNTRIES.items()}
 
 # ============================================================
-#  ФИЛЬТР ХОСТОВ
-# ============================================================
-BAD_TLDS = {"tk", "ml", "ga", "cf", "gq", "top", "xyz", "club"}
-BAD_LABELS = {"mirror", "gist", "storage", "aws", "example", "test", "localhost"}
-BAD_SUFFIXES = ("kdns.fr", "org.ua")
-BAD_SUBSTRINGS = (
-    "github", "yandexcloud", "cloudflare", "cloudfront", "amazon", "azure",
-    "google", "heroku", "netlify", "vercel", "roc-taiwan", "taipeicitygovernment",
-    "seoulcitygovernment", "seoulcityhall", "tokyometropolis", "duckdns",
-    "no-ip", "dyndns", "ddns", "serveo", "ngrok",
-)
-
-
-def is_bad_host(host: str) -> bool:
-    h = host.lower().rstrip(".")
-    if not h:
-        return True
-    try:  # IP-адрес: отбрасываем приватные, loopback, зарезервированные и т.п.
-        return not ipaddress.ip_address(h).is_global
-    except ValueError:
-        pass
-    if "." not in h:
-        return True
-    labels = h.split(".")
-    if labels[-1] in BAD_TLDS or any(lb in BAD_LABELS for lb in labels):
-        return True
-    if any(h == s or h.endswith("." + s) for s in BAD_SUFFIXES):
-        return True
-    return any(s in h for s in BAD_SUBSTRINGS)
-
-
-# ============================================================
-#  МОДЕЛЬ УЗЛА И ПАРСИНГ ССЫЛОК
-# ============================================================
-SUPPORTED_NETWORKS = {"tcp", "ws", "grpc", "httpupgrade", "xhttp", "http"}
-SUPPORTED_SECURITY = {"none", "tls", "reality"}
-_NET_ALIASES = {"raw": "tcp", "h2": "http", "splithttp": "xhttp", "gun": "grpc"}
-_LINK_RE = re.compile(r"(?:vless|trojan|vmess)://[^\s\"'<>`]+", re.I)
-
-
-@dataclass
-class Node:
-    protocol: str
-    host: str
-    port: int
-    secret: str  # uuid (vless/vmess) или пароль (trojan)
-    params: dict = field(default_factory=dict)
-    remark: str = ""
-    country: Optional[str] = None
-    latency_ms: Optional[float] = None
-    ip: Optional[str] = None
-
-    @property
-    def identity(self) -> tuple:
-        p = self.params
-        return (self.protocol, self.host, self.port, self.secret,
-                p.get("type", ""), p.get("path") or p.get("serviceName", ""),
-                p.get("security", ""))
-
-
-def _s(value: Any) -> str:
-    return "" if value is None else str(value).strip()
-
-
-def _b64decode(text: str) -> bytes:
-    text = re.sub(r"\s+", "", text).replace("-", "+").replace("_", "/")
-    text += "=" * (-len(text) % 4)
-    return base64.b64decode(text)
-
-
-def _parse_vmess(raw: str) -> Optional[Node]:
-    try:
-        payload = raw[len("vmess://"):].split("#", 1)[0]
-        data = json.loads(_b64decode(payload).decode("utf-8"))
-        port = int(data.get("port"))
-    except (ValueError, TypeError, AttributeError):  # включая binascii.Error / JSONDecodeError
-        return None
-    if not isinstance(data, dict):
-        return None
-    net = _s(data.get("net")).lower() or "tcp"
-    tls = _s(data.get("tls")).lower()
-    params = {
-        "type": net,
-        "security": tls if tls in ("tls", "reality") else "none",
-        "sni": _s(data.get("sni")),
-        "host": _s(data.get("host")),
-        "path": _s(data.get("path")),
-        "fp": _s(data.get("fp")),
-        "alpn": _s(data.get("alpn")),
-        "scy": _s(data.get("scy")) or "auto",
-        "aid": _s(data.get("aid")) or "0",
-    }
-    if net == "grpc":
-        params["serviceName"] = params["path"]
-    return Node("vmess", _s(data.get("add")).lower(), port, _s(data.get("id")),
-                params, remark=_s(data.get("ps")))
-
-
-def _parse_url_link(raw: str, protocol: str) -> Optional[Node]:
-    try:
-        u = urlsplit(raw)
-        host, port = u.hostname or "", u.port
-    except ValueError:
-        return None
-    if port is None:
-        return None
-    secret = unquote(u.username or "")
-    if u.password:
-        secret += ":" + unquote(u.password)
-    params = {k: v[0] for k, v in parse_qs(u.query).items() if v}
-    return Node(protocol, host, port, secret, params, remark=unquote(u.fragment))
-
-
-def parse_link(raw: str) -> Optional[Node]:
-    raw = raw.strip()
-    scheme = raw.split("://", 1)[0].lower() if "://" in raw else ""
-    if scheme == "vmess":
-        node = _parse_vmess(raw)
-    elif scheme in ("vless", "trojan"):
-        node = _parse_url_link(raw, scheme)
-    else:
-        return None
-    if node is None:
-        return None
-    p = node.params
-    net = (p.get("type") or "tcp").lower()
-    p["type"] = _NET_ALIASES.get(net, net)
-    p["security"] = (p.get("security") or ("tls" if node.protocol == "trojan" else "none")).lower()
-    return node
-
-
-def reject_reason(node: Node) -> Optional[str]:
-    """Причина отбраковки узла или None, если он годится."""
-    p = node.params
-    if not node.secret:
-        return "нет id/пароля"
-    if not 1 <= node.port <= 65535:
-        return "неверный порт"
-    if is_bad_host(node.host):
-        return "плохой хост"
-    if p["type"] not in SUPPORTED_NETWORKS:
-        return "неподдерживаемый транспорт"
-    if p["security"] not in SUPPORTED_SECURITY:
-        return "неподдерживаемая защита"
-    if p["security"] == "reality" and not p.get("pbk"):
-        return "reality без public key"  # такой ключ ломает весь профиль в Xray
-    return None
-
-
-def dedupe(nodes: list[Node]) -> list[Node]:
-    seen: set = set()
-    out = []
-    for n in nodes:
-        if n.identity not in seen:
-            seen.add(n.identity)
-            out.append(n)
-    return out
-
-
-# ============================================================
-#  XRAY-КОНФИГ
+#  XRAY BASE STRUCTURE (for Happ)
 # ============================================================
 BASE_DNS = {"servers": ["1.1.1.1", "1.0.0.1"], "queryStrategy": "UseIP"}
 
 BASE_ROUTING = {
     "rules": [{"type": "field", "protocol": ["bittorrent"], "outboundTag": "direct"}],
     "domainMatcher": "hybrid",
-    "domainStrategy": "IPIfNonMatch",
+    "domainStrategy": "IPIfNonMatch"
 }
 
-_SNIFFING = {"enabled": True, "routeOnly": False, "destOverride": ["http", "tls", "quic"]}
 BASE_INBOUNDS = [
-    {"tag": "socks", "port": 10808, "listen": "127.0.0.1", "protocol": "socks",
-     "settings": {"udp": True, "auth": "noauth"}, "sniffing": _SNIFFING},
-    {"tag": "http", "port": 10809, "listen": "127.0.0.1", "protocol": "http",
-     "settings": {"allowTransparent": False}, "sniffing": _SNIFFING},
+    {
+        "tag": "socks", "port": 10808, "listen": "127.0.0.1", "protocol": "socks",
+        "settings": {"udp": True, "auth": "noauth"},
+        "sniffing": {"enabled": True, "routeOnly": False, "destOverride": ["http", "tls", "quic"]}
+    },
+    {
+        "tag": "http", "port": 10809, "listen": "127.0.0.1", "protocol": "http",
+        "settings": {"allowTransparent": False},
+        "sniffing": {"enabled": True, "routeOnly": False, "destOverride": ["http", "tls", "quic"]}
+    }
 ]
 
 BASE_OUTBOUNDS_EXTRA = [
     {"tag": "direct", "protocol": "freedom"},
-    {"tag": "block", "protocol": "blackhole"},
+    {"tag": "block", "protocol": "blackhole"}
 ]
 
-
-def build_stream(node: Node) -> dict:
-    p = node.params
-    net, sec = p["type"], p["security"]
-    stream: dict = {"network": net, "security": sec}
-    path = p.get("path") or "/"
-    host = p.get("host", "")
-
-    if net == "ws":
-        ws = {"path": path}
-        if host:
-            ws["headers"] = {"Host": host}
-        stream["wsSettings"] = ws
-    elif net == "grpc":
-        stream["grpcSettings"] = {"serviceName": p.get("serviceName", ""), "multiMode": True}
-    elif net == "tcp":
-        stream["tcpSettings"] = {"header": {"type": "none"}}
-    elif net == "httpupgrade":
-        s = {"path": path}
-        if host:
-            s["host"] = host
-        stream["httpupgradeSettings"] = s
-    elif net == "xhttp":
-        s = {"path": path, "mode": p.get("mode") or "auto"}
-        if host:
-            s["host"] = host
-        stream["xhttpSettings"] = s
-    elif net == "http":
-        s = {"path": path}
-        if host:
-            s["host"] = [h.strip() for h in host.split(",") if h.strip()]
-        stream["httpSettings"] = s
-
-    if sec == "tls":
-        tls = {
-            "serverName": p.get("sni") or host or node.host,
-            "fingerprint": p.get("fp") or "chrome",
-            "allowInsecure": False,
-        }
-        alpn = [a.strip() for a in p.get("alpn", "").split(",") if a.strip()]
-        if alpn:
-            tls["alpn"] = alpn
-        stream["tlsSettings"] = tls
-    elif sec == "reality":
-        reality = {
-            "serverName": p.get("sni") or node.host,
-            "fingerprint": p.get("fp") or "chrome",
-            "publicKey": p["pbk"],
-        }
-        if p.get("sid"):
-            reality["shortId"] = p["sid"]
-        if p.get("spx"):
-            reality["spiderX"] = p["spx"]
-        stream["realitySettings"] = reality
-    return stream
-
-
-def build_outbound(node: Node, tag: str) -> dict:
-    p = node.params
-    if node.protocol == "vless":
-        settings = {"vnext": [{"address": node.host, "port": node.port, "users": [{
-            "id": node.secret, "encryption": p.get("encryption") or "none",
-            "flow": p.get("flow", ""), "level": 0}]}]}
-    elif node.protocol == "trojan":
-        settings = {"servers": [{"address": node.host, "port": node.port,
-                                 "password": node.secret}]}
-    else:  # vmess
-        try:
-            aid = int(p.get("aid") or 0)
-        except ValueError:
-            aid = 0
-        settings = {"vnext": [{"address": node.host, "port": node.port, "users": [{
-            "id": node.secret, "security": p.get("scy") or "auto",
-            "alterId": aid, "level": 0}]}]}
-    return {"protocol": node.protocol, "settings": settings,
-            "streamSettings": build_stream(node), "tag": tag}
-
-
 # ============================================================
-#  ЗАГРУЗКА ИСТОЧНИКОВ
+#  HELPERS
 # ============================================================
-def _short(url: str) -> str:
-    """URL для логов: без query/fragment (там часто лежат токены подписок)."""
-    u = urlsplit(url)
-    return f"{u.netloc}{u.path}"[:70]
+def load_sources(filepath: str) -> List[str]:
+    if not Path(filepath).exists():
+        logger.error(f"Source file {filepath} not found")
+        return []
+    with open(filepath, "r", encoding="utf-8") as f:
+        return [ln.strip() for ln in f if ln.strip() and not ln.startswith("#")]
 
+def get_cache_path(url: str) -> Path:
+    return Path(CACHE_DIR) / f"{hashlib.md5(url.encode()).hexdigest()}.cache"
 
-def atomic_write_text(path: Path, text: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=path.name + ".", suffix=".tmp")
+def load_from_cache(url: str) -> Optional[List[Tuple[str, str]]]:
+    if not CACHE_ENABLED:
+        return None
+    p = get_cache_path(url)
+    if not p.exists() or time.time() - p.stat().st_mtime > CACHE_TTL:
+        return None
     try:
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            f.write(text)
-        os.replace(tmp, path)
-    except BaseException:
+        with open(p, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+def save_to_cache(url: str, data: List[Tuple[str, str]]) -> None:
+    if not CACHE_ENABLED:
+        return
+    try:
+        with open(get_cache_path(url), "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False)
+    except Exception as e:
+        logger.warning(f"Cache save failed: {e}")
+
+def fetch_with_retry(url: str) -> Optional[requests.Response]:
+    attempts = RETRY_COUNT if RETRY_ENABLED else 1
+    headers = {"User-Agent": USER_AGENT} if USER_AGENT else {}
+    for attempt in range(attempts):
         try:
-            os.unlink(tmp)
-        except OSError:
-            pass
-        raise
-
-
-def load_sources(filepath: str) -> list[str]:
-    seen: dict[str, None] = {}
-    with open(filepath, encoding="utf-8-sig") as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#"):
-                seen.setdefault(line)
-    return list(seen)
-
-
-def make_session(cfg: Config) -> requests.Session:
-    s = requests.Session()
-    adapter = HTTPAdapter(pool_connections=cfg.max_workers, pool_maxsize=cfg.max_workers)
-    s.mount("http://", adapter)
-    s.mount("https://", adapter)
-    if cfg.user_agent:
-        s.headers["User-Agent"] = cfg.user_agent
-    return s
-
-
-_RETRY_STATUS = {429, 500, 502, 503, 504}
-
-
-def fetch_text(session: requests.Session, url: str, cfg: Config) -> Optional[str]:
-    """GET с ретраями (только для сетевых ошибок, 429 и 5xx) и лимитом размера."""
-    attempts = max(1, cfg.retry_count) if cfg.retry_enabled else 1
-    limit = cfg.max_response_mb * 1024 * 1024
-    for attempt in range(1, attempts + 1):
-        retryable, err = True, ""
-        try:
-            with session.get(url, timeout=cfg.timeout, stream=True) as r:
-                if r.status_code == 200:
-                    buf = bytearray()
-                    for chunk in r.iter_content(65536):
-                        buf.extend(chunk)
-                        if len(buf) > limit:
-                            log.warning("%s: ответ больше %d МБ, пропускаю",
-                                        _short(url), cfg.max_response_mb)
-                            return None
-                    return bytes(buf).decode("utf-8-sig", errors="replace")
-                err = f"HTTP {r.status_code}"
-                retryable = r.status_code in _RETRY_STATUS
-        except requests.RequestException as e:
-            err = type(e).__name__
-        if not retryable or attempt == attempts:
-            log.error("%s: не удалось загрузить (%s)", _short(url), err)
-            return None
-        wait = cfg.retry_delay * 2 ** (attempt - 1)
-        log.warning("%s: попытка %d/%d (%s), повтор через %.0fс",
-                    _short(url), attempt, attempts, err, wait)
-        time.sleep(wait)
+            resp = requests.get(url, timeout=TIMEOUT, headers=headers)
+            if resp.status_code == 200:
+                return resp
+            if attempt < attempts - 1:
+                wait = RETRY_DELAY * (2 ** attempt)
+                logger.warning(f"Retry {attempt+1}/{attempts} {url[:50]}... status {resp.status_code}, wait {wait}s")
+                time.sleep(wait)
+        except Exception as e:
+            if attempt < attempts - 1:
+                wait = RETRY_DELAY * (2 ** attempt)
+                logger.warning(f"Retry {attempt+1}/{attempts} {url[:50]}... error: {e}, wait {wait}s")
+                time.sleep(wait)
+            else:
+                logger.error(f"Failed {url[:50]}...: {e}")
     return None
 
-
-def _maybe_b64_text(text: str) -> Optional[str]:
+def is_valid_key(key: str) -> bool:
+    key = key.strip()
+    if len(key) < 20:
+        return False
+    if not any(key.startswith(p) for p in VALID_PROTOCOLS):
+        return False
+    if any(key.startswith(p) for p in EXCLUDED_PROTOCOLS):
+        return False
     try:
-        decoded = _b64decode(text).decode("utf-8")
-    except ValueError:
-        return None
-    return decoded if "://" in decoded else None
+        parsed = urllib.parse.urlparse(key)
+        hostname = parsed.hostname or ""
+        if len(hostname) < 3:
+            return False
+        # Hysteria2 may omit port in multi-port format
+        if not parsed.port and not parsed.path and not key.startswith(("hysteria2://", "hy2://")):
+            return False
+        if key.startswith("vmess://"):
+            encoded = key.replace("vmess://", "")
+            missing = len(encoded) % 4
+            if missing:
+                encoded += "=" * (4 - missing)
+            json.loads(base64.b64decode(encoded).decode("utf-8"))
+    except Exception:
+        return False
+    return True
 
+def is_bad_domain(hostname: str) -> bool:
+    if not hostname:
+        return True
+    h = hostname.lower()
+    return any(bad in h for bad in BAD_DOMAINS)
 
-def extract_links(text: str) -> list[str]:
-    """Ссылки из текста; понимает и base64-подписки."""
-    if not _LINK_RE.search(text):
-        text = _maybe_b64_text(text) or text
-    links: list[str] = []
-    for line in text.splitlines():
-        line = line.strip()
-        if line and not line.startswith("#"):
-            links.extend(_LINK_RE.findall(line))
-    return links
+def detect_country(key: str) -> Tuple[Optional[str], Optional[str]]:
+    """Returns (flag, country_name). O(1) for emoji lookup."""
+    # 1) Emoji in key
+    for flag in COUNTRY_TO_FLAG:
+        if flag in key:
+            return flag, COUNTRY_TO_FLAG[flag]
 
+    # 2) Country code in tag (#RU, #RU-Server, #RU_Server, #RU Server)
+    for code, flag in COUNTRY_CODES.items():
+        for sep in ("#", "_", "-"):
+            marker = f"{sep}{code}"
+            idx = key.find(marker)
+            if idx != -1:
+                after = key[idx + len(marker):idx + len(marker) + 1]
+                if not after or not after.isalnum():
+                    return flag, COUNTRIES.get(flag, code)
 
-def _cache_path(cfg: Config, url: str) -> Path:
-    return Path(cfg.cache_dir) / (hashlib.sha256(url.encode()).hexdigest()[:32] + ".json")
-
-
-def _cache_load(cfg: Config, url: str) -> Optional[list[str]]:
-    p = _cache_path(cfg, url)
+    # 3) Country code in hostname
     try:
-        if time.time() - p.stat().st_mtime > cfg.cache_ttl:
-            return None
-        data = json.loads(p.read_text(encoding="utf-8"))
-        return data if isinstance(data, list) else None
-    except (OSError, ValueError):
-        return None
-
-
-def fetch_source(session: requests.Session, url: str, cfg: Config) -> Optional[list[str]]:
-    """Сырые ссылки из источника; None — источник недоступен."""
-    if cfg.cache_enabled:
-        cached = _cache_load(cfg, url)
-        if cached is not None:
-            log.debug("%s: из кэша (%d)", _short(url), len(cached))
-            return cached
-    text = fetch_text(session, url, cfg)
-    if text is None:
-        return None
-    links = extract_links(text)
-    if cfg.cache_enabled:
-        try:
-            atomic_write_text(_cache_path(cfg, url), json.dumps(links))
-        except OSError as e:
-            log.warning("Кэш не записан: %s", e)
-    return links
-
-
-# ============================================================
-#  ПРОВЕРКА ДОСТУПНОСТИ И ГЕО
-# ============================================================
-@functools.lru_cache(maxsize=None)
-def resolve(host: str) -> Optional[str]:
-    try:
-        ipaddress.ip_address(host)
-        return host
-    except ValueError:
+        hostname = (urllib.parse.urlparse(key).hostname or "").lower()
+        for code, flag in COUNTRY_CODES.items():
+            if hostname.endswith(f".{code.lower()}"):
+                return flag, COUNTRIES.get(flag, code)
+    except Exception:
         pass
+
+    return None, None
+
+def tcp_check(hostname: str, port: int, timeout: float = 3.0) -> bool:
+    """TCP-connect check (works on GitHub Actions without ICMP)."""
     try:
-        infos = socket.getaddrinfo(host, None, type=socket.SOCK_STREAM)
-    except OSError:
-        return None
-    v4 = [i[4][0] for i in infos if i[0] == socket.AF_INET]
-    return (v4 or [i[4][0] for i in infos] or [None])[0]
+        with socket.create_connection((hostname, port), timeout=timeout):
+            return True
+    except Exception:
+        return False
 
-
-def tcp_latency_ms(ip: str, port: int, timeout: float, attempts: int = 2) -> Optional[float]:
-    best: Optional[float] = None
-    for _ in range(attempts):
-        t0 = time.perf_counter()
+def parse_hysteria2_host_port(parsed) -> Tuple[Optional[str], Optional[int], Optional[str]]:
+    """
+    Hysteria2 multi-port: host:1234,5000-6000
+    urllib cannot parse this correctly.
+    Returns (host, first_port_or_443, port_range_or_None)
+    """
+    netloc = parsed.netloc or ""
+    if "@" in netloc:
+        netloc = netloc.split("@", 1)[1]
+    if ":" not in netloc:
+        return netloc, 443, None
+    host, port_part = netloc.rsplit(":", 1)
+    if "," in port_part or "-" in port_part:
+        first = port_part.split(",")[0].split("-")[0]
         try:
-            with socket.create_connection((ip, port), timeout=timeout):
-                pass
-        except OSError:
-            continue
-        dt = (time.perf_counter() - t0) * 1000
-        best = dt if best is None else min(best, dt)
-    return best
+            return host, int(first), port_part
+        except ValueError:
+            return host, 443, port_part
+    try:
+        return host, int(port_part), None
+    except ValueError:
+        return host, 443, None
 
+# ============================================================
+#  PARSERS (Xray format for Happ)
+# ============================================================
+def parse_vless_key(key: str) -> Optional[Dict]:
+    try:
+        parsed = urllib.parse.urlparse(key)
+        q = urllib.parse.parse_qs(parsed.query)
+        hostname = parsed.hostname or ""
+        port = parsed.port or 443
+        user_id = parsed.username or ""
 
-def check_nodes(nodes: list[Node], cfg: Config) -> tuple[list[Node], Counter]:
-    """TCP-проверка: оставляет узлы, к которым удалось подключиться быстрее порога."""
-    stats: Counter = Counter()
+        outbound = {
+            "protocol": "vless",
+            "settings": {
+                "vnext": [{
+                    "address": hostname,
+                    "port": port,
+                    "users": [{
+                        "id": user_id,
+                        "encryption": q.get("encryption", ["none"])[0],
+                        "flow": q.get("flow", [""])[0],
+                        "level": 0
+                    }]
+                }]
+            },
+            "streamSettings": {}
+        }
 
-    def work(n: Node) -> tuple[Node, Optional[float]]:
-        n.ip = resolve(n.host)
-        return n, (tcp_latency_ms(n.ip, n.port, cfg.connect_timeout) if n.ip else None)
+        security = q.get("security", ["none"])[0]
+        network = q.get("type", ["tcp"])[0]
+        stream = {"network": network, "security": security}
 
-    alive: list[Node] = []
-    with ThreadPoolExecutor(max_workers=cfg.check_workers) as ex:
-        futures = [ex.submit(work, n) for n in nodes]
-        for i, fut in enumerate(as_completed(futures), 1):
-            n, lat = fut.result()
-            if n.ip is None:
-                stats["не резолвится"] += 1
-            elif lat is None:
-                stats["недоступен"] += 1
-            elif lat > cfg.ping_threshold_ms:
-                stats["медленный"] += 1
-            else:
-                n.latency_ms = round(lat, 1)
-                alive.append(n)
-            if i % 500 == 0:
-                log.info("  проверено %d/%d", i, len(nodes))
-    return alive, stats
+        if network == "ws":
+            ws = {"path": q.get("path", ["/"])[0]}
+            if "host" in q:
+                ws["headers"] = {"Host": q["host"][0]}
+            stream["wsSettings"] = ws
+        elif network == "grpc":
+            stream["grpcSettings"] = {"serviceName": q.get("serviceName", [""])[0], "multiMode": True}
+        elif network == "tcp":
+            stream["tcpSettings"] = {"header": {"type": "none"}}
 
+        if security == "tls":
+            stream["tlsSettings"] = {
+                "serverName": q.get("sni", [hostname])[0],
+                "fingerprint": q.get("fp", ["chrome"])[0],
+                "allowInsecure": False
+            }
+        elif security == "reality":
+            reality = {
+                "serverName": q.get("sni", [hostname])[0],
+                "fingerprint": q.get("fp", ["chrome"])[0],
+                "publicKey": q.get("pbk", [""])[0],
+            }
+            if "sid" in q:
+                reality["shortId"] = q["sid"][0]
+            stream["realitySettings"] = reality
 
-_GEO_URL = "http://ip-api.com/batch?fields=status,countryCode"
+        outbound["streamSettings"] = stream
+        return outbound
+    except Exception as e:
+        logger.debug(f"VLESS parse error: {e}")
+        return None
 
+def parse_trojan_key(key: str) -> Optional[Dict]:
+    try:
+        parsed = urllib.parse.urlparse(key)
+        q = urllib.parse.parse_qs(parsed.query)
+        hostname = parsed.hostname or ""
+        port = parsed.port or 443
+        password = parsed.username or ""
 
-def geo_countries(session: requests.Session, ips: list[str]) -> dict[str, str]:
-    """ISO-страны по IP через ip-api.com (batch по 100, лимит ~15 запросов/мин)."""
-    result: dict[str, str] = {}
-    chunks = [ips[i:i + 100] for i in range(0, len(ips), 100)]
-    for ci, chunk in enumerate(chunks):
-        for _ in range(2):
-            try:
-                r = session.post(_GEO_URL, json=chunk, timeout=10)
-                if r.status_code == 429:
-                    ttl = r.headers.get("X-Ttl", "")
-                    time.sleep(min(int(ttl) + 1 if ttl.isdigit() else 6, 60))
-                    continue
-                if r.ok:
-                    for ip, item in zip(chunk, r.json()):
-                        if isinstance(item, dict) and item.get("status") == "success":
-                            result[ip] = item["countryCode"]
-            except (requests.RequestException, ValueError) as e:
-                log.warning("Geo-запрос не удался: %s", type(e).__name__)
+        outbound = {
+            "protocol": "trojan",
+            "settings": {
+                "servers": [{
+                    "address": hostname,
+                    "port": port,
+                    "password": password,
+                    "sni": q.get("sni", [hostname])[0],
+                    "udp": True
+                }]
+            },
+            "streamSettings": {}
+        }
+
+        security = q.get("security", ["tls"])[0]
+        network = q.get("type", ["tcp"])[0]
+        stream = {"network": network, "security": security}
+
+        if network == "ws":
+            ws = {"path": q.get("path", ["/"])[0]}
+            if "host" in q:
+                ws["headers"] = {"Host": q["host"][0]}
+            stream["wsSettings"] = ws
+
+        if security == "tls":
+            stream["tlsSettings"] = {
+                "serverName": q.get("sni", [hostname])[0],
+                "fingerprint": q.get("fp", ["chrome"])[0],
+                "allowInsecure": False
+            }
+
+        outbound["streamSettings"] = stream
+        return outbound
+    except Exception as e:
+        logger.debug(f"Trojan parse error: {e}")
+        return None
+
+def parse_vmess_key(key: str) -> Optional[Dict]:
+    try:
+        encoded = key.replace("vmess://", "")
+        missing = len(encoded) % 4
+        if missing:
+            encoded += "=" * (4 - missing)
+        data = json.loads(base64.b64decode(encoded).decode("utf-8"))
+
+        outbound = {
+            "protocol": "vmess",
+            "settings": {
+                "vnext": [{
+                    "address": data.get("add", ""),
+                    "port": data.get("port", 443),
+                    "users": [{
+                        "id": data.get("id", ""),
+                        "security": data.get("scy", "auto"),
+                        "alterId": data.get("aid", 0)
+                    }]
+                }]
+            },
+            "streamSettings": {}
+        }
+
+        network = data.get("net", "tcp")
+        security = data.get("tls", "none")
+        stream = {"network": network, "security": security if security != "none" else "none"}
+
+        if network == "ws":
+            ws = {"path": data.get("path", "/")}
+            if data.get("host"):
+                ws["headers"] = {"Host": data["host"]}
+            stream["wsSettings"] = ws
+        elif network == "grpc":
+            stream["grpcSettings"] = {"serviceName": data.get("serviceName", ""), "multiMode": True}
+
+        if security == "tls":
+            stream["tlsSettings"] = {
+                "serverName": data.get("sni", data.get("add", "")),
+                "fingerprint": data.get("fp", "chrome"),
+                "allowInsecure": False
+            }
+
+        outbound["streamSettings"] = stream
+        return outbound
+    except Exception as e:
+        logger.debug(f"VMess parse error: {e}")
+        return None
+
+def parse_hysteria2_key(key: str) -> Optional[Dict]:
+    """
+    Hysteria2 URI: hysteria2://auth@host:port/?sni=...&obfs=salamander&obfs-password=...&insecure=1
+    Also supports hy2:// and multi-port (host:1234,5000-6000)
+    Happ supports hy2:// explicitly [citation:6][citation:12].
+    """
+    try:
+        parsed = urllib.parse.urlparse(key)
+        q = urllib.parse.parse_qs(parsed.query)
+
+        host, port, port_range = parse_hysteria2_host_port(parsed)
+        if not host:
+            return None
+
+        auth = parsed.username or ""
+        password = parsed.password or ""
+        auth_value = f"{auth}:{password}" if password else auth
+
+        outbound = {
+            "protocol": "hysteria2",
+            "settings": {
+                "servers": [{
+                    "address": host,
+                    "port": port,
+                    "password": auth_value,
+                }]
+            },
+            "streamSettings": {
+                "network": "hysteria2",
+                "security": "tls",
+                "tlsSettings": {
+                    "serverName": q.get("sni", [host])[0],
+                    "allowInsecure": q.get("insecure", ["0"])[0] in ("1", "true")
+                }
+            }
+        }
+
+        server = outbound["settings"]["servers"][0]
+
+        # obfs (salamander)
+        if "obfs" in q:
+            server["obfs"] = q["obfs"][0]
+            if "obfs-password" in q:
+                server["obfsPassword"] = q["obfs-password"][0]
+
+        # multi-port
+        if port_range:
+            server["ports"] = port_range
+
+        # bandwidth (optional)
+        if "upmbps" in q:
+            server["up"] = q["upmbps"][0]
+        if "downmbps" in q:
+            server["down"] = q["downmbps"][0]
+
+        return outbound
+    except Exception as e:
+        logger.debug(f"Hysteria2 parse error: {e}")
+        return None
+
+def parse_key_to_outbound(key: str, index: int) -> Optional[Dict]:
+    if key.startswith("vless://"):
+        outbound = parse_vless_key(key)
+    elif key.startswith("trojan://"):
+        outbound = parse_trojan_key(key)
+    elif key.startswith("vmess://"):
+        outbound = parse_vmess_key(key)
+    elif key.startswith(("hysteria2://", "hy2://")):
+        outbound = parse_hysteria2_key(key)
+    else:
+        return None
+
+    if outbound:
+        outbound["tag"] = f"proxy-{index}"
+    return outbound
+
+def split_into_groups(keys: List[str], max_per_group: int, max_groups: int) -> List[List[str]]:
+    groups = []
+    for i in range(0, len(keys), max_per_group):
+        if len(groups) >= max_groups:
             break
-        if ci < len(chunks) - 1:
-            time.sleep(4.5)
+        groups.append(keys[i:i + max_per_group])
+    return groups
+
+def deduplicate_keys(keys: List[str]) -> List[str]:
+    """Deduplicate by (hostname, port, protocol)."""
+    if not ENABLE_DEDUP:
+        return keys
+    seen = set()
+    result = []
+    for key in keys:
+        try:
+            parsed = urllib.parse.urlparse(key)
+            proto = key.split("://", 1)[0].lower()
+            if proto in ("hysteria2", "hy2"):
+                host, port, _ = parse_hysteria2_host_port(parsed)
+            else:
+                host = (parsed.hostname or "").lower()
+                port = parsed.port
+            sig = (host, port, proto)
+            if sig not in seen:
+                seen.add(sig)
+                result.append(key)
+        except Exception:
+            result.append(key)
     return result
 
+def fetch_url(url: str) -> List[Tuple[str, str]]:
+    cached = load_from_cache(url)
+    if cached is not None:
+        return cached
 
-def apply_geo(session: requests.Session, nodes: list[Node], cfg: Config) -> list[Node]:
-    for n in nodes:
-        n.ip = n.ip or resolve(n.host)
-    geo = geo_countries(session, sorted({n.ip for n in nodes if n.ip}))
-    kept, fixed, dropped = [], 0, 0
-    for n in nodes:
-        real = geo.get(n.ip) if n.ip else None
-        if real and n.country and n.country != real:
-            if cfg.geo_drop_mismatch:
-                dropped += 1
+    resp = fetch_with_retry(url)
+    if not resp:
+        return []
+
+    valid = []
+    for line in resp.iter_lines(decode_unicode=True):
+        if not line:
+            continue
+        line = line.strip()
+        if not line or line.startswith("#") or not is_valid_key(line):
+            continue
+
+        flag, country = detect_country(line)
+        if not flag or not country:
+            continue
+
+        try:
+            parsed = urllib.parse.urlparse(line)
+            hostname = parsed.hostname or ""
+            if is_bad_domain(hostname):
                 continue
-            fixed += 1
-        if real:
-            n.country = real
-        kept.append(n)
-    log.info("Geo: исправлено меток %d, отброшено %d", fixed, dropped)
-    return kept
 
+            if ENABLE_TCP_CHECK:
+                proto = line.split("://", 1)[0].lower()
+                if proto in ("hysteria2", "hy2"):
+                    check_host, check_port, _ = parse_hysteria2_host_port(parsed)
+                else:
+                    check_host, check_port = hostname, parsed.port or 443
+                if not tcp_check(check_host, check_port, TCP_CHECK_TIMEOUT):
+                    logger.debug(f"TCP check failed: {check_host}:{check_port}")
+                    continue
+        except Exception:
+            continue
 
-# ============================================================
-#  СБОРКА ПРОФИЛЕЙ
-# ============================================================
-def split_into_groups(items: list, max_per_group: int, max_groups: int) -> list[list]:
-    items = items[: max_per_group * max_groups]
-    return [items[i:i + max_per_group] for i in range(0, len(items), max_per_group)]
+        valid.append((country, line))
 
+    save_to_cache(url, valid)
+    return valid
 
-def build_profiles(nodes: list[Node], cfg: Config) -> list[dict]:
-    by_country: dict[str, list[Node]] = {}
-    for n in nodes:
-        by_country.setdefault(n.country or UNKNOWN_COUNTRY, []).append(n)
-
-    profiles: list[dict] = []
-    order = sorted(by_country.items(), key=lambda kv: (-len(kv[1]), country_label(kv[0])[1]))
-    for iso, group_nodes in order:
-        flag, name = country_label(iso)
-        group_nodes.sort(key=lambda n: (n.latency_ms is None, n.latency_ms or 0.0, n.identity))
-        groups = split_into_groups(group_nodes, cfg.max_keys_per_group, cfg.max_groups_per_country)
-        for gi, group in enumerate(groups, 1):
-            outbounds = []
-            for n in group:
-                try:
-                    outbounds.append(build_outbound(n, f"proxy-{len(outbounds) + 1}"))
-                except Exception as e:  # один кривой ключ не должен ронять всё
-                    log.debug("Пропущен %s:%s — %s", n.host, n.port, e)
-            if not outbounds:
-                continue
-            outbounds += copy.deepcopy(BASE_OUTBOUNDS_EXTRA)
-            suffix = f" #{gi}" if len(groups) > 1 else ""
-            brand = f" | {cfg.brand}" if cfg.brand else ""
-            profiles.append({
-                "remarks": f"{flag} {name}{suffix}{brand}",
-                "dns": copy.deepcopy(BASE_DNS),
-                "routing": copy.deepcopy(BASE_ROUTING),
-                "inbounds": copy.deepcopy(BASE_INBOUNDS),
-                "outbounds": outbounds,
-            })
-    return profiles
-
-
-# ============================================================
-#  TELEGRAM
-# ============================================================
-def notify(cfg: Config, text: str, *, is_error: bool) -> None:
-    if not (cfg.tg_bot_token and cfg.tg_chat_id):
+def send_telegram(message: str, is_error: bool = False) -> None:
+    if TG_DISABLED:
         return
-    if (is_error and not cfg.tg_notify_on_error) or (not is_error and not cfg.tg_notify_on_success):
+    if is_error and not TG_NOTIFY_ON_ERROR:
+        return
+    if not is_error and not TG_NOTIFY_ON_SUCCESS:
         return
     try:
-        r = requests.post(
-            f"https://api.telegram.org/bot{cfg.tg_bot_token}/sendMessage",
-            json={"chat_id": cfg.tg_chat_id, "text": text, "parse_mode": "HTML",
-                  "disable_web_page_preview": True},
-            timeout=10,
-        )
-        if not r.ok:
-            log.warning("Telegram ответил HTTP %s", r.status_code)
-    except requests.RequestException as e:
-        log.warning("Не удалось отправить уведомление в Telegram: %s", type(e).__name__)
-
+        url = f"https://api.telegram.org/bot{TG_BOT_TOKEN}/sendMessage"
+        payload = {"chat_id": TG_CHAT_ID, "text": message, "parse_mode": "HTML", "disable_web_page_preview": True}
+        r = requests.post(url, json=payload, timeout=5)
+        if r.status_code == 200:
+            logger.info("Telegram notification sent")
+        else:
+            logger.error(f"Telegram error: {r.status_code}")
+    except Exception as e:
+        logger.error(f"Telegram send failed: {e}")
 
 # ============================================================
-#  ОСНОВНОЙ ПРОЦЕСС
+#  MAIN
 # ============================================================
-def run(cfg: Config, dry_run: bool = False) -> int:
-    t0 = time.time()
-    log.info("Старт: %s", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+def main():
+    start = time.time()
+    logger.info("🚀 VPN Parser v4 started")
+    logger.info(f"📦 Keys/group: {MAX_KEYS_PER_GROUP}, Groups/country: {MAX_GROUPS_PER_COUNTRY}")
+    logger.info(f"📦 Dedup: {'ON' if ENABLE_DEDUP else 'OFF'}")
 
-    try:
-        sources = load_sources(cfg.source_file)
-    except OSError as e:
-        return _fail(cfg, f"Не удалось прочитать {cfg.source_file}: {e}")
-    if not sources:
-        return _fail(cfg, f"В {cfg.source_file} нет источников")
-    log.info("Источников: %d", len(sources))
+    urls = load_sources(SOURCE_FILE)
+    if not urls:
+        logger.error("No sources")
+        with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+            json.dump([], f)
+        sys.exit(0)
 
-    # 1. загрузка
-    session = make_session(cfg)
-    fetched: dict[str, Optional[list[str]]] = {}
-    with ThreadPoolExecutor(max_workers=cfg.max_workers) as ex:
-        futures = {ex.submit(fetch_source, session, u, cfg): u for u in sources}
+    logger.info(f"📥 Sources: {len(urls)}")
+
+    grouped: Dict[str, List[str]] = {}
+    total = 0
+    errors = 0
+
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
+        futures = {ex.submit(fetch_url, u): u for u in urls}
         for i, fut in enumerate(as_completed(futures), 1):
             url = futures[fut]
             try:
-                fetched[url] = fut.result()
+                results = fut.result()
+                for country, key in results:
+                    grouped.setdefault(country, []).append(key)
+                    total += 1
+                logger.info(f"  [{i}/{len(urls)}] ✅ {url[:50]}... → {len(results)} keys")
             except Exception as e:
-                log.error("%s: ошибка %s", _short(url), e)
-                fetched[url] = None
-            n = fetched[url]
-            log.info("[%d/%d] %s → %s", i, len(sources), _short(url),
-                     "ОШИБКА" if n is None else f"{len(n)} ссылок")
-    src_errors = sum(1 for v in fetched.values() if v is None)
-    raw_links = [link for u in sources for link in (fetched[u] or [])]
+                errors += 1
+                logger.error(f"  [{i}/{len(urls)}] ❌ {url[:50]}... error: {e}")
 
-    # 2. разбор и фильтрация
-    nodes: list[Node] = []
-    rejects: Counter = Counter()
-    for raw in raw_links:
-        node = parse_link(raw)
-        if node is None:
-            rejects["не разобрана"] += 1
-            continue
-        reason = reject_reason(node)
-        if reason:
-            rejects[reason] += 1
-            continue
-        nodes.append(node)
-    valid = len(nodes)
-    if cfg.enable_dedup:
-        nodes = dedupe(nodes)
-    log.info("Ссылок: %d, валидных: %d, после дедупликации: %d", len(raw_links), valid, len(nodes))
-    if rejects:
-        log.info("Отбраковано: %s", ", ".join(f"{k}: {v}" for k, v in rejects.most_common()))
+    if ENABLE_DEDUP:
+        logger.info("🔄 Deduplicating...")
+        for country, keys in grouped.items():
+            before = len(keys)
+            grouped[country] = deduplicate_keys(keys)
+            after = len(grouped[country])
+            if before != after:
+                logger.info(f"  {country}: removed {before - after} duplicates")
 
-    for n in nodes:
-        n.country = detect_country(n.remark, n.host)
+    logger.info(f"\n📊 Total keys: {total}")
+    for country, keys in sorted(grouped.items(), key=lambda x: -len(x[1])):
+        logger.info(f"  {country}: {len(keys)}")
 
-    # 3. доступность
-    if cfg.enable_ping_check and nodes:
-        log.info("TCP-проверка %d серверов (порог %d мс)...", len(nodes), cfg.ping_threshold_ms)
-        alive, stats = check_nodes(nodes, cfg)
-        log.info("Живых: %d (%s)", len(alive),
-                 ", ".join(f"{k}: {v}" for k, v in stats.most_common()) or "ок")
-        if alive:
-            nodes = alive
-        else:
-            log.warning("Ни один сервер не прошёл проверку — похоже, проблема в сети раннера; "
-                        "оставляю список без проверки")
+    output = []
+    for country, keys in grouped.items():
+        flag = COUNTRY_TO_FLAG.get(country, "🌍")
+        groups = split_into_groups(keys, MAX_KEYS_PER_GROUP, MAX_GROUPS_PER_COUNTRY)
 
-    # 4. гео
-    if cfg.enable_geo_check and nodes:
-        nodes = apply_geo(session, nodes, cfg)
+        for gi, group in enumerate(groups, 1):
+            outbounds = []
+            for idx, key in enumerate(group, 1):
+                ob = parse_key_to_outbound(key, idx)
+                if ob:
+                    outbounds.append(ob)
+            if not outbounds:
+                continue
 
-    if not cfg.keep_unknown_country:
-        nodes = [n for n in nodes if n.country]
+            outbounds.extend(BASE_OUTBOUNDS_EXTRA)
+            suffix = f" #{gi}" if len(groups) > 1 else ""
 
-    # 5. профили
-    profiles = build_profiles(nodes, cfg)
-    countries = len({n.country for n in nodes})
-    servers = sum(len(p["outbounds"]) - len(BASE_OUTBOUNDS_EXTRA) for p in profiles)
-    elapsed = time.time() - t0
+            output.append({
+                "remarks": f"{flag} {country}{suffix} | @TourFromKirill",
+                "dns": BASE_DNS,
+                "routing": BASE_ROUTING,
+                "inbounds": BASE_INBOUNDS,
+                "outbounds": outbounds
+            })
 
-    if len(profiles) < max(1, cfg.min_profiles):
-        return _fail(cfg, f"Получилось профилей: {len(profiles)} (минимум {cfg.min_profiles}). "
-                          f"Файл {cfg.output_file} НЕ перезаписан.")
+    total_servers = sum(len(p['outbounds']) - 2 for p in output)
+    elapsed = time.time() - start
 
-    if cfg.add_metadata:
-        profiles.append({"_metadata": {
-            "generated": datetime.now().isoformat(timespec="seconds"),
-            "total_servers": servers, "total_profiles": len(profiles),
-            "total_countries": countries, "sources": len(sources),
-            "errors": src_errors, "elapsed_seconds": round(elapsed, 2)}})
-
-    if dry_run:
-        log.info("dry-run: профилей %d, серверов %d — файл не записан", len(profiles), servers)
-        return 0
-
-    text = (json.dumps(profiles, ensure_ascii=False, separators=(",", ":"))
-            if cfg.compress_output else json.dumps(profiles, ensure_ascii=False, indent=2))
-    atomic_write_text(Path(cfg.output_file), text + "\n")
-    log.info("Сохранено: %s (%d профилей, %d серверов, %d стран, %.1f с)",
-             cfg.output_file, len(profiles) - (1 if cfg.add_metadata else 0),
-             servers, countries, elapsed)
-
-    status = "✅ УСПЕХ" if src_errors == 0 else f"⚠️ ЧАСТИЧНЫЙ УСПЕХ ({src_errors} источн. недоступно)"
-    notify(cfg, (
-        f"<b>VPN Checker</b>\n{status}\n\n"
-        f"• Источников: {len(sources)}\n• Ссылок: {len(raw_links)}\n"
-        f"• Серверов в выдаче: {servers}\n• Стран: {countries}\n"
-        f"• Профилей: {len(profiles)}\n⏱ {elapsed:.1f} с"), is_error=src_errors > 0)
-    return 0
-
-
-def _fail(cfg: Config, message: str) -> int:
-    log.error(message)
-    notify(cfg, f"<b>❌ VPN Checker</b>\n{html.escape(message)}", is_error=True)
-    return 1
-
-
-def parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
-    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--source", help="файл со списком источников (SOURCE_FILE)")
-    ap.add_argument("--output", help="выходной JSON (OUTPUT_FILE)")
-    ap.add_argument("--no-check", action="store_true", help="не проверять доступность серверов")
-    ap.add_argument("--dry-run", action="store_true", help="ничего не записывать")
-    ap.add_argument("-v", "--verbose", action="store_true", help="подробный лог")
-    return ap.parse_args(argv)
-
-
-def main(argv: Optional[list[str]] = None) -> int:
-    args = parse_args(argv)
-    if load_dotenv:
-        load_dotenv()
-    cfg = Config.from_env()
-    if args.source:
-        cfg = replace(cfg, source_file=args.source)
-    if args.output:
-        cfg = replace(cfg, output_file=args.output)
-    if args.no_check:
-        cfg = replace(cfg, enable_ping_check=False)
-    setup_logging(cfg, args.verbose)
+    logger.info(f"💾 Saving {len(output)} profiles to {OUTPUT_FILE}")
     try:
-        return run(cfg, dry_run=args.dry_run)
+        with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+            if COMPRESS_OUTPUT:
+                json.dump(output, f, ensure_ascii=False, separators=(',', ':'))
+            else:
+                json.dump(output, f, ensure_ascii=False, indent=2)
+        size = Path(OUTPUT_FILE).stat().st_size
+        logger.info(f"✅ Saved ({size} bytes)")
     except Exception as e:
-        log.exception("Критическая ошибка")
-        tb = html.escape(traceback.format_exc()[-800:])
-        notify(cfg, f"<b>❌ КРИТИЧЕСКАЯ ОШИБКА</b>\n<code>{html.escape(str(e))}</code>\n<pre>{tb}</pre>",
-               is_error=True)
-        return 1  # существующий выходной файл остаётся нетронутым
+        logger.error(f"❌ Save failed: {e}")
 
+    logger.info(f"\n✅ Profiles: {len(output)}, Servers: {total_servers}, Time: {elapsed:.2f}s")
+
+    if not TG_DISABLED:
+        status = "✅ OK" if errors == 0 else f"⚠️ Partial ({errors} errors)"
+        msg = f"""<b>VPN Parser</b>
+{status}
+
+📊 Sources: {len(urls)}
+📊 Servers: {total_servers}
+📊 Countries: {len(grouped)}
+📊 Profiles: {len(output)}
+📊 Errors: {errors}
+
+⏱️ {elapsed:.2f}s
+📅 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+"""
+        send_telegram(msg, is_error=errors > 0)
+
+    sys.exit(0)
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        main()
+    except Exception as e:
+        logger.error(f"❌ Fatal: {e}")
+        logger.error(traceback.format_exc())
+        if not TG_DISABLED:
+            send_telegram(f"<b>❌ FATAL</b>\n<code>{str(e)}</code>", is_error=True)
+        with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+            json.dump([], f)
+        sys.exit(1)
