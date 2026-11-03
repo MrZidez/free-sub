@@ -1,5 +1,5 @@
-            "profile-title": metadata['profile-title'] || 'Free Vpn From KIrill',
-            "announce": metadata['announce'] || 'Бесплатная подписка',
+            "profile-title": metadata['profile-title'] || 'Free Vpn From Kirill',
+            "announce": metadata['announce'] || 'Бесплатная подписка для всех!',
             "profile-update-interval": parseInt(metadata['profile-update-interval']) || 12,
             "profile-web-page-url": metadata['profile-web-page-url'] || 'https://free.vpn-from-kirill.workers.dev/',
             "support-url": metadata['support-url'] || 'https://t.me/TourFromKirill',
