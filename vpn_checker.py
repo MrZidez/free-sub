@@ -724,7 +724,7 @@ def main():
     #  FORCED TELEGRAM PROFILE (always first, no flag)
     # ============================================================
     TELEGRAM_KEYS = [
-        "vless://50b95deb-6394-46c5-b88a-583e5b3ca7ee@178.176.128.128:443?security=tls&sni=tgp.fastcon.cc&type=xhttp&path=%2Fstorage%2Fblob%2Fv2%2F&extra=%7B%22scMaxEachPostBytes%22%3A%22262144-524288%22%2C%22scMinPostsIntervalMs%22%3A%2220-40%22%2C%22seqKey%22%3A%22part%22%2C%22seqPlacement%22%3A%22query%22%2C%22sessionIDKey%22%3A%22upload_id%22%2C%22sessionIDLength%22%3A%2220-24%22%2C%22sessionIDPlacement%22%3A%22query%22%2C%22sessionIDTable%22%3A%22Base62%22%2C%22uplinkDataPlacement%22%3A%22body%22%2C%22uplinkHTTPMethod%22%3A%22POST%22%2C%22xPaddingBytes%22%3A%2224-48%22%2C%22xPaddingHeader%22%3A%22X-Request-Id%22%2C%22xPaddingMethod%22%3A%22tokenish%22%2C%22xPaddingObfsMode%22%3Atrue%2C%22xPaddingPlacement%22%3A%22header%22%2C%22xmux%22%3A%7B%22cMaxReuseTimes%22%3A0.0%2C%22hKeepAlivePeriod%22%3A0.0%2C%22hMaxRequestTimes%22%3A%22600-900%22%2C%22hMaxReusableSecs%22%3A%221800-3000%22%2C%22maxConnections%22%3A3.0%7D%7D#proxy-kzxtmqv",
+        "vless://b9abca13-8d45-43db-b0a2-4d26f85380c3@46.243.234.65:12443?flow=xtls-rprx-vision&security=reality&sni=catalog.mimowhat.online&fp=firefox&pbk=HyJQdnrodVK1USi-VyOC_pIvy1Ploj4Kf7kpO0vopSo&sid=78c8c6801d59cc19&type=tcp#proxy-bqwxzmt",
     ]
 
     telegram_outbounds = []
