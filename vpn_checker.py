@@ -724,7 +724,7 @@ def main():
     #  FORCED TELEGRAM PROFILE (always first, no flag)
     # ============================================================
     TELEGRAM_KEYS = [
-        "vless://4054fdc2-ee80-4419-8a8e-d937df4719e2@qq.utiltools.site:443?flow=xtls-rprx-vision&encryption=none&security=reality&sni=qq.utiltools.site&fp=chrome&pbk=drY21DHNOr6ezJLA2B10mzTExeJ9-gVBfTBNLwVBtWI&type=tcp&headerType=none#%F0%9F%95%B8%D0%A2%D0%B5%D0%BB%D0%B5%D0%B3%D1%80%D0%B0%D0%BC%20%F0%9F%87%B7%F0%9F%87%BA%20(telegram-only)%F0%9F%8E%83",
+        "vless://50b95deb-6394-46c5-b88a-583e5b3ca7ee@178.176.128.128:443?security=tls&sni=tgp.fastcon.cc&type=xhttp&path=%2Fstorage%2Fblob%2Fv2%2F&extra=%7B%22scMaxEachPostBytes%22%3A%22262144-524288%22%2C%22scMinPostsIntervalMs%22%3A%2220-40%22%2C%22seqKey%22%3A%22part%22%2C%22seqPlacement%22%3A%22query%22%2C%22sessionIDKey%22%3A%22upload_id%22%2C%22sessionIDLength%22%3A%2220-24%22%2C%22sessionIDPlacement%22%3A%22query%22%2C%22sessionIDTable%22%3A%22Base62%22%2C%22uplinkDataPlacement%22%3A%22body%22%2C%22uplinkHTTPMethod%22%3A%22POST%22%2C%22xPaddingBytes%22%3A%2224-48%22%2C%22xPaddingHeader%22%3A%22X-Request-Id%22%2C%22xPaddingMethod%22%3A%22tokenish%22%2C%22xPaddingObfsMode%22%3Atrue%2C%22xPaddingPlacement%22%3A%22header%22%2C%22xmux%22%3A%7B%22cMaxReuseTimes%22%3A0.0%2C%22hKeepAlivePeriod%22%3A0.0%2C%22hMaxRequestTimes%22%3A%22600-900%22%2C%22hMaxReusableSecs%22%3A%221800-3000%22%2C%22maxConnections%22%3A3.0%7D%7D#proxy-kzxtmqv",
     ]
 
     telegram_outbounds = []
